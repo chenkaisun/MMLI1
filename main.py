@@ -1,16 +1,19 @@
-# This is a sample Python script.
+from train import train
+from data import load_data
+from utils import setup_common
+from model.load_model import *
+from transformers import BertTokenizer
+from utils import mkdir
+from transformers import AutoTokenizer
+torch.backends.cudnn.benchmark=True
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    # load model and data etc.
+    args, model, optimizer = setup_common()
+    mkdir("model")
+    mkdir("model/states")
+    tokenizer=AutoTokenizer.from_pretrained(args.plm)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    train_data, val_data, test_data = load_data(args, args.train_file, tokenizer)
+    # train_data, val_data, test_data = load_data(args.train_file), load_data(args.val_file), load_data(args.test_file)
+    train(args, model, optimizer, (train_data, val_data, test_data))

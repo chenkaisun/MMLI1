@@ -11,18 +11,19 @@ def read_args():
     # model
     parser.add_argument("--model_name", default="", type=str)
     parser.add_argument("--model_path", default="model/states/best_dev.pt", type=str)
-    parser.add_argument("--experiment", default="", type=str)
+    parser.add_argument("--experiment", default="exp", type=str)
     parser.add_argument("--experiment_path", default="experiment/", type=str)
 
     # data
     parser.add_argument("--seed", type=int, default=0, help="random seed for initialization")
-    parser.add_argument("--train_file", default="train_annotated.json", type=str)
+    parser.add_argument("--train_file", default="data/property_pred/BBBP.csv", type=str)
     parser.add_argument("--val_file", default="dev.json", type=str)
     parser.add_argument("--test_file", default="test.json", type=str)
+    parser.add_argument("--cache_filename", default="data/property_pred/BBBP_1.pkl", type=str)
     parser.add_argument("--cache_data", default=True, type=str)
 
     # training params
-    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for training.")
+    parser.add_argument("--batch_size", default=1, type=int, help="Batch size for training.")
     parser.add_argument("--plm_lr", default=5e-5, type=float, help="The initial learning rate for PLM.")
     parser.add_argument("--lr", default=1e-4, type=float, help="The initial learning rate for Adam.")
     parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
@@ -31,7 +32,7 @@ def read_args():
     parser.add_argument("--warmup_ratio", default=0.06, type=float, help="Warm up ratio for Adam.")
     parser.add_argument("--num_epochs", default=300, type=float, help="Total number of training epochs to perform.")
     parser.add_argument("--eval_epoch", default=30, type=float, help="Number of steps between each evaluation.")
-    parser.add_argument('--patience', type=int, default=20)
+    parser.add_argument('--patience', type=int, default=30)
     parser.add_argument('--burn_in', type=int, default=20)
     parser.add_argument('--print_epoch_interval', type=int, default=10)
     parser.add_argument("--scheduler", default="")

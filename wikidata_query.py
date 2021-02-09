@@ -59,6 +59,7 @@ mkdir(html_folder)
 # query all wikidata pubchem cid entries with a wikipedia link
 # query batches of 1000
 for i in range(0,args.npages,1000):
+    print("i",i)
 
 
     results = get_results(endpoint_url, query%i)
