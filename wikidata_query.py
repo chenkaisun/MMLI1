@@ -7,6 +7,13 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 import requests
 from bs4 import BeautifulSoup
 from utils import *
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--npages', default=100000, type=int)
+
+args = parser.parse_args()
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
@@ -50,7 +57,7 @@ html_folder="wikipedia_html_for_pubchem_compounds/"
 mkdir(html_folder)
 # query all wikidata pubchem cid entries with a wikipedia link
 # query batches of 1000
-for i in range(0,1000000,1000):
+for i in range(0,args.npages,1000):
 
 
     results = get_results(endpoint_url, query%i)
