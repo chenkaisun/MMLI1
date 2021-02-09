@@ -53,7 +53,8 @@ def get_results(endpoint_url, query):
     return sparql.query().convert()
 
 res={}
-html_folder="wikipedia_html_for_pubchem_compounds/"
+mkdir("data/")
+html_folder="data/wikipedia_html_for_pubchem_compounds/"
 mkdir(html_folder)
 # query all wikidata pubchem cid entries with a wikipedia link
 # query batches of 1000
@@ -73,7 +74,7 @@ for i in range(0,args.npages,1000):
                 dump_file(html, html_folder+result['value']['value']+".html")
         except:
             pass
-    dump_file(res, "pubchemcid2wikiitem.json")
+    dump_file(res, "data/pubchemcid2wikiitem.json")
 
 
 
