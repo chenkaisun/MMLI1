@@ -87,6 +87,7 @@ for file in [tr, dev, test]:
                             print("desc", desc)
 
                             cmpd_info[cid]["pubchem_description"] = desc
+                            print("cmpd_info", cmpd_info)
                         # wikihtml_file = 'data/wikipedia_html_for_pubchem_compounds/' + str(cid) + '.html'
                         #
                         # print(wikihtml_file)
