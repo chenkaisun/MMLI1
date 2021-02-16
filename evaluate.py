@@ -42,12 +42,13 @@ def evaluate(args, model, data):
     # score = roc_auc_score(targets, preds)
 
     preds=np.array(preds)
+    print(targets, preds.tolist())
+    score2 = roc_auc_score(targets, preds.tolist())
     preds[preds>=0.5]=1
     preds[preds<0.5]=0
-
-    score2 = roc_auc_score(targets, preds)
-    print("auc", score2)
     score = accuracy_score(targets, preds.tolist())
+    args.logger.debug(f"accuracy_score {score}")
+    args.logger.debug(f"auc_score {score2}", )
     # f1 = f1_score(targets, preds, average='macro')
     output = None
-    return score, output
+    return score2, output

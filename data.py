@@ -53,7 +53,7 @@ def load_data(args, filename, tokenizer):
     smiles=[]
     suppl, targets=[],[]
 
-    for s, t in zip(list(df['smiles']), list(df['p_np'])):
+    for s, t in zip(list(df['smiles']), list(df['CT_TOX'])):
         try:
             c=Chem.MolFromSmiles(s)
         except:

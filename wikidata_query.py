@@ -1,11 +1,9 @@
 # pip install sparqlwrapper
 # https://rdflib.github.io/sparqlwrapper/
 
-import sys
-import time
 from SPARQLWrapper import SPARQLWrapper, JSON
 import requests
-from bs4 import BeautifulSoup
+
 from utils import *
 import argparse
 
@@ -72,10 +70,10 @@ for i in range(0,args.npages,1000):
             r = requests.get(result['article']['value'], headers=headers)
             if r.ok:
                 html = r.text
-                dump_file(html, html_folder+result['value']['value']+".html")
+                # dump_file(html, html_folder+result['value']['value']+".html")
         except:
             pass
-    dump_file(res, "data/pubchemcid2wikiitem.json")
+    # dump_file(res, "data/pubchemcid2wikiitem.json")
 
 
 

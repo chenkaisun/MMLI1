@@ -134,6 +134,9 @@ wikipedia = MediaWiki(
     user_agent='Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6')
 
 res=wikipedia.prefixsearch('ace')
+
+
+
 p = wikipedia.page(res[0])
 # items[j]['html']=p.html
 print(p.html)

@@ -55,9 +55,9 @@ class Net(torch.nn.Module):
         # self.conv4 = GINConv(nn=Linear(32, 32))
         # self.conv5 = GINConv(nn=Linear(32, 32))
         self.conv1 = GATConv(5, 32)
-        self.conv2 = GATConv(32, 64)
-        self.conv3 = GATConv(64, 128)
-        self.conv4 = GATConv(128, 32)
+        self.conv2 = GATConv(32, 32)
+        self.conv3 = GATConv(32, 32)
+        self.conv4 = GATConv(32, 32)
         self.conv5 = GATConv(32, 32)
         # self.conv1 = GATConv(5, 32)
         # self.conv2 = GATConv(32, 32)
@@ -101,7 +101,7 @@ class Net(torch.nn.Module):
         # print("x before", x)
         # print("x", x)
         # x=self.dropout(x)
-        x=torch.dropout(x, p=self.dropout, train=self.training)
+        # x=torch.dropout(x, p=self.dropout, train=self.training)
         x=self.conv1(x, edge_index)
         # x=self.mid(x)
         # torch.nn.functional.tanh(x)
@@ -138,7 +138,9 @@ class JNet(torch.nn.Module):
         self.gnn = Net(args)
         self.plm = AutoModel.from_pretrained(args.plm)
         # self.combiner = Linear(16+128, 1)
-        self.combiner = Linear(128, 1)
+        # self.combiner = Linear(32, 1)
+        # self.combiner = Linear(args.plm_hidden_dim+32, 1)
+        self.combiner = Linear(args.plm_hidden_dim, 1)
         self.dropout=args.dropout
 
     def forward(self, input):
@@ -147,14 +149,19 @@ class JNet(torch.nn.Module):
         ids=input['ids']
         in_train=input['in_train']
         g_out=self.gnn(batch_graph_data)
-        # t_out=self.plm(**input_ids, return_dict=True).pooler_output
+        t_out=self.plm(**input_ids, return_dict=True).pooler_output
         # print(get_tensor_info(g_out))
         # print(get_tensor_info(t_out))
-        # output=self.combiner(torch.cat([g_out, t_out], dim=-1))
-        output=self.combiner(torch.cat([g_out], dim=-1))
+        # print("g_out", get_tensor_info(g_out))
+        # print("t_out", get_tensor_info(t_out))
 
+        # output=self.combiner(torch.cat([g_out, t_out], dim=-1))
+        output=self.combiner(torch.cat([t_out], dim=-1))
+        # output=self.combiner(torch.cat([g_out], dim=-1))
+        # print("output",output.shape)
+        # print("batch_graph_data.y.unsqueeze(-1)",batch_graph_data.y.shape)
         if in_train:
-            return torch.nn.functional.binary_cross_entropy_with_logits(output, batch_graph_data.y.unsqueeze(-1))
+            return torch.nn.functional.binary_cross_entropy_with_logits(output, batch_graph_data.y.view(-1, 1))
         # return torch.argmax(F.log_softmax(output, dim=-1), dim=-1)
         return torch.sigmoid(output)
 

@@ -1,14 +1,9 @@
-from pprint import pprint as pp
-import pickle as pkl
-from collections import deque, defaultdict, Counter
-import json
 import requests
 from bs4 import BeautifulSoup
-import lxml
+
 from utils import *
 # api
 from mediawiki import MediaWiki
-import pubchempy as pcp
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '

@@ -16,10 +16,10 @@ def read_args():
 
     # data
     parser.add_argument("--seed", type=int, default=0, help="random seed for initialization")
-    parser.add_argument("--train_file", default="data/property_pred/BBBP.csv", type=str)
+    parser.add_argument("--train_file", default="data/property_pred/clintox.csv", type=str)
     parser.add_argument("--val_file", default="dev.json", type=str)
     parser.add_argument("--test_file", default="test.json", type=str)
-    parser.add_argument("--cache_filename", default="data/property_pred/BBBP_1.pkl", type=str)
+    parser.add_argument("--cache_filename", default="data/property_pred/clintox.pkl", type=str)
     parser.add_argument("--cache_data", default=True, type=str)
 
     # training params
@@ -32,7 +32,7 @@ def read_args():
     parser.add_argument("--warmup_ratio", default=0.06, type=float, help="Warm up ratio for Adam.")
     parser.add_argument("--num_epochs", default=300, type=float, help="Total number of training epochs to perform.")
     parser.add_argument("--eval_epoch", default=30, type=float, help="Number of steps between each evaluation.")
-    parser.add_argument('--patience', type=int, default=30)
+    parser.add_argument('--patience', type=int, default=10)
     parser.add_argument('--burn_in', type=int, default=20)
     parser.add_argument('--print_epoch_interval', type=int, default=10)
     parser.add_argument("--scheduler", default="")
@@ -43,13 +43,19 @@ def read_args():
 
     # model params
     parser.add_argument("--dropout", default=0.3, type=float, help="Dropout")
-    parser.add_argument('--hidden_dim', type=int, default=16, help='Number of hidden units.')
+    parser.add_argument('--plm_hidden_dim', type=int, default=128, help='Number of hidden units for plm.')
+    parser.add_argument('--hidden_dim', type=int, default=128, help='Number of hidden units.')
     parser.add_argument('--embedding_dim', type=int, default=16, help='Number of embedding units.')
     parser.add_argument('--batch_norm', default=False, help="Please give a value for batch_norm")
 
     # auxiliary
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--eval", action="store_true")
+
+    # experiment specific
+    parser.add_argument("--g", action="store_true")
+    parser.add_argument("--tg", action="store_true")
+
 
     args = parser.parse_args()
     return args

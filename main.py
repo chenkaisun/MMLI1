@@ -1,9 +1,9 @@
 from train import train
 from data import load_data
-from utils import setup_common
+from train_utils import setup_common
+from utils import mkdir
 from model.load_model import *
 from transformers import BertTokenizer
-from utils import mkdir
 from transformers import AutoTokenizer
 torch.backends.cudnn.benchmark=True
 

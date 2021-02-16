@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR
 # from utils import *
 from evaluate import evaluate
 from data import collate_fn
-from utils import get_logger
+from train_utils import get_logger
 # from torch_geometric.data import DataLoader
 import gc
 
@@ -30,7 +30,7 @@ def train(args, model, optimizer, data):
     # optimizer = args.optimizer
 
     # get logger
-    logger = get_logger(args)
+    logger = args.logger
 
     train_iterator = range(args.start_epoch, int(args.num_epoch) + args.start_epoch)
     total_steps = int(len(train_loader) * args.num_epoch)
@@ -49,6 +49,7 @@ def train(args, model, optimizer, data):
     best_epoch = 0
     t_total = time.time()
     num_steps = 0
+    logger.debug(f"{len(train_loader)} steps for each epoch")
     for epoch in train_iterator:
         logger.debug(f"Epoch {epoch}")
         t = time.time()
@@ -57,7 +58,7 @@ def train(args, model, optimizer, data):
 
         total_loss=0
         for step, batch in enumerate(train_loader):
-            logger.debug(f"Step {step}")
+            # logger.debug(f"Step {step}")
             num_steps += 1
             encoded_input = batch[0]  # tokenizer(batch[0])
             # print("encoded_input", encoded_input)
