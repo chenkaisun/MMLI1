@@ -19,7 +19,7 @@ import csv
 from utils import dump_file, join, get_mole_desciption, request_get
 from bs4 import BeautifulSoup
 import requests
-
+import time
 from crawler_config import headers
 
 tr = "data_online/ChemProt_Corpus/chemprot_training/chemprot_training_entities.tsv"
@@ -30,7 +30,7 @@ data_dir = 'data_online/ChemProt_Corpus/'
 mention2ent = {}
 cmpd_info = {}
 
-batch_save = 1
+batch_save = 100
 cnt = 0
 for file in [tr, dev, test]:
     with open(file, encoding='utf-8') as fd:
@@ -39,12 +39,16 @@ for file in [tr, dev, test]:
             # if i<3: continue
 
             print(i, row)
-
-            if row[2] != "CHEMICAL": continue
+            if not row or row[2] != "CHEMICAL": continue
 
             mole_name = row[-1]
             if mole_name not in mention2ent:
-                results = pcp.get_compounds(mole_name, 'name')
+                try:
+                    results = pcp.get_compounds(mole_name, 'name')
+                except Exception as e:
+                    print(e)
+                    time.sleep(8)
+                    continue
                 # r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/cids/TXT')
                 # print(r.text)
 
@@ -80,6 +84,7 @@ for file in [tr, dev, test]:
                         r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/description/XML')
                         if r and r.ok:
                             desc=get_mole_desciption(r)
+                            print("desc", desc)
 
                             cmpd_info["wiki_description"] = desc
                         # wikihtml_file = 'data/wikipedia_html_for_pubchem_compounds/' + str(cid) + '.html'
@@ -100,7 +105,9 @@ for file in [tr, dev, test]:
                         # print(description.get_text())
                         # cmpd_info["wiki_description"]=description.get_text()
 
-    cnt += 1
-    if cnt % batch_save == 0:
+                cnt += 1
+                if cnt % batch_save == 0:
+                    dump_file(mention2ent, data_dir + "mention2ent.json")
+                    dump_file(cmpd_info, data_dir + "cmpd_info.json")
         dump_file(mention2ent, data_dir + "mention2ent.json")
         dump_file(cmpd_info, data_dir + "cmpd_info.json")
