@@ -22,10 +22,10 @@ import requests
 
 from crawler_config import headers
 
-tr = "data/ChemProt_Corpus/chemprot_training/chemprot_training_entities.tsv"
-dev = "data/ChemProt_Corpus/chemprot_development/chemprot_development_entities.tsv"
-test = "data/ChemProt_Corpus/chemprot_test_gs/chemprot_test_entities_gs.tsv"
-data_dir = 'data/ChemProt_Corpus/'
+tr = "data_online/ChemProt_Corpus/chemprot_training/chemprot_training_entities.tsv"
+dev = "data_online/ChemProt_Corpus/chemprot_development/chemprot_development_entities.tsv"
+test = "data_online/ChemProt_Corpus/chemprot_test_gs/chemprot_test_entities_gs.tsv"
+data_dir = 'data_online/ChemProt_Corpus/'
 
 mention2ent = {}
 cmpd_info = {}
@@ -36,7 +36,7 @@ for file in [tr, dev, test]:
     with open(file, encoding='utf-8') as fd:
         rd = csv.reader(fd, delimiter="\t", quotechar='"')
         for i, row in enumerate(rd):
-            if i<3: continue
+            # if i<3: continue
 
             print(i, row)
 
