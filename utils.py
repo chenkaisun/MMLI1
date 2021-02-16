@@ -37,7 +37,7 @@ def get_mole_desciption(r):
         if information.find("title"):
             sinple_item["title"]=information.find("title").get_text()
 
-        elif information.find("description"):
+        if information.find("description"):
             if "descriptions" not in sinple_item:
                 sinple_item["descriptions"] = []
             description=information.find("description").get_text()
@@ -47,6 +47,8 @@ def get_mole_desciption(r):
                                                 "descriptionsourcename":descriptionsourcename,
                                                 "descriptionurl":descriptionurl,})
     return sinple_item
+
+
 
 
 def is_symmetric(g):

@@ -33,21 +33,25 @@ def get_logger(args):
     return logger
 
 
-def setup_common():
-    args = read_args()
+def setup_common(args):
+    # args = read_args()
     # wandb.config.update(args)
+    # for model running
+    mkdir("model")
+    mkdir("model/states")
+
     set_seeds(args)
     args.device = gpu_setup(use_gpu=args.use_gpu)
-    # wandb.init(config=args, project=args.experiment)
-    if args.debug:
-        # args.plm="bert-ba"
-        # args.use_amp=False
-        args.num_epoch = 100
-        args.batch_size = 64
-        args.burn_in = 1
-        args.lr=1e-4
-        args.grad_accumulation_steps = 1
-        args.plm="prajjwal1/bert-tiny"
+    # # wandb.init(config=args, project=args.experiment)
+    # if args.debug:
+    #     # args.plm="bert-ba"
+    #     # args.use_amp=False
+    #     args.num_epoch = 100
+    #     args.batch_size = 1
+    #     args.burn_in = 1
+    #     args.lr=1e-4
+    #     args.grad_accumulation_steps = 1
+    #     args.plm="prajjwal1/bert-tiny"
 
     if "-tiny" in args.plm:
         args.plm_hidden_dim=128
@@ -58,7 +62,7 @@ def setup_common():
     elif "-medium" in args.plm:
         args.plm_hidden_dim=512
     else: args.plm_hidden_dim=768
-    args.cache_filename=os.path.splitext(args.train_file)[0]+".pkl"
+
 
     # print("args.plm_hidden_dim", args.plm_hidden_dim)
         # args.plm="prajjwal1/bert-medium"
@@ -76,15 +80,15 @@ def setup_common():
 
     args.logger=get_logger(args)
     args.logger.debug("=====begin of args=====")
-    # print(vars(args))
     arg_dict=vars(args)
-    # max_chr_len=max([len(s) for s in arg_dict])
-    # print("arg_dict", arg_dict)
     for key in sorted(arg_dict.keys()):
         args.logger.debug(f"{key}: {arg_dict[key]}")
     args.logger.debug("=====end of args=====")
     # print(sys.argv)
     # args.logger(args)
+    # print(vars(args))
+    # max_chr_len=max([len(s) for s in arg_dict])
+    # print("arg_dict", arg_dict)
     return args, model, optimizer
 
 

@@ -8,7 +8,7 @@ import torch.utils.data
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error
 import numpy as np
 def evaluate(args, model, data):
-    print("Evaluate")
+    # print("Evaluate")
 
     dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
                             drop_last=False)
@@ -24,7 +24,7 @@ def evaluate(args, model, data):
                   'in_train': False,
                   }
         with torch.no_grad():
-            pred = model(inputs)
+            pred = model(inputs, args)
             # print(pred.shape)
             # print(pred.cpu())
             # print(pred.cpu().numpy())
@@ -42,7 +42,7 @@ def evaluate(args, model, data):
     # score = roc_auc_score(targets, preds)
 
     preds=np.array(preds)
-    print(targets, preds.tolist())
+    # print(targets, preds.tolist())
     score2 = roc_auc_score(targets, preds.tolist())
     preds[preds>=0.5]=1
     preds[preds<0.5]=0

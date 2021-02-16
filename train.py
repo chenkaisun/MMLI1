@@ -22,7 +22,7 @@ def train(args, model, optimizer, data):
         # train_data = train_data[:500]
         # val_data = train_data
         # test_data = train_data
-    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn,
+    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
                               drop_last=False)
     # model = args.model
     if args.n_gpu > 1:
@@ -82,7 +82,7 @@ def train(args, model, optimizer, data):
 
             if args.use_amp:
                 with torch.cuda.amp.autocast():
-                    loss = model(inputs)
+                    loss = model(inputs, args)
                 scaler.scale(loss).backward()
 
                 if step % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
@@ -94,7 +94,7 @@ def train(args, model, optimizer, data):
                     # scheduler.step()
                     optimizer.zero_grad()
             else:
-                loss = model(inputs)
+                loss = model(inputs, args)
                 loss.backward()
                 if step % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

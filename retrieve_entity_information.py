@@ -81,12 +81,12 @@ for file in [tr, dev, test]:
                         print("here")
 
 
-                        r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/description/XML')
+                        r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{int(cid)}/description/XML')
                         if r and r.ok:
                             desc=get_mole_desciption(r)
                             print("desc", desc)
 
-                            cmpd_info["wiki_description"] = desc
+                            cmpd_info[cid]["pubchem_description"] = desc
                         # wikihtml_file = 'data/wikipedia_html_for_pubchem_compounds/' + str(cid) + '.html'
                         #
                         # print(wikihtml_file)

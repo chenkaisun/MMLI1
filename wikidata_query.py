@@ -6,10 +6,10 @@ import requests
 
 from utils import *
 import argparse
-
+import sys
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--npages', default=100000, type=int)
+parser.add_argument('--npages', default=1000000, type=int)
 
 args = parser.parse_args()
 
@@ -51,8 +51,8 @@ def get_results(endpoint_url, query):
     return sparql.query().convert()
 
 res={}
-mkdir("data/")
-html_folder="data/wikipedia_html_for_pubchem_compounds/"
+mkdir("data_online/")
+html_folder="data_online/wikipedia_html_for_pubchem_compounds/"
 mkdir(html_folder)
 # query all wikidata pubchem cid entries with a wikipedia link
 # query batches of 1000
@@ -70,10 +70,10 @@ for i in range(0,args.npages,1000):
             r = requests.get(result['article']['value'], headers=headers)
             if r.ok:
                 html = r.text
-                # dump_file(html, html_folder+result['value']['value']+".html")
-        except:
-            pass
-    # dump_file(res, "data/pubchemcid2wikiitem.json")
+                dump_file(html, html_folder+result['value']['value']+".html")
+        except Exception as e:
+            print(e)
+    dump_file(res, "data/pubchemcid2wikiitem.json")
 
 
 

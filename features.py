@@ -13,6 +13,7 @@ import scipy
 import numpy as np
 import pandas as pd
 import itertools
+from sklearn.preprocessing import StandardScaler
 
 import tqdm
 import torch
@@ -23,6 +24,7 @@ import networkx as nx
 
 from torch_geometric.data import Data, Dataset
 from mendeleev import element
+from torch_geometric import utils
 
 # suppl = Chem.SDMolSupplier('10.sdf')
 #
@@ -38,24 +40,37 @@ from mendeleev import element
 
 # =================================================================================== #
 """                              GRAPH REPRESENTATION                               """
+
+
 # =================================================================================== #
 
 def get_adj_matrix_coo(molecules):
     for i, mol in enumerate(molecules):
         # print("i",i)
         # print("mol",mol)
-        am=Chem.rdmolops.GetAdjacencyMatrix(mol)
+        am = Chem.GetAdjacencyMatrix(mol)
+        # print("am\n", am)
         for i in range(np.array(am).shape[0]):
-            am[i,i]=1
+            am[i, i] = 1
         adj_mat = scipy.sparse.csr_matrix(am)
-        nx_graph = nx.from_scipy_sparse_matrix(adj_mat)
-        coo_matrix = nx.to_scipy_sparse_matrix(nx_graph, dtype=float, format="coo")
 
-        yield coo_matrix.row, coo_matrix.col
+        # print("adj_mat", adj_mat.row)
+        # print("adj_mat", adj_mat.col)
+
+        # nx_graph = nx.from_scipy_sparse_matrix(adj_mat)
+        # coo_matrix = nx.to_scipy_sparse_matrix(nx_graph, dtype=float, format="coo")
+
+        # print("coo_matrix row", coo_matrix.row)
+        # print("coo_matrix", coo_matrix.col)
+        # print("utils.from_scipy_sparse_matrix(adj_mat)[0]", utils.from_scipy_sparse_matrix(adj_mat)[0])
+        yield utils.from_scipy_sparse_matrix(adj_mat)[0]
+        # yield coo_matrix.row, coo_matrix.col
 
 
 # =================================================================================== #
 """                                GRAPH ATTRIBUTES                                 """
+
+
 # =================================================================================== #
 
 def get_num_bonds(molecules):
@@ -67,16 +82,21 @@ def get_num_bonds(molecules):
 
 # =================================================================================== #
 """                                NODE ATTRIBUTES                                  """
+
+
 # =================================================================================== #
 
 def get_atom_symbols(molecules):
     for mol in molecules:
         atoms = mol.GetAtoms()
-        atom_symbols = [atom.GetSymbol() for atom in atoms]
-        yield atom_symbols
+        # print("list(atoms)",list(atoms))
+        yield list(atoms)
+
+        # atom_symbols = [atom.GetSymbol() for atom in atoms]
+        # yield atom_symbols
+
 
 def get_prop(prop, atom, prop_dict):
-
     # print(prop_dict)
     if not atom in prop_dict:
         prop_dict[atom] = {}
@@ -84,20 +104,30 @@ def get_prop(prop, atom, prop_dict):
         # print("atom", atom)
         # print("prop", prop)
         elt_atom = element(atom)
-        if prop=="atomic_volume": prop_dict[atom][prop]=elt_atom.atomic_volume
-        elif prop=="atomic_weight": prop_dict[atom][prop]=elt_atom.atomic_weight
-        elif prop=="atomic_radius": prop_dict[atom][prop]=elt_atom.atomic_radius
-        elif prop=="boiling_point": prop_dict[atom][prop]=elt_atom.boiling_point
-        elif prop=="charge": prop_dict[atom][prop]=elt_atom.charge
-        elif prop=="density": prop_dict[atom][prop]=elt_atom.density
+        if prop == "atomic_volume":
+            prop_dict[atom][prop] = elt_atom.atomic_volume
+        elif prop == "atomic_weight":
+            prop_dict[atom][prop] = elt_atom.atomic_weight
+        elif prop == "atomic_radius":
+            prop_dict[atom][prop] = elt_atom.atomic_radius
+        elif prop == "boiling_point":
+            prop_dict[atom][prop] = elt_atom.boiling_point
+        elif prop == "charge":
+            prop_dict[atom][prop] = elt_atom.charge
+        elif prop == "density":
+            prop_dict[atom][prop] = elt_atom.density
     return prop_dict[atom][prop]
+
+
 def get_atom_properties(atom_list):
-    res=[]
-    dex=[]
-    prop_dict={}
+    res = []
+    dex = []
+    prop_dict = {}
+    scaler = StandardScaler()
     for i, atoms in enumerate(atom_list):
+
         # if i>60: break
-        # print("i", i)
+        print("i", i)
         # print("atoms",atoms)
         # for i, atom in enumerate(atoms):
         #     print(i, atom)
@@ -106,24 +136,52 @@ def get_atom_properties(atom_list):
         # atomic_number = [element(atom).atomic_number for atom in atoms]atomic_number,
 
         try:
-            atomic_volume = [get_prop("atomic_volume", atom, prop_dict) for atom in atoms]
-            atomic_weight = [get_prop("atomic_weight", atom, prop_dict) for atom in atoms]
-            atomic_radius = [get_prop("atomic_radius", atom, prop_dict) for atom in atoms]
-            boiling_point = [get_prop("boiling_point", atom, prop_dict) for atom in atoms]
+
+            atomic_volume = [get_prop("atomic_volume", atom.GetSymbol(), prop_dict) for atom in atoms]
+            atomic_weight = [get_prop("atomic_weight", atom.GetSymbol(), prop_dict) for atom in atoms]
+            atomic_radius = [get_prop("atomic_radius", atom.GetSymbol(), prop_dict) for atom in atoms]
+            boiling_point = [get_prop("boiling_point", atom.GetSymbol(), prop_dict) for atom in atoms]
+            density = [get_prop("density", atom.GetSymbol(), prop_dict) for atom in atoms]
+
+            total_valence = [atom.GetTotalValence() for atom in atoms]
+            aromatic = [int(atom.GetIsAromatic()) for atom in atoms]
+            fc = [atom.GetFormalCharge() for atom in atoms]
+
+            # 8 types
+            hybridization = np.zeros((len(atoms), 8))
+            hybridization[np.arange(len(atoms)), [int(atom.GetHybridization()) for atom in atoms]] = 1
+            # print("hybridization", hybridization)
+            # hybridization = [int(atom.GetHybridization()) for atom in atoms]
+
+            # 4 types
+            chiral_tag = np.zeros((len(atoms), 4))
+            chiral_tag[np.arange(len(atoms)), [int(atom.GetChiralTag()) for atom in atoms]] = 1
+            # print("chiral_tag", chiral_tag)
+            # chiral_tag = [int(atom.GetChiralTag()) for atom in atoms]
             # charge = [get_prop("charge", atom, prop_dict) for atom in atoms]
-            density = [get_prop("density", atom, prop_dict) for atom in atoms]# boiling_point, charge, density
-        except(Exception):
-            print("Exception", Exception)
+
+        except Exception as e:
+            print(e)
             # exclude.append(i)
             continue
 
-        all_atom_properties = list(zip(atomic_volume, atomic_weight,atomic_radius,boiling_point,density
-                                       ))
-        res.append(all_atom_properties)
+        all_atom_properties = list(zip(atomic_volume, atomic_weight, atomic_radius, boiling_point,
+                                       density, total_valence, aromatic, fc))
+        all_atom_properties = np.concatenate([all_atom_properties, hybridization, chiral_tag], axis=1)
+
+
+        # print("all_atom_properties", scaler.fit_transform(all_atom_properties))
+        # print("all_atom_properties", all_atom_properties.shape)
+
+        res.append(scaler.fit_transform(all_atom_properties))
         dex.append(i)
-    print("dex",dex)
+    print("dex", dex)
+
+    # normalization
+
     return res, dex
-        # yield all_atom_properties
+    # yield all_atom_properties
+
 
 # for buh in all_atom_properties:
 #         ah = buh[0]
@@ -134,6 +192,8 @@ def get_atom_properties(atom_list):
 
 # =================================================================================== #
 """                                EDGE ATTRIBUTES                                  """
+
+
 # =================================================================================== #
 
 # def get_num_bonds(molecules):
@@ -155,6 +215,8 @@ def get_bonds_info(molecules):
 #         print(type(ah))
 # =================================================================================== #
 """                                    TARGETS                                      """
+
+
 # =================================================================================== #
 def get_targets(atom_list):
     # Same as the get_atom_properties function from node attributes section
@@ -163,13 +225,14 @@ def get_targets(atom_list):
 
         yield boiling_points
 
+
 def get_num_classes(atom_list):
     num_classes = []
     for atoms in atom_list:
         boiling_points = list([element(atom).boiling_point for atom in atoms])
         classes = len(sorted(list(set(boiling_points))))
         num_classes.append(classes)
-    return max(num_classes) # We return the max value, as this is the number of classes of the most diverse molecule
+    return max(num_classes)  # We return the max value, as this is the number of classes of the most diverse molecule
 
 
 def normalize(numerical_dataset):
@@ -184,6 +247,7 @@ def normalize(numerical_dataset):
 
         return norm_dataset
 
+
 # norm_targets = normalize(targets)
 
 # for buh in norm_targets:
@@ -191,6 +255,8 @@ def normalize(numerical_dataset):
 
 # =================================================================================== #
 """                                 BUILD DATASETS                                  """
+
+
 # =================================================================================== #
 
 def seperator(datasets):
