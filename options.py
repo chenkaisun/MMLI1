@@ -13,6 +13,7 @@ def read_args():
     parser.add_argument("--model_path", default="model/states/best_dev.pt", type=str)
     parser.add_argument("--experiment", default="exp", type=str)
     parser.add_argument("--experiment_path", default="experiment/", type=str)
+    parser.add_argument("--exp", default="re", type=str)
 
     # data
     parser.add_argument("--seed", type=int, default=0, help="random seed for initialization")
@@ -46,6 +47,7 @@ def read_args():
 
     # model params
     parser.add_argument("--in_dim", default=14, type=float, help="Feature dim")
+    parser.add_argument("--out_dim", default=14, type=float, help="Feature dim")
     parser.add_argument('--g_dim', type=int, default=32, help='Number of final hidden units for graph.')
     parser.add_argument("--dropout", default=0.2, type=float, help="Dropout")
     parser.add_argument('--hidden_dim', type=int, default=128, help='Number of hidden units.')

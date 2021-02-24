@@ -5,24 +5,52 @@ from data import collate_fn
 import torch
 import torch.nn.functional as F
 import torch.utils.data
-from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error,
 import numpy as np
+from data import collate_fn_re
+
 def evaluate(args, model, data):
     # print("Evaluate")
 
-    dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
-                            drop_last=False)
+    if args.exp == "mol_pred":
+
+        dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
+                                drop_last=False)
+    else:
+
+        dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,
+                                drop_last=False)
     preds = []
     targets = []
     for batch in dataloader:
         model.eval()
 
-        encoded_input = batch[0]  # tokenizer(batch[0])
-        inputs = {'input_ids': {key: encoded_input[key].to(args.device) for key in encoded_input},
-                  'batch_graph_data': batch[1].to(args.device),
-                  'ids': batch[2],
-                  'in_train': False,
-                  }
+        if args.exp == "mol_pred":
+            encoded_input = batch[0]  # tokenizer(batch[0])
+            inputs = {'input_ids': {key: encoded_input[key].to(args.device) for key in encoded_input},
+                      'batch_graph_data': batch[1].to(args.device),
+                      'ids': batch[2],
+                      'in_train': False,
+                      }
+        else:
+            texts = batch[0]
+            batch_ent1_d = batch[1]
+            batch_ent2_d = batch[3]
+
+            # print("encoded_input", encoded_input)
+            inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
+                      "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
+                      "batch_ent1_d_mask": batch[2].to(args.device),
+                      "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
+                      "batch_ent2_d_mask": batch[4].to(args.device),
+                      "batch_ent1_g": batch[5].to(args.device),
+                      "batch_ent1_g_mask": batch[6].to(args.device),
+                      "batch_ent2_g": batch[7].to(args.device),
+                      "batch_ent2_g_mask": batch[8].to(args.device),
+                      "ids": batch[9],
+                      "labels": batch[10].to(args.device),
+                      'in_train': True,
+                      }
         with torch.no_grad():
             pred = model(inputs, args)
             # print(pred.shape)
@@ -34,7 +62,9 @@ def evaluate(args, model, data):
 
             # print(inputs["ids"], inputs["batch_graph_data"].y, inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1), list(inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1)))
             # print("ergf", list(inputs["batch_graph_data"].y.cpu().numpy().squeeze()))
-            targets.extend(list(inputs["batch_graph_data"].y.cpu().numpy()))
+
+            if args.exp == "mol_pred": targets.extend(list(inputs["batch_graph_data"].y.cpu().numpy()))
+            else:targets.extend(list(inputs["labels"].cpu().numpy()))
             # print("new targets", targets)
 
     # print("preds  ", preds)
@@ -42,13 +72,16 @@ def evaluate(args, model, data):
     # score = roc_auc_score(targets, preds)
 
     preds=np.array(preds)
-    # print(targets, preds.tolist())
-    score2 = roc_auc_score(targets, preds.tolist())
-    preds[preds>=0.5]=1
-    preds[preds<0.5]=0
-    score = accuracy_score(targets, preds.tolist())
-    args.logger.debug(f"accuracy_score {score}")
-    args.logger.debug(f"auc_score {score2}", )
-    # f1 = f1_score(targets, preds, average='macro')
+    if args.exp == "mol_pred":
+        # print(targets, preds.tolist())
+        score2 = roc_auc_score(targets, preds.tolist())
+        preds[preds>=0.5]=1
+        preds[preds<0.5]=0
+        score = accuracy_score(targets, preds.tolist())
+        args.logger.debug(f"accuracy_score {score}")
+        args.logger.debug(f"auc_score {score2}", )
+        # f1 = f1_score(targets, preds, average='macro')
+    else:
+        score2 = f1_score(targets, preds.tolist(), average="macro")
     output = None
     return score2, output

@@ -3,9 +3,14 @@ import torch
 import os
 from model.joint_gt import JNet
 
+from model.re_model import RE
+
 
 def get_model(args):
-    return JNet(args)
+    if args.model_name=="joint_gt":
+        return JNet(args)
+    if args.model_name=="re_model":
+        return RE(args)
 
 
 

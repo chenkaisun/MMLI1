@@ -78,7 +78,7 @@ def dump_file(obj, filename):
 
 def load_file(filename):
     if get_ext(filename) == ".json":
-        with open(filename, "r") as r:
+        with open(filename, "r", encoding="utf-8") as r:
             res = json.load(r)
     elif get_ext(filename) == ".pkl":
         with open(filename, "rb") as r:
