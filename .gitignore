@@ -137,7 +137,7 @@ experimental/*
 *.pkl
 *.json
 *.html
-
+.vector_cache/
 out/
 final/
 missMDA/
