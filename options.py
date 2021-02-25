@@ -22,8 +22,8 @@ def read_args():
     parser.add_argument("--val_file", default="dev.json", type=str)
     parser.add_argument("--test_file", default="test.json", type=str)
     parser.add_argument("--cache_filename", default="data/property_pred/clintox.pkl", type=str)
-    parser.add_argument("--use_cache", default=True, type=str)
-    parser.add_argument("--cache_data", default=True, type=str)
+    parser.add_argument("--use_cache", default=1, type=int)
+    parser.add_argument("--cache_data", default=1, type=int)
 
     # training params
     parser.add_argument("--batch_size", default=1, type=int, help="Batch size for training.")

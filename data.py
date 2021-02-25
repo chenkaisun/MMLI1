@@ -53,7 +53,7 @@ def get_graph_info(input_smiles):
     dex = []
     for i, s in enumerate(list(input_smiles)):
         if s == "[[NULL]]":
-            print("isnull")
+            # print("isnull")
             continue
         try:
             c = Chem.MolFromSmiles(s)

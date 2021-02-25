@@ -43,6 +43,7 @@ class RE(torch.nn.Module):
         # print("batch_graph_data", batch_graph_data)
 
         if args.bert_only:
+            print("bert only")
             hid_texts = self.plm(**texts, return_dict=True).pooler_output
             output = self.combiner(torch.cat([hid_texts], dim=-1))
 

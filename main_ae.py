@@ -16,7 +16,7 @@ if __name__ == '__main__':
     if args.debug:
         # args.plm="bert-ba"
         # args.use_amp=False
-        args.use_cache=False
+        # args.use_cache=False
         # data
         data_dir="data_online/ChemProt_Corpus/chemprot_preprocessed/"
         args.train_file=data_dir+"train.txt"
@@ -24,8 +24,8 @@ if __name__ == '__main__':
         args.test_file=data_dir+"test.txt"
         args.model_name="re_model"
         args.exp="re"
-        args.num_epoch = 300
-        args.batch_size = 4
+        # args.num_epoch = 300
+        # args.batch_size = 4
         args.burn_in = 1
         args.lr=1e-4
         args.grad_accumulation_steps = 1
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         args.plm="allenai/scibert_scivocab_cased"
         args.patience=5
         args.g_dim=64
-        args.bert_only=1
+        # args.bert_only=1
         args.exp = "re"
         # args.g_only=True
         # args.t_only=True
