@@ -135,8 +135,6 @@ experimental/*
 .idea/
 
 *.pkl
-*.json
-*.html
 .vector_cache/
 out/
 final/

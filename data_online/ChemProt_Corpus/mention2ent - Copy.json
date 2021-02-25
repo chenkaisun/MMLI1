@@ -1,0 +1,306 @@
+[
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules [
+            [ gefitinib
+            ]
+        ] (Iressa, ZD1839) and erlotinib (Tarceva, OSI-774), as well as monoclonal antibodies such as cetuximab (IMC-225, Erbitux).', 'id': 0, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            99
+        ], x=[
+            31,
+            20
+        ]), 'ent2_g_mask': 1, 'ent2_d': 'Gefitinib is a member of the class of quinazolines that is quinazoline which is substituted by a (3-chloro-4-fluorophenyl)nitrilo group,
+        3-(morpholin-4-yl)propoxy group and a methoxy group at positions 4,
+        6 and 7, respectively. An EGFR kinase inhibitor used for the treatment of non-small cell lung cancer. It has a role as an epidermal growth factor receptor antagonist and an antineoplastic agent. It is an aromatic ether, a member of monochlorobenzenes, a member of monofluorobenzenes, a secondary amino compound, a tertiary amino compound, a member of quinazolines and a member of morpholines.', 'ent2_d_mask': 1, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib ([
+            [ Iressa
+            ]
+        ], ZD1839) and erlotinib (Tarceva, OSI-774), as well as monoclonal antibodies such as cetuximab (IMC-225, Erbitux).', 'id': 1, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            99
+        ], x=[
+            31,
+            20
+        ]), 'ent2_g_mask': 1, 'ent2_d': 'Gefitinib is a member of the class of quinazolines that is quinazoline which is substituted by a (3-chloro-4-fluorophenyl)nitrilo group,
+        3-(morpholin-4-yl)propoxy group and a methoxy group at positions 4,
+        6 and 7, respectively. An EGFR kinase inhibitor used for the treatment of non-small cell lung cancer. It has a role as an epidermal growth factor receptor antagonist and an antineoplastic agent. It is an aromatic ether, a member of monochlorobenzenes, a member of monofluorobenzenes, a secondary amino compound, a tertiary amino compound, a member of quinazolines and a member of morpholines.', 'ent2_d_mask': 1, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa,
+        [
+            [ ZD1839
+            ]
+        ]) and erlotinib (Tarceva, OSI-774), as well as monoclonal antibodies such as cetuximab (IMC-225, Erbitux).', 'id': 2, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            99
+        ], x=[
+            31,
+            20
+        ]), 'ent2_g_mask': 1, 'ent2_d': 'Gefitinib is a member of the class of quinazolines that is quinazoline which is substituted by a (3-chloro-4-fluorophenyl)nitrilo group,
+        3-(morpholin-4-yl)propoxy group and a methoxy group at positions 4,
+        6 and 7, respectively. An EGFR kinase inhibitor used for the treatment of non-small cell lung cancer. It has a role as an epidermal growth factor receptor antagonist and an antineoplastic agent. It is an aromatic ether, a member of monochlorobenzenes, a member of monofluorobenzenes, a secondary amino compound, a tertiary amino compound, a member of quinazolines and a member of morpholines.', 'ent2_d_mask': 1, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa, ZD1839) and [
+            [ erlotinib
+            ]
+        ] (Tarceva, OSI-774), as well as monoclonal antibodies such as cetuximab (IMC-225, Erbitux).', 'id': 3, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            91
+        ], x=[
+            29,
+            20
+        ]), 'ent2_g_mask': 1, 'ent2_d': 'Erlotinib is a quinazoline compound having a (3-ethynylphenyl)amino group at the 4-position and two 2-methoxyethoxy groups at the 6- and 7-positions. It has a role as an antineoplastic agent, a protein kinase inhibitor and an epidermal growth factor receptor antagonist. It is a member of quinazolines, a terminal acetylenic compound, an aromatic ether and a secondary amino compound.', 'ent2_d_mask': 1, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa, ZD1839) and erlotinib ([
+            [ Tarceva
+            ]
+        ], OSI-774), as well as monoclonal antibodies such as cetuximab (IMC-225, Erbitux).', 'id': 4, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            92
+        ], x=[
+            30,
+            20
+        ]), 'ent2_g_mask': 1, 'ent2_d': 'Erlotinib Hydrochloride is the hydrochloride salt of a quinazoline derivative with antineoplastic properties. Competing with adenosine triphosphate, erlotinib reversibly binds to the intracellular catalytic domain of epidermal growth factor receptor (EGFR) tyrosine kinase, thereby reversibly inhibiting EGFR phosphorylation and blocking the signal transduction events and tumorigenic effects associated with EGFR activation.', 'ent2_d_mask': 1, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa, ZD1839) and erlotinib (Tarceva,
+        [
+            [ OSI-774
+            ]
+        ]), as well as monoclonal antibodies such as cetuximab (IMC-225, Erbitux).', 'id': 5, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            92
+        ], x=[
+            30,
+            20
+        ]), 'ent2_g_mask': 1, 'ent2_d': 'Erlotinib Hydrochloride is the hydrochloride salt of a quinazoline derivative with antineoplastic properties. Competing with adenosine triphosphate, erlotinib reversibly binds to the intracellular catalytic domain of epidermal growth factor receptor (EGFR) tyrosine kinase, thereby reversibly inhibiting EGFR phosphorylation and blocking the signal transduction events and tumorigenic effects associated with EGFR activation.', 'ent2_d_mask': 1, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa, ZD1839) and erlotinib (Tarceva, OSI-774), as well as monoclonal antibodies such as [
+            [ cetuximab
+            ]
+        ] (IMC-225, Erbitux).', 'id': 6, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent2_g_mask': 0, 'ent2_d': '[
+            [NULL
+            ]
+        ]', 'ent2_d_mask': 0, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa, ZD1839) and erlotinib (Tarceva, OSI-774), as well as monoclonal antibodies such as cetuximab ([
+            [ IMC-225
+            ]
+        ], Erbitux).', 'id': 7, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent2_g_mask': 0, 'ent2_d': '[
+            [NULL
+            ]
+        ]', 'ent2_d_mask': 0, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': '<< Epidermal growth factor receptor >> inhibitors currently under investigation include the small molecules gefitinib (Iressa, ZD1839) and erlotinib (Tarceva, OSI-774), as well as monoclonal antibodies such as cetuximab (IMC-225,
+        [
+            [ Erbitux
+            ]
+        ]).', 'id': 8, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent1_g_mask': 0, 'ent1_d': '[
+            [NULL
+            ]
+        ]', 'ent1_d_mask': 0, 'ent2_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent2_g_mask': 0, 'ent2_d': '[
+            [NULL
+            ]
+        ]', 'ent2_d_mask': 0, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': 'Agents that have only begun to undergo clinical evaluation include << CI-1033 >>, an irreversible pan-[
+            [ erbB
+            ]
+        ] tyrosine kinase inhibitor, and PKI166 and GW572016, both examples of dual kinase inhibitors (inhibiting epidermal growth factor receptor and Her2).', 'id': 9, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            108
+        ], x=[
+            34,
+            20
+        ]), 'ent1_g_mask': 1, 'ent1_d': 'Canertinib is a quinazoline compound having a 3-chloro-4-fluoroanilino group at the 4-position, a propenamido group at the 6-position, and a 3-morpholinopropoxy group at the 7-position. It has a role as a tyrosine kinase inhibitor and an antineoplastic agent. It is a member of quinazolines, an organofluorine compound, a member of morpholines and a member of monochlorobenzenes.', 'ent1_d_mask': 1, 'ent2_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent2_g_mask': 0, 'ent2_d': '[
+            [NULL
+            ]
+        ]', 'ent2_d_mask': 0, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    },
+    {'text': 'Agents that have only begun to undergo clinical evaluation include << CI-1033 >>, an irreversible pan-erbB [
+            [ tyrosine kinase
+            ]
+        ] inhibitor, and PKI166 and GW572016, both examples of dual kinase inhibitors (inhibiting epidermal growth factor receptor and Her2).', 'id': 10, 'label': 4, 'ent1_g': Data(edge_index=[
+            2,
+            108
+        ], x=[
+            34,
+            20
+        ]), 'ent1_g_mask': 1, 'ent1_d': 'Canertinib is a quinazoline compound having a 3-chloro-4-fluoroanilino group at the 4-position, a propenamido group at the 6-position, and a 3-morpholinopropoxy group at the 7-position. It has a role as a tyrosine kinase inhibitor and an antineoplastic agent. It is a member of quinazolines, an organofluorine compound, a member of morpholines and a member of monochlorobenzenes.', 'ent1_d_mask': 1, 'ent2_g': Data(edge_index=[
+            2,
+            2
+        ], x=[
+            2,
+            20
+        ]), 'ent2_g_mask': 0, 'ent2_d': '[
+            [NULL
+            ]
+        ]', 'ent2_d_mask': 0, 'tokenizer': PreTrainedTokenizerFast(name_or_path='prajjwal1/bert-tiny', vocab_size=30522, model_max_len=1000000000000000019884624838656, is_fast=True, padding_side='right', special_tokens={'unk_token': '[UNK
+            ]', 'sep_token': '[SEP
+            ]', 'pad_token': '[PAD
+            ]', 'cls_token': '[CLS
+            ]', 'mask_token': '[MASK
+            ]'
+        })
+    }
+]
