@@ -286,9 +286,9 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
         modal_feat_mask2 = [[], []]
         # modal_feats={"smiles":[], "smiles":[], "smiles":[], "smiles":[]}
         for i, line in enumerate(fin):
-            if args.debug:
-                # if i<100: continue
-                if i>1000: break
+            # if args.debug:
+            #     # if i<100: continue
+            #     if i>1000: break
 
             # print("\n", i, line)
             sample = json.loads(line.strip())

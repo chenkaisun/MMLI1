@@ -83,7 +83,7 @@ def evaluate(args, model, data):
         # f1 = f1_score(targets, preds, average='macro')
     else:
         score = f1_score(targets, preds.tolist(), average="macro")
-        print(targets, preds.tolist())
+        # print(targets, preds.tolist())
 
     # output = None
     return score, pred
