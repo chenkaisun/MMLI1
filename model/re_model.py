@@ -28,16 +28,16 @@ class RE(torch.nn.Module):
         if 't' in args.model_type:
             print("args.t")
             self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
-        elif 'td' in args.model_type:
+        if 'td' in args.model_type:
             print("args.td")
             self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
-        elif 'tg' in args.model_type:
+        if 'tg' in args.model_type:
             print("args.tg")
             self.combiner = Linear(args.plm_hidden_dim + 2 * args.g_dim, args.out_dim)
-        elif 'tdg' in args.model_type:
+        if 'tdg' in args.model_type:
             print("args.tdg")
             self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
-        elif 'tdgx' in args.model_type:
+        if 'tdgx' in args.model_type:
             print("tdgx")
             self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
 
