@@ -7,6 +7,8 @@ from transformers import AutoModel
 from model.gnn import MoleGNN
 # from train_utils import get_tensor_info
 from model.model_utils import get_tensor_info, LabelSmoothingCrossEntropy
+
+
 class RE(torch.nn.Module):
     def __init__(self, args):
         super(RE, self).__init__()
@@ -24,9 +26,11 @@ class RE(torch.nn.Module):
         if args.bert_only:
             print("bert only")
             self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
-        else: self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+        else:
+            self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
         self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
         self.dropout = args.dropout
+        self.loss = torch.nn.CrossEntropyLoss()
 
     def forward(self, input, args):
         texts = input['texts']
@@ -44,9 +48,11 @@ class RE(torch.nn.Module):
         # print("batch_graph_data", batch_graph_data)
 
         if args.bert_only:
-            hid_texts = self.plm(**texts, return_dict=True).pooler_output
-            output = self.combiner(torch.cat([hid_texts], dim=-1))
-
+            # hid_texts = self.plm(**texts, return_dict=True).pooler_output
+            hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
+            pooled = self.dropout(hid_texts)
+            output = self.combiner(pooled)
+            # output = torch.softmax(output, dim=-1)
         else:
             hid_texts = self.plm(**texts, return_dict=True).pooler_output
             hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).pooler_output * batch_ent1_d_mask
@@ -54,7 +60,6 @@ class RE(torch.nn.Module):
             hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).pooler_output * batch_ent2_d_mask
             hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
             hid_ent2_g = self.gnn(batch_ent2_g) * batch_ent2_g_mask
-
 
             # relu ?
             output = self.combiner(torch.cat([hid_texts, hid_ent1_d, hid_ent1_g, hid_ent2_d, hid_ent2_g], dim=-1))
@@ -64,14 +69,14 @@ class RE(torch.nn.Module):
 
         # print("self.training", self.training)
         if in_train:
-
             # label smoothing
             # return self.criterion(output, labels)
-
+            return self.loss(output, labels)
+            return torch.nn.functional.cross_entropy(output, labels)
             return torch.nn.functional.binary_cross_entropy_with_logits(output, labels)
         # return torch.argmax(F.log_softmax(output, dim=-1), dim=-1)
 
-        pred_out=torch.argmax(torch.softmax(output, dim=-1), dim=-1)
+        pred_out = torch.argmax(torch.softmax(output, dim=-1), dim=-1)
         # print('pred_out', get_tensor_info(pred_out))
         return pred_out
 

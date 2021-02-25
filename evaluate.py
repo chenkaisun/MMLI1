@@ -82,7 +82,7 @@ def evaluate(args, model, data):
         args.logger.debug(f"auc_score {score}", )
         # f1 = f1_score(targets, preds, average='macro')
     else:
-        score = f1_score(targets, preds.tolist(), average="macro")
+        score = f1_score(targets, preds.tolist(), average="micro")
         # print(targets, preds.tolist())
 
     # output = None

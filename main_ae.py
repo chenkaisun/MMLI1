@@ -30,7 +30,7 @@ if __name__ == '__main__':
         args.lr=1e-4
         args.grad_accumulation_steps = 1
         # args.plm="prajjwal1/bert-medium"
-        args.plm="allenai/scibert_scivocab_cased"
+        args.plm="allenai/scibert_scivocab_uncased"
         args.patience=5
         args.g_dim=64
         # args.bert_only=1

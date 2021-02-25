@@ -529,7 +529,7 @@ def collate_fn_re(batch):
     #  "ent2_d_mask": ent1_d_mask,
     #  "tokenizer": tokenizer
     #  }
-    texts = batch[0]["tokenizer"]([f["text"] for f in batch], return_tensors='pt', padding=True, )
+    texts = batch[0]["tokenizer"]([f["text"] for f in batch], return_tensors='pt', padding=True)
     ids = [f["id"] for f in batch]
     labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
 

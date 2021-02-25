@@ -3,7 +3,7 @@ import time
 import torch
 from torch import nn
 # import wandb
-# from transformers import get_linear_schedule_with_warmup
+from transformers import get_linear_schedule_with_warmup
 from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR
 # from model.load_model import load_model_from_path
 # import logging
@@ -48,9 +48,9 @@ def train(args, model, optimizer, data):
     train_iterator = range(args.start_epoch, int(args.num_epochs) + args.start_epoch)
     total_steps = int(len(train_loader) * args.num_epochs)
     warmup_steps = int(total_steps * args.warmup_ratio)
-    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
-    #                                             num_training_steps=total_steps)
-    scheduler = CosineAnnealingLR(optimizer, T_max=(int(args.num_epochs) // 4) + 1, eta_min=0)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
+                                                num_training_steps=total_steps)
+    # scheduler = CosineAnnealingLR(optimizer, T_max=(int(args.num_epochs) // 4) + 1, eta_min=0)
 
     logger.debug(f"Total steps: {total_steps}")
     logger.debug(f"Warmup steps: {warmup_steps}")
@@ -89,11 +89,11 @@ def train(args, model, optimizer, data):
                 batch_ent1_d = batch[1]
                 batch_ent2_d = batch[3]
 
-                lb = batch[10].int().numpy()
-                tmp=np.zeros((len(lb), 13))
-
-                tmp[np.arange(len(lb)), lb] = 1
-                tmp=torch.tensor(tmp)
+                # lb = batch[10].int().numpy()
+                # tmp=np.zeros((len(lb), 13))
+                #
+                # tmp[np.arange(len(lb)), lb] = 1
+                # tmp=torch.tensor(tmp)
                 # print("encoded_input", encoded_input)
                 inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
                           "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
@@ -105,7 +105,8 @@ def train(args, model, optimizer, data):
                           "batch_ent2_g": batch[7].to(args.device),
                           "batch_ent2_g_mask": batch[8].to(args.device),
                           "ids": batch[9],
-                          "labels": tmp.to(args.device),
+                          # "labels": tmp.to(args.device),
+                          "labels": batch[10].to(args.device),
                           'in_train': True,
                           }
             # inputs = {'input_ids': {key:encoded_input[key].to(args.device) for key in encoded_input},
@@ -125,7 +126,7 @@ def train(args, model, optimizer, data):
                     loss = model(inputs, args)
                 scaler.scale(loss).backward()
 
-                if step % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
+                if (step+1) % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
                     if args.max_grad_norm > 0:
                         scaler.unscale_(optimizer)
                         torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
