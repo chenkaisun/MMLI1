@@ -58,7 +58,7 @@ class MoleGNN(torch.nn.Module):
         x = data.x
         batch = data.batch
         # print("batch", batch)
-        print("prior", x)
+        # print("prior", x)
 
         # Step 1: Add self-loops to the adjacency matrix.
         # edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
@@ -92,11 +92,13 @@ class MoleGNN(torch.nn.Module):
         # x=self.mid(x)
         # x=torch.nn.functional.relu(x)
         # x=self.mid(x)
+        x=torch.relu(x)
         x=self.conv2(x, edge_index)
         # torch.nn.functional.tanh(x)
         # x=self.mid(x)
         # x=self.mid(x)
         # x=torch.nn.functional.relu(x)
+        x=torch.relu(x)
         x=self.conv3(x, edge_index)
         # x=self.conv4(x, edge_index)
         # x=self.conv5(x, edge_index)
@@ -110,7 +112,8 @@ class MoleGNN(torch.nn.Module):
         # x = F.relu(x)
         # x = F.dropout(x, p=self.dropout,training=self.training)
         # x = self.conv2(x.float(), edge_index.long())
-        print("later", x)
+        x=torch.relu(x)
+        # print("later", x)
 
         if not global_pooling:
             graph_list=[]

@@ -77,11 +77,11 @@ class RE(torch.nn.Module):
                 hid_ent2_d = self.dropout(hid_ent2_d)
                 modals.extend([hid_ent1_d, hid_ent2_d])
             if 'g' in args.model_type:
-                print("batch_ent1_g", batch_ent1_g)
-                hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
-                hid_ent2_g = self.gnn(batch_ent2_g) * batch_ent2_g_mask
-                print("gnn hid_ent1_g", hid_ent1_g)
-                print("gnn hid_ent2_g", hid_ent2_g)
+                # print("batch_ent1_g", batch_ent1_g)
+                hid_ent1_g = self.gnn(batch_ent1_g)# * batch_ent1_g_mask
+                hid_ent2_g = self.gnn(batch_ent2_g)# * batch_ent2_g_mask
+                # print("gnn hid_ent1_g", hid_ent1_g)
+                # print("gnn hid_ent2_g", hid_ent2_g)
 
                 modals.extend([hid_ent1_g, hid_ent2_g])
         else:
@@ -94,9 +94,9 @@ class RE(torch.nn.Module):
             hid_ent2_d = self.dropout(hid_ent2_d)
             hid_ent1_gs = self.gnn(batch_ent1_g, global_pooling=False)
             hid_ent2_gs = self.gnn(batch_ent2_g, global_pooling=False)
-            print('e0')
-            print(hid_ent1_gs.shape)
-            print(hid_ent2_gs.shape)
+            # print('e0')
+            # print(hid_ent1_gs.shape)
+            # print(hid_ent2_gs.shape)
             res_g1=[]
             res_g2=[]
             res_d1=[]
