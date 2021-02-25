@@ -115,10 +115,18 @@ class MoleGNN(torch.nn.Module):
             max_num_nodes=-1
             graph_ids=torch.unique(batch)
             batch_ids=batch.cpu().numpy()
+
+            print("graph_ids", graph_ids)
+            print("batch_ids", batch_ids)
             for graph_id in graph_ids:
+
                 indices=np.argwhere(batch_ids==graph_id)
+                print("indices", indices)
                 max_num_nodes=max(max_num_nodes, len(indices))
                 graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
+
+
+                print("indices", indices)
             return graph_list
         return global_mean_pool(x, batch)
 
