@@ -13,14 +13,14 @@ from utils import mkdir
 
 
 def get_logger(args):
-    if os.path.exists(args.experiment_path + args.experiment + ".txt"):
-
-        with open(args.experiment_path + "count.txt", mode="r") as f:
-            pos = int(f.readlines()[-1].strip())
-        with open(args.experiment_path + "count.txt", mode="w") as f:
-            f.write(str(pos + 1))
-        os.rename(args.experiment_path + args.experiment + ".txt",
-                  args.experiment_path + args.experiment + "_" + str(pos) + ".txt")
+    # if os.path.exists(args.experiment_path + args.experiment + ".txt"):
+    #
+    #     with open(args.experiment_path + "count.txt", mode="r") as f:
+    #         pos = int(f.readlines()[-1].strip())
+    #     with open(args.experiment_path + "count.txt", mode="w") as f:
+    #         f.write(str(pos + 1))
+    #     os.rename(args.experiment_path + args.experiment + ".txt",
+    #               args.experiment_path + args.experiment + "_" + str(pos) + ".txt")
 
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
