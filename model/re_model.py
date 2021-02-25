@@ -66,9 +66,9 @@ class RE(torch.nn.Module):
         if in_train:
 
             # label smoothing
-            return self.criterion(output, labels)
+            # return self.criterion(output, labels)
 
-            # return torch.nn.functional.binary_cross_entropy_with_logits(output, labels)
+            return torch.nn.functional.binary_cross_entropy_with_logits(output, labels)
         # return torch.argmax(F.log_softmax(output, dim=-1), dim=-1)
 
         pred_out=torch.argmax(torch.softmax(output, dim=-1), dim=-1)

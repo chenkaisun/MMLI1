@@ -13,6 +13,7 @@ from data import collate_fn, collate_fn_re
 # from train_utils import get_logger
 # from torch_geometric.data import DataLoader
 import gc
+import numpy as np
 from torch.nn.functional import one_hot
 
 def train(args, model, optimizer, data):
@@ -88,6 +89,10 @@ def train(args, model, optimizer, data):
                 batch_ent1_d = batch[1]
                 batch_ent2_d = batch[3]
 
+                tmp=np.zeros((args.batch_size, 13))
+                lb=batch[10].int().numpy()
+                tmp[np.arange(args.batch_size), lb] = 1
+                tmp=torch.tensor(tmp)
                 # print("encoded_input", encoded_input)
                 inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
                           "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
@@ -99,7 +104,7 @@ def train(args, model, optimizer, data):
                           "batch_ent2_g": batch[7].to(args.device),
                           "batch_ent2_g_mask": batch[8].to(args.device),
                           "ids": batch[9],
-                          "labels": batch[10].to(args.device),
+                          "labels": tmp.to(args.device),
                           'in_train': True,
                           }
             # inputs = {'input_ids': {key:encoded_input[key].to(args.device) for key in encoded_input},
