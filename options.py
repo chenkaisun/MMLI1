@@ -22,12 +22,12 @@ def read_args():
     parser.add_argument("--val_file", default="dev.json", type=str)
     parser.add_argument("--test_file", default="test.json", type=str)
     parser.add_argument("--cache_filename", default="data/property_pred/clintox.pkl", type=str)
-    parser.add_argument("--use_cache", default=1, type=int)
-    parser.add_argument("--cache_data", default=1, type=int)
+    parser.add_argument("--use_cache", default=0, type=int)
+    parser.add_argument("--cache_data", default=0, type=int)
 
     # training params
-    parser.add_argument("--batch_size", default=1, type=int, help="Batch size for training.")
-    parser.add_argument("--plm_lr", default=5e-5, type=float, help="The initial learning rate for PLM.")
+    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for training.")
+    parser.add_argument("--plm_lr", default=2e-5, type=float, help="The initial learning rate for PLM.")
     parser.add_argument("--lr", default=1e-4, type=float, help="The initial learning rate for Adam.")
     parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
     parser.add_argument("--adam_epsilon", default=1e-6, type=float, help="Epsilon for Adam optimizer.")
