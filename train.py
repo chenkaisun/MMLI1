@@ -44,12 +44,12 @@ def train(args, model, optimizer, data):
     # get logger
     logger = args.logger
 
-    train_iterator = range(args.start_epoch, int(args.num_epoch) + args.start_epoch)
-    total_steps = int(len(train_loader) * args.num_epoch)
+    train_iterator = range(args.start_epoch, int(args.num_epochs) + args.start_epoch)
+    total_steps = int(len(train_loader) * args.num_epochs)
     warmup_steps = int(total_steps * args.warmup_ratio)
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
     #                                             num_training_steps=total_steps)
-    scheduler = CosineAnnealingLR(optimizer, T_max=(int(args.num_epoch) // 4) + 1, eta_min=0)
+    scheduler = CosineAnnealingLR(optimizer, T_max=(int(args.num_epochs) // 4) + 1, eta_min=0)
 
     logger.debug(f"Total steps: {total_steps}")
     logger.debug(f"Warmup steps: {warmup_steps}")
