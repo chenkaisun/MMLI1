@@ -22,6 +22,7 @@ class RE(torch.nn.Module):
         # self.combiner = Linear(args.g_dim, 1)
         # self.combiner = Linear(args.plm_hidden_dim, 1)
         if args.bert_only:
+            print("bert only")
             self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
         else: self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
         self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
@@ -43,7 +44,6 @@ class RE(torch.nn.Module):
         # print("batch_graph_data", batch_graph_data)
 
         if args.bert_only:
-            print("bert only")
             hid_texts = self.plm(**texts, return_dict=True).pooler_output
             output = self.combiner(torch.cat([hid_texts], dim=-1))
 
