@@ -70,7 +70,7 @@ def setup_common(args):
     # print("model", model)
     # view_model_param(args, model)
 
-    downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder", "query_encoder"]
+    downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder", "query_encoder", "map2smaller"]
     optimizer = get_optimizer(args, model, downstream_layers)
 
     model, optimizer, args.start_epoch, args.best_dev_score = load_model_from_path(model, optimizer,

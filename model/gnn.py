@@ -3,7 +3,7 @@ import torch.nn
 from torch.nn import functional as F
 from torch_geometric.nn import BatchNorm, GATConv, global_mean_pool
 
-
+import numpy as np
 class MoleGNN(torch.nn.Module):
     def __init__(self, args):
         super(MoleGNN, self).__init__()
@@ -12,7 +12,7 @@ class MoleGNN(torch.nn.Module):
         # c=Linear(32, 32)
         # d=Linear(32, 32)
         # e=Linear(32, 32)
-        self.dropout=args.dropout
+        # self.dropout=torch.nn.Dropout(args.dropout)
         # self.ls=torch.nn.Sequential(
         #     Dropout(self.dropout),
         #     GINConv(Linear(5, 32)),
@@ -37,11 +37,11 @@ class MoleGNN(torch.nn.Module):
         # self.conv4 = GINConv(nn=Linear(32, 32))
         # self.conv5 = GINConv(nn=Linear(32, 32))
         print("args.in_dim", args.in_dim)
-        self.conv1 = GATConv(args.in_dim, args.g_dim, dropout=self.dropout)
-        self.conv2 = GATConv(args.g_dim,args.g_dim, dropout=self.dropout)
-        self.conv3 = GATConv(args.g_dim,args.g_dim, dropout=self.dropout)
-        self.conv4 = GATConv(args.g_dim,args.g_dim, dropout=self.dropout)
-        self.conv5 = GATConv(args.g_dim, args.g_dim, dropout=self.dropout)
+        self.conv1 = GATConv(args.in_dim, args.g_dim, dropout=args.dropout)
+        self.conv2 = GATConv(args.g_dim,args.g_dim, dropout=args.dropout)
+        self.conv3 = GATConv(args.g_dim,args.g_dim, dropout=args.dropout)
+        self.conv4 = GATConv(args.g_dim,args.g_dim, dropout=args.dropout)
+        self.conv5 = GATConv(args.g_dim, args.g_dim, dropout=args.dropout)
         # self.conv1 = GATConv(5, 32)
         # self.conv2 = GATConv(32, 32)
         # self.conv3 = GATConv(32, 32)
@@ -50,13 +50,14 @@ class MoleGNN(torch.nn.Module):
         # self.conv3 = GATConv(128, 256)
         # self.lin = Linear(16, 2)
 
-    def forward(self, data):
+    def forward(self, data, global_pooling=True):
         # print("data", data.x.shape)
         # num_attr, list_num_atoms = outcome.get_network_params()
         # train, val, test = outcome.splitter(list(outcome.yielder()))
         edge_index = data.edge_index
         x = data.x
         batch = data.batch
+        print("batch", batch)
 
         # Step 1: Add self-loops to the adjacency matrix.
         # edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
@@ -108,7 +109,18 @@ class MoleGNN(torch.nn.Module):
         # x = F.relu(x)
         # x = F.dropout(x, p=self.dropout,training=self.training)
         # x = self.conv2(x.float(), edge_index.long())
-        x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
+
+        if not global_pooling:
+            graph_list=[]
+            max_num_nodes=-1
+            graph_ids=torch.unique(batch)
+            batch_ids=batch.cpu().numpy()
+            for graph_id in graph_ids:
+                indices=np.argwhere(batch_ids==graph_id)
+                max_num_nodes=max(max_num_nodes, len(indices))
+                graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
+            return graph_list
+        return global_mean_pool(x, batch)
 
         # 3. Apply a final classifier
         # x = F.dropout(x, p=self.dropout, training=self.training)

@@ -14,8 +14,9 @@ class RE(torch.nn.Module):
     def __init__(self, args):
         super(RE, self).__init__()
 
-        if not args.bert_only:
+        if 'g' in args.model_type:
             self.gnn = MoleGNN(args)
+
         self.plm = AutoModel.from_pretrained(args.plm)
         # if args.g_only:
         #     self.combiner = Linear(args.g_dim, 1)
@@ -24,11 +25,23 @@ class RE(torch.nn.Module):
         # else:
         # self.combiner = Linear(args.g_dim, 1)
         # self.combiner = Linear(args.plm_hidden_dim, 1)
-        if args.bert_only:
-            print("bert only")
+        if 't' in args.model_type:
+            print("args.t")
             self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
-        else:
+        elif 'td' in args.model_type:
+            print("args.td")
+            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
+        elif 'tg' in args.model_type:
+            print("args.tg")
+            self.combiner = Linear(args.plm_hidden_dim + 2 * args.g_dim, args.out_dim)
+        elif 'tdg' in args.model_type:
+            print("args.tdg")
             self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+        elif 'tdgx' in args.model_type:
+            print("tdgx")
+            self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+
+        self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
         self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
         self.dropout = torch.nn.Dropout(args.dropout)
         self.loss = torch.nn.CrossEntropyLoss()
@@ -48,22 +61,87 @@ class RE(torch.nn.Module):
         in_train = input['in_train']
         # print("batch_graph_data", batch_graph_data)
 
-        if args.bert_only:
-            # hid_texts = self.plm(**texts, return_dict=True).pooler_output
-            hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
-            pooled = self.dropout(hid_texts)
-            output = self.combiner(pooled)
-            # output = torch.softmax(output, dim=-1)
+        modals=[]
+        hid_texts, hid_ent1_d, hid_ent2_d, hid_ent1_g, hid_ent2_g = None, None, None, None, None
+        if 'tdgx' not in args.model_type:
+            if 't' in args.model_type:
+                # hid_texts = self.plm(**texts, return_dict=True).pooler_output
+                hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
+                hid_texts = self.dropout(hid_texts)
+                modals.append(hid_texts)
+            if 'd' in args.model_type:
+                hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]
+                hid_ent1_d = self.dropout(hid_ent1_d)
+                hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]
+                hid_ent2_d = self.dropout(hid_ent2_d)
+                modals.extend([hid_ent1_d, hid_ent2_d])
+            if 'g' in args.model_type:
+                hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
+                hid_ent2_g = self.gnn(batch_ent2_g) * batch_ent2_g_mask
+                modals.extend([hid_ent1_g, hid_ent2_g])
         else:
-            hid_texts = self.plm(**texts, return_dict=True).pooler_output
-            hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).pooler_output * batch_ent1_d_mask
-            # print("hid_ent1_d", get_tensor_info(hid_ent1_d))
-            hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).pooler_output * batch_ent2_d_mask
-            hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
-            hid_ent2_g = self.gnn(batch_ent2_g) * batch_ent2_g_mask
+            hid_texts = self.plm(**texts, return_dict=True).last_hidden_state
+            hid_texts = self.dropout(hid_texts)
+            # modals.append(hid_texts)
+            hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state
+            hid_ent1_d = self.dropout(hid_ent1_d)
+            hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state
+            hid_ent2_d = self.dropout(hid_ent2_d)
+            hid_ent1_gs = self.gnn(batch_ent1_g, global_pooling=False)
+            hid_ent2_gs = self.gnn(batch_ent2_g, global_pooling=False)
+
+            res_g1=[]
+            res_g2=[]
+            res_d1=[]
+            res_d2=[]
+            for i, (hid_ent1_g, hid_ent2_g) in enumerate(zip(hid_ent1_gs, hid_ent2_gs)):
+                cur_hid_ent1_d = hid_ent1_d[i, :, :]
+                cur_hid_ent2_d = hid_ent2_d[i, :, :]
+                tmp_hid_ent1_d, tmp_hid_ent2_d = self.map2smaller(cur_hid_ent1_d), self.map2smaller(cur_hid_ent2_d)
+                x_attn_mat1, x_attn_mat2 = hid_ent1_g.mm(tmp_hid_ent1_d.t()), hid_ent2_g.mm(tmp_hid_ent2_d.t())
+                cur_hid_ent1_g, cur_hid_ent2_g = x_attn_mat1.mm(cur_hid_ent1_d), x_attn_mat2.mm(cur_hid_ent2_d)
+                cur_hid_ent1_d, cur_hid_ent2_d = x_attn_mat1.t().mm(hid_ent1_g), x_attn_mat2.t().mm(hid_ent2_g)
+                res_g1.append(cur_hid_ent1_g)
+                res_g2.append(cur_hid_ent2_g)
+                res_d1.append(cur_hid_ent1_d)
+                res_d2.append(cur_hid_ent2_d)
+            modals.extend([hid_texts, torch.cat(res_g1, dim=0), torch.cat(res_g2, dim=0),
+                           torch.cat(res_d1, dim=0), torch.cat(res_d1, dim=0)])
+
+            #
+            # tmp_hid_ent1_d, tmp_hid_ent2_d = self.map2smaller(hid_ent1_d), self.map2smaller(hid_ent2_d)
+            # x_attn_mat1, x_attn_mat2 = hid_ent1_g.mm(tmp_hid_ent1_d.t()), hid_ent2_g.mm(tmp_hid_ent2_d.t())
+            # hid_ent1_g, hid_ent2_g = x_attn_mat1.mm(hid_ent1_d), x_attn_mat2.mm(hid_ent2_d)
+            # hid_ent1_d, hid_ent2_d = x_attn_mat1.t().mm(hid_ent1_g), x_attn_mat2.t().mm(hid_ent2_g)
+            # modals.extend([hid_texts, hid_ent1_g, hid_ent2_g, hid_ent1_d, hid_ent2_d])
+
 
             # relu ?
-            output = self.combiner(torch.cat([hid_texts, hid_ent1_d, hid_ent1_g, hid_ent2_d, hid_ent2_g], dim=-1))
+        output = self.combiner(torch.cat(modals, dim=-1))
+
+
+            #
+            # if args.t:
+            #     # hid_texts = self.plm(**texts, return_dict=True).pooler_output
+            #     hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
+            #     pooled = self.dropout(hid_texts)
+            #     output = self.combiner(pooled)
+            #     # output = torch.softmax(output, dim=-1)
+            # elif args.td:
+            #     # hid_texts = self.plm(**texts, return_dict=True).pooler_output
+            #
+            #     hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
+            #     pooled = self.dropout(hid_texts)
+            #     output = self.combiner(pooled)
+            #
+            #
+            #     hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
+            #     hid_texts = self.dropout(hid_texts)
+            #     hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).pooler_output * batch_ent1_d_mask
+            #     # print("hid_ent1_d", get_tensor_info(hid_ent1_d))
+            #     hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).pooler_output * batch_ent2_d_mask
+            #     hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
+            #     hid_ent2_g = self.gnn(batch_ent2_g) * batch_ent2_g_mask
 
         # print("output",output.shape)
         # print("batch_graph_data.y.unsqueeze(-1)",batch_graph_data.y.shape)

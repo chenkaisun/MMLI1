@@ -53,7 +53,7 @@ def get_adj_matrix_coo(molecules):
         for i in range(np.array(am).shape[0]):
             am[i, i] = 1
 
-        # am[am>1]=1
+        am[am>1]=1
 
         adj_mat = scipy.sparse.csr_matrix(am)
 
