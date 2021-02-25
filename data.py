@@ -227,6 +227,11 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
     if args.use_cache and os.path.exists(args.cache_filename):
         print("Loading Cached Data...", args.cache_filename)
         data = load_file(args.cache_filename)
+
+        print(sum([instance["ent1_g_mask"] for instance in data['instances']])//len(data['instances']))
+        print(sum([instance["ent2_g_mask"] for instance in data['instances']])//len(data['instances']))
+        print(sum([instance["ent1_d_mask"] for instance in data['instances']])//len(data['instances']))
+        print(sum([instance["ent2_d_mask"] for instance in data['instances']])//len(data['instances']))
         args.out_dim=len(data['rel2id'])
         args.in_dim=data['instances'][0]["ent1_g"].x.shape[-1]
 

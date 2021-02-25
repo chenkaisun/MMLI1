@@ -57,7 +57,7 @@ class MoleGNN(torch.nn.Module):
         edge_index = data.edge_index
         x = data.x
         batch = data.batch
-        print("batch", batch)
+        # print("batch", batch)
 
         # Step 1: Add self-loops to the adjacency matrix.
         # edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
