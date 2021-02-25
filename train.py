@@ -13,7 +13,7 @@ from data import collate_fn, collate_fn_re
 # from train_utils import get_logger
 # from torch_geometric.data import DataLoader
 import gc
-
+from torch.nn.functional import one_hot
 
 def train(args, model, optimizer, data):
     train_data, val_data, test_data = data
