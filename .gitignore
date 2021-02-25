@@ -134,6 +134,7 @@ dmypy.json
 experimental/*
 .idea/
 
+ *-*Copy*.json
 *.pkl
 .vector_cache/
 out/
