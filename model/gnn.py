@@ -120,7 +120,7 @@ class MoleGNN(torch.nn.Module):
             print("batch_ids", batch_ids)
             for graph_id in graph_ids:
 
-                indices=np.argwhere(batch_ids==graph_id)
+                indices=np.argwhere(batch_ids==graph_id).flatten()
                 print("indices", indices)
                 max_num_nodes=max(max_num_nodes, len(indices))
                 graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
