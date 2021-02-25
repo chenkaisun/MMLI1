@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 import torch.utils.data
 from torch.nn import Linear
 from transformers import AutoModel
@@ -29,7 +30,7 @@ class RE(torch.nn.Module):
         else:
             self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
         self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
-        self.dropout = args.dropout
+        self.dropout = torch.nn.Dropout(args.dropout)
         self.loss = torch.nn.CrossEntropyLoss()
 
     def forward(self, input, args):
