@@ -257,7 +257,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
             if cid is not None and str(cid) in cmpd_info:
                 cid=str(cid)
                 if "canonical_smiles" in cmpd_info[cid]:
-                    print("found")
+                    # print("found")
                     modal_feats[0].append(cmpd_info[cid]["canonical_smiles"])
                     modal_feat_mask[0].append(1)
                 else:
@@ -290,7 +290,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                 # if i<100: continue
                 if i>200: break
 
-            print("\n", i, line)
+            # print("\n", i, line)
             sample = json.loads(line.strip())
 
             # text label metadata
@@ -301,35 +301,35 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
             labels.append(rel2id[sample["label"]])
 
             ent1, ent2 = text[text.find("<< ") + 3:text.find(" >>")], text[text.find("[[ ") + 3:text.find(" ]]")]
-            print("ent1, ent2", ent1,"|",  ent2)
-            print("looking for ent1")
+            # print("ent1, ent2", ent1,"|",  ent2)
+            # print("looking for ent1")
 
             fill_modal_data(ent1, mention2cid, cmpd_info, modal_feats1, modal_feat_mask1)
-            print("looking for ent2")
+            # print("looking for ent2")
             fill_modal_data(ent2, mention2cid, cmpd_info, modal_feats2, modal_feat_mask2)
-            print(modal_feats1)
-            print(modal_feats2)
-            print(len(modal_feats1[0]))
-            print(len(modal_feats1[1]))
-            print(len(modal_feat_mask1[0]))
-            print(len(modal_feat_mask1[1]))
-            print(len(modal_feats2[0]))
-            print(len(modal_feats2[1]))
-            print(len(modal_feat_mask2[0]))
-            print(len(modal_feat_mask2[1]))
+            # print(modal_feats1)
+            # print(modal_feats2)
+            # print(len(modal_feats1[0]))
+            # print(len(modal_feats1[1]))
+            # print(len(modal_feat_mask1[0]))
+            # print(len(modal_feat_mask1[1]))
+            # print(len(modal_feats2[0]))
+            # print(len(modal_feats2[1]))
+            # print(len(modal_feat_mask2[0]))
+            # print(len(modal_feat_mask2[1]))
 
 
 
     modal_feat_mask1[0], modal_feats1[0] = get_graph_info(modal_feats1[0])
     modal_feat_mask2[0], modal_feats2[0] = get_graph_info(modal_feats2[0])
-    print(len(modal_feats1[0]))
-    print(len(modal_feats1[1]))
-    print(len(modal_feat_mask1[0]))
-    print(len(modal_feat_mask1[1]))
-    print(len(modal_feats2[0]))
-    print(len(modal_feats2[1]))
-    print(len(modal_feat_mask2[0]))
-    print(len(modal_feat_mask2[1]))
+    # print(len(modal_feats1[0]))
+    # print(len(modal_feats1[1]))
+    # print(len(modal_feat_mask1[0]))
+    # print(len(modal_feat_mask1[1]))
+    # print(len(modal_feats2[0]))
+    # print(len(modal_feats2[1]))
+    # print(len(modal_feat_mask2[0]))
+    # print(len(modal_feat_mask2[1]))
 
     # exit()
 
@@ -539,12 +539,16 @@ def collate_fn_re(batch):
     batch_ent1_d_mask = torch.tensor([f["ent1_d_mask"] for f in batch]).unsqueeze(-1)
     print("batch_ent1_d")
     pp(batch_ent1_d)
+    print("batch_ent1_g")
+    pp(batch_ent1_g)
     batch_ent2_g = Batch.from_data_list([f["ent2_g"] for f in batch])
     batch_ent2_g_mask = torch.tensor([f["ent2_g_mask"] for f in batch]).unsqueeze(-1)
     batch_ent2_d = batch[0]["tokenizer"]([f["ent2_d"] for f in batch], return_tensors='pt', padding=True,)
     batch_ent2_d_mask = torch.tensor([f["ent2_d_mask"] for f in batch]).unsqueeze(-1)
     print("batch_ent2_d")
     pp(batch_ent2_d)
+    print("batch_ent2_g")
+    pp(batch_ent2_g)
     # Label Smoothing
     # output = (smiles, edge_indices, node_attrs,edge_attrs, Ys, ids)
 
