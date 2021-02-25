@@ -297,7 +297,9 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
             assert not sample["metadata"]
 
             text = sample["text"]
-            texts.append(text)
+
+            # lower case
+            texts.append(text.lower())
             labels.append(rel2id[sample["label"]])
 
             ent1, ent2 = text[text.find("<< ") + 3:text.find(" >>")], text[text.find("[[ ") + 3:text.find(" ]]")]
