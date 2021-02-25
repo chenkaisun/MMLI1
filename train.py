@@ -89,9 +89,10 @@ def train(args, model, optimizer, data):
                 batch_ent1_d = batch[1]
                 batch_ent2_d = batch[3]
 
-                tmp=np.zeros((args.batch_size, 13))
-                lb=batch[10].int().numpy()
-                tmp[np.arange(args.batch_size), lb] = 1
+                lb = batch[10].int().numpy()
+                tmp=np.zeros((len(lb), 13))
+
+                tmp[np.arange(len(lb)), lb] = 1
                 tmp=torch.tensor(tmp)
                 # print("encoded_input", encoded_input)
                 inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
