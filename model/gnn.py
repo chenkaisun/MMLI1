@@ -113,8 +113,8 @@ class MoleGNN(torch.nn.Module):
         if not global_pooling:
             graph_list=[]
             max_num_nodes=-1
-            graph_ids=torch.unique(batch)
-            batch_ids=batch.cpu().numpy()
+            graph_ids=torch.unique(batch).cpu().numpy().astype(int)
+            batch_ids=batch.cpu().numpy().astype(int)
 
             print("graph_ids", graph_ids)
             print("batch_ids", batch_ids)
@@ -125,8 +125,6 @@ class MoleGNN(torch.nn.Module):
                 max_num_nodes=max(max_num_nodes, len(indices))
                 graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
 
-
-                print("indices", indices)
             return graph_list
         return global_mean_pool(x, batch)
 
