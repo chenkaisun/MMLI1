@@ -1,22 +1,24 @@
-import torch
-from rdkit import Chem
-import pandas as pd
-import numpy as np
-from rdkit import Chem
-from rdkit.Chem import rdmolops
+# import torch
+# from rdkit import Chem
+# import pandas as pd
+# import numpy as np
+# from rdkit import Chem
+# from rdkit.Chem import rdmolops
 # import igraph
+from pprint import pprint as pp
 from features import *
 from utils import dump_file, load_file
-from transformers import BartTokenizer
+# from transformers import BartTokenizer
 from torch_geometric.data import Data, Batch
 from sklearn import model_selection
-from IPython import embed
+# from IPython import embed
 import os
-from torch_geometric import utils
+# from torch_geometric import utils
 import spacy
 import json
-from collections import defaultdict
-import re
+# from collections import defaultdict
+# import re
+import pandas as pd
 
 
 # def mol2graph( mol ):
@@ -50,7 +52,9 @@ def get_graph_info(input_smiles):
     suppl, targets = [], []
     dex = []
     for i, s in enumerate(list(input_smiles)):
-        if s == "[[NULL]]": continue
+        if s == "[[NULL]]":
+            print("isnull")
+            continue
         try:
             c = Chem.MolFromSmiles(s)
         except Exception as e:
@@ -63,6 +67,7 @@ def get_graph_info(input_smiles):
 
     # res, exclude
     all_atom_properties, tmp_dex = get_atom_properties(get_atom_symbols(suppl))
+
     # updated valid dex
     # dex is valid index in original input
     dex = [dex[d] for d in tmp_dex]
@@ -90,7 +95,7 @@ def get_graph_info(input_smiles):
     # num_classes = max(targets) + 1
     # print("num_classes", num_classes)
     # print("edge_index")
-    edge_index = [torch.tensor(target, dtype=torch.long) for target in adj]
+    edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
     # print("node_attr")
     node_attr = list(seperator(all_atom_properties))
     # print("edge_attr")
@@ -103,7 +108,7 @@ def get_graph_info(input_smiles):
     # dummy data
     res = [Data(x=torch.rand(2, in_dim), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long)) for _ in
            range(len(input_smiles))]
-    res_mask = [0 for 0 in range(len(input_smiles))]
+    res_mask = [0 for _ in range(len(input_smiles))]
     for i, d in enumerate(dex):
         res_mask[d] = 1
         res[d] = Data(x=node_attr[i], edge_index=edge_index[i])
@@ -215,8 +220,10 @@ def load_mole_data(args, filename, tokenizer):
     return train, val, test
 
 
-def load_data_chemprot_re(args, filename="data_online/chemprot_preprocessed/train.txt", tokenizer=None):
+def load_data_chemprot_re(args, filename, tokenizer=None):
     args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
+
+
     if args.use_cache and os.path.exists(args.cache_filename):
         print("Loading Cached Data...", args.cache_filename)
         data = load_file(args.cache_filename)
@@ -236,7 +243,7 @@ def load_data_chemprot_re(args, filename="data_online/chemprot_preprocessed/trai
     # descriptions2 = []
 
     mention2cid, cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
-                             load_file("data_online/ChemProt_Corpus/cmpd_info.json.json")
+                             load_file("data_online/ChemProt_Corpus/cmpd_info.json")
 
     rels = ['AGONIST-ACTIVATOR', 'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
             'AGONIST', 'INHIBITOR', 'PRODUCT-OF', 'ANTAGONIST', 'ACTIVATOR',
@@ -245,33 +252,45 @@ def load_data_chemprot_re(args, filename="data_online/chemprot_preprocessed/trai
     rel2id = {rel: i for i, rel in enumerate(rels)}
 
     def fill_modal_data(ent, mention2cid, cmpd_info, modal_feats, modal_feat_mask):
-
         if ent in mention2cid:
             cid = mention2cid[ent]
-            if cid is not None and cid in cmpd_info:
+            if cid is not None and str(cid) in cmpd_info:
+                cid=str(cid)
                 if "canonical_smiles" in cmpd_info[cid]:
+                    print("found")
                     modal_feats[0].append(cmpd_info[cid]["canonical_smiles"])
                     modal_feat_mask[0].append(1)
                 else:
                     modal_feats[0].append("[[NULL]]")
                     modal_feat_mask[0].append(0)
 
-                if "description" in cmpd_info[cid]:
-                    modal_feats[1].append(cmpd_info[cid]["description"])
+                if "pubchem_description" in cmpd_info[cid] and 'descriptions' in cmpd_info[cid]['pubchem_description'] and\
+                    len(cmpd_info[cid]['pubchem_description']['descriptions']):
+                    modal_feats[1].append(cmpd_info[cid]['pubchem_description']['descriptions'][0]["description"])
                     modal_feat_mask[1].append(1)
                 else:
                     modal_feats[1].append("[[NULL]]")
                     modal_feat_mask[1].append(0)
+                return
+        modal_feats[0].append("[[NULL]]")
+        modal_feat_mask[0].append(0)
+        modal_feats[1].append("[[NULL]]")
+        modal_feat_mask[1].append(0)
 
     texts, labels = [], []
 
-    with open(filename, mode="r") as fin:
+    with open(filename, mode="r", encoding="utf-8") as fin:
         modal_feats1 = [[], []]  # n row, each row is all for one modalities
         modal_feat_mask1 = [[], []]
         modal_feats2 = [[], []]  # n row, each row is all for one modalities
         modal_feat_mask2 = [[], []]
         # modal_feats={"smiles":[], "smiles":[], "smiles":[], "smiles":[]}
-        for i, line in fin:
+        for i, line in enumerate(fin):
+            if args.debug:
+                # if i<100: continue
+                if i>200: break
+
+            print("\n", i, line)
             sample = json.loads(line.strip())
 
             # text label metadata
@@ -282,10 +301,39 @@ def load_data_chemprot_re(args, filename="data_online/chemprot_preprocessed/trai
             labels.append(rel2id[sample["label"]])
 
             ent1, ent2 = text[text.find("<< ") + 3:text.find(" >>")], text[text.find("[[ ") + 3:text.find(" ]]")]
+            print("ent1, ent2", ent1,"|",  ent2)
+            print("looking for ent1")
+
             fill_modal_data(ent1, mention2cid, cmpd_info, modal_feats1, modal_feat_mask1)
+            print("looking for ent2")
             fill_modal_data(ent2, mention2cid, cmpd_info, modal_feats2, modal_feat_mask2)
+            print(modal_feats1)
+            print(modal_feats2)
+            print(len(modal_feats1[0]))
+            print(len(modal_feats1[1]))
+            print(len(modal_feat_mask1[0]))
+            print(len(modal_feat_mask1[1]))
+            print(len(modal_feats2[0]))
+            print(len(modal_feats2[1]))
+            print(len(modal_feat_mask2[0]))
+            print(len(modal_feat_mask2[1]))
+
+
+
     modal_feat_mask1[0], modal_feats1[0] = get_graph_info(modal_feats1[0])
     modal_feat_mask2[0], modal_feats2[0] = get_graph_info(modal_feats2[0])
+    print(len(modal_feats1[0]))
+    print(len(modal_feats1[1]))
+    print(len(modal_feat_mask1[0]))
+    print(len(modal_feat_mask1[1]))
+    print(len(modal_feats2[0]))
+    print(len(modal_feats2[1]))
+    print(len(modal_feat_mask2[0]))
+    print(len(modal_feat_mask2[1]))
+
+    # exit()
+
+
     assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
         modal_feats2[1])
 
@@ -293,20 +341,23 @@ def load_data_chemprot_re(args, filename="data_online/chemprot_preprocessed/trai
     text, label, ent1_g, ent1_g_mask, ent1_d, ent1_d_mask, ent2_g, ent2_g_mask, ent2_d, ent2_d_mask) in enumerate(
             zip(texts, labels, modal_feats1[0], modal_feat_mask1[0], modal_feats1[1], modal_feat_mask1[1],
                 modal_feats2[0], modal_feat_mask2[0], modal_feats2[1], modal_feat_mask2[1])):
+
+
         instances.append({"text": text,
                           "id": i,
                           "label": label,
                           "ent1_g": ent1_g,
                           "ent1_g_mask": ent1_g_mask,
-                          "ent1_d": ent1_d_mask,
+                          "ent1_d": ent1_d,
                           "ent1_d_mask": ent1_d_mask,
-                          "ent2_g": ent2_g_mask,
-                          "ent2_g_mask": ent1_g_mask,
-                          "ent2_d": ent1_d_mask,
-                          "ent2_d_mask": ent1_d_mask,
+                          "ent2_g": ent2_g,
+                          "ent2_g_mask": ent2_g_mask,
+                          "ent2_d": ent2_d,
+                          "ent2_d_mask": ent2_d_mask,
                           "tokenizer": tokenizer
                           })
-
+    # print(instances)
+    # exit()
     args.out_dim = len(rel2id)
     args.in_dim = instances[0]["ent1_g"].x.shape[-1]
 
@@ -484,14 +535,16 @@ def collate_fn_re(batch):
 
     batch_ent1_g = Batch.from_data_list([f["ent1_g"] for f in batch])
     batch_ent1_g_mask = torch.tensor([f["ent1_g_mask"] for f in batch]).unsqueeze(-1)
-    batch_ent1_d = batch[0]["tokenizer"]([f["ent1_d"] for f in batch], return_tensors='pt', padding=True, )
+    batch_ent1_d = batch[0]["tokenizer"]([f["ent1_d"] for f in batch], return_tensors='pt', padding=True,)
     batch_ent1_d_mask = torch.tensor([f["ent1_d_mask"] for f in batch]).unsqueeze(-1)
-
+    print("batch_ent1_d")
+    pp(batch_ent1_d)
     batch_ent2_g = Batch.from_data_list([f["ent2_g"] for f in batch])
     batch_ent2_g_mask = torch.tensor([f["ent2_g_mask"] for f in batch]).unsqueeze(-1)
-    batch_ent2_d = batch[0]["tokenizer"]([f["ent2_d"] for f in batch], return_tensors='pt', padding=True, )
+    batch_ent2_d = batch[0]["tokenizer"]([f["ent2_d"] for f in batch], return_tensors='pt', padding=True,)
     batch_ent2_d_mask = torch.tensor([f["ent2_d_mask"] for f in batch]).unsqueeze(-1)
-
+    print("batch_ent2_d")
+    pp(batch_ent2_d)
     # Label Smoothing
     # output = (smiles, edge_indices, node_attrs,edge_attrs, Ys, ids)
 

@@ -1,6 +1,6 @@
-from torch import optim
+# from torch import optim
 import torch
-import os
+# import os
 from model.joint_gt import JNet
 
 from model.re_model import RE

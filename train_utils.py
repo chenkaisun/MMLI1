@@ -40,7 +40,7 @@ def setup_common(args):
     mkdir("model")
     mkdir("model/states")
 
-    set_seeds(args)
+    # set_seeds(args)
     args.device = gpu_setup(use_gpu=args.use_gpu)
     # # wandb.init(config=args, project=args.experiment)
     # if args.debug:
@@ -124,12 +124,12 @@ def view_model_param(args, model):
 
 def get_optimizer(args, model, downstream_layers):
     optimizer_grouped_parameters = [
-        {"params": [p for n, p in model.named_parameters() if not any(nd in n for nd in downstream_layers)], },
+        {"params": [p for n, p in model.named_parameters() if not any(nd in n for nd in downstream_layers)],},
         {"params": [p for n, p in model.named_parameters() if any(nd in n for nd in downstream_layers)],
          "lr": args.lr}
     ]
     return optim.AdamW(optimizer_grouped_parameters,
-                       lr=args.lr,
+                       lr=args.plm_lr,
                        weight_decay=args.weight_decay,
                        eps=args.adam_epsilon)
 

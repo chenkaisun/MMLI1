@@ -2,15 +2,15 @@ from torch.utils.data import DataLoader
 import time
 import torch
 from torch import nn
-import wandb
-from transformers import get_linear_schedule_with_warmup
+# import wandb
+# from transformers import get_linear_schedule_with_warmup
 from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR
 # from model.load_model import load_model_from_path
 # import logging
 # from utils import *
 from evaluate import evaluate
 from data import collate_fn, collate_fn_re
-from train_utils import get_logger
+# from train_utils import get_logger
 # from torch_geometric.data import DataLoader
 import gc
 
@@ -32,6 +32,7 @@ def train(args, model, optimizer, data):
         train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
                                   drop_last=False)
     else:
+        print('args.exp', args.exp)
         train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,
                                   drop_last=False)
 
@@ -182,6 +183,7 @@ def train(args, model, optimizer, data):
     logger.debug("Optimization Finished!")
     logger.debug("Total time elapsed: {:.4f}s".format(time.time() - t_total))
     logger.debug('Loading {}th epoch'.format(best_epoch))
+
     gc.collect()
     model.load_state_dict(torch.load(args.model_path)['model_state_dict'])
     test_score, output = evaluate(args, model, test_data)

@@ -23,7 +23,6 @@ def read_args():
     parser.add_argument("--test_file", default="test.json", type=str)
     parser.add_argument("--cache_filename", default="data/property_pred/clintox.pkl", type=str)
     parser.add_argument("--use_cache", default=True, type=str)
-
     parser.add_argument("--cache_data", default=True, type=str)
 
     # training params
@@ -60,10 +59,12 @@ def read_args():
     parser.add_argument('--i', default=False)
     parser.add_argument('--t', default=False)
     parser.add_argument('--gt', default=True)
+    parser.add_argument('--bert_only', default=0)
 
 
     # auxiliary
-    parser.add_argument("--debug", action="store_true")
+    # parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--debug", default=1, type=int, help="Using gpu or cpu", )
     parser.add_argument("--eval", action="store_true")
 
     # # experiment specific

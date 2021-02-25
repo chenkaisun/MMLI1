@@ -1,5 +1,5 @@
 from train import train
-from data import load_data_chemprot_re
+from data import load_data_chemprot_re ,load_mole_data
 from train_utils import setup_common
 from utils import mkdir
 from model.load_model import *
@@ -31,6 +31,7 @@ if __name__ == '__main__':
         args.patience = 5
         args.g_dim = 64
         args.g_only = True
+        args.exp = "mol_pred"
         # args.t_only=True
         # args.g_dim=32
         # args.use_cache=False
@@ -40,9 +41,7 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(args.plm, cache_dir="/")
     print("tokenizer2")
 
-    train_data, val_data, test_data = load_data_chemprot_re(args, args.train_file, tokenizer), \
-                                      load_data_chemprot_re(args, args.val_file, tokenizer), \
-                                      load_data_chemprot_re(args, args.test_file, tokenizer)
+    train_data, val_data, test_data = load_mole_data(args, args.train_file, tokenizer)
 
     # load model and data etc.
     args, model, optimizer = setup_common(args)

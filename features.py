@@ -11,18 +11,18 @@ There are a couple possible input types for each function:
 
 import scipy
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import itertools
 from sklearn.preprocessing import StandardScaler
 
-import tqdm
+# import tqdm
 import torch
 
-import os.path as osp
+# import os.path as osp
 import rdkit.Chem as Chem
-import networkx as nx
+# import networkx as nx
 
-from torch_geometric.data import Data, Dataset
+# from torch_geometric.data import Data, Dataset
 from mendeleev import element
 from torch_geometric import utils
 
@@ -52,6 +52,9 @@ def get_adj_matrix_coo(molecules):
         # print("am\n", am)
         for i in range(np.array(am).shape[0]):
             am[i, i] = 1
+
+        # am[am>1]=1
+
         adj_mat = scipy.sparse.csr_matrix(am)
 
         # print("adj_mat", adj_mat.row)
@@ -98,6 +101,7 @@ def get_atom_symbols(molecules):
 
 def get_prop(prop, atom, prop_dict):
     # print(prop_dict)
+    # dynamic populating
     if not atom in prop_dict:
         prop_dict[atom] = {}
     if not prop in prop_dict[atom]:
@@ -118,6 +122,9 @@ def get_prop(prop, atom, prop_dict):
             prop_dict[atom][prop] = elt_atom.density
     return prop_dict[atom][prop]
 
+class AtomProp:
+    def __init__(self):
+        pass
 
 def get_atom_properties(atom_list):
     res = []

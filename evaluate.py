@@ -1,11 +1,11 @@
 from torch.utils.data import DataLoader
-import torch
-from torch import nn
+# import torch
+# from torch import nn
 from data import collate_fn
 import torch
-import torch.nn.functional as F
+# import torch.nn.functional as F
 import torch.utils.data
-from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error,
+from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error
 import numpy as np
 from data import collate_fn_re
 
@@ -49,7 +49,7 @@ def evaluate(args, model, data):
                       "batch_ent2_g_mask": batch[8].to(args.device),
                       "ids": batch[9],
                       "labels": batch[10].to(args.device),
-                      'in_train': True,
+                      'in_train': False,
                       }
         with torch.no_grad():
             pred = model(inputs, args)
@@ -57,7 +57,7 @@ def evaluate(args, model, data):
             # print(pred.cpu())
             # print(pred.cpu().numpy())
             # print(pred.cpu().numpy().squeeze(-1))
-            pred = list(pred.cpu().numpy().squeeze(-1))
+            pred = list(pred.cpu().numpy())
             preds.extend(pred)
 
             # print(inputs["ids"], inputs["batch_graph_data"].y, inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1), list(inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1)))
@@ -74,14 +74,16 @@ def evaluate(args, model, data):
     preds=np.array(preds)
     if args.exp == "mol_pred":
         # print(targets, preds.tolist())
-        score2 = roc_auc_score(targets, preds.tolist())
+        score = roc_auc_score(targets, preds.tolist())
         preds[preds>=0.5]=1
         preds[preds<0.5]=0
-        score = accuracy_score(targets, preds.tolist())
-        args.logger.debug(f"accuracy_score {score}")
-        args.logger.debug(f"auc_score {score2}", )
+        score2 = accuracy_score(targets, preds.tolist())
+        args.logger.debug(f"accuracy_score {score2}")
+        args.logger.debug(f"auc_score {score}", )
         # f1 = f1_score(targets, preds, average='macro')
     else:
-        score2 = f1_score(targets, preds.tolist(), average="macro")
-    output = None
-    return score2, output
+        score = f1_score(targets, preds.tolist(), average="macro")
+        print(targets, preds.tolist())
+
+    # output = None
+    return score, pred
