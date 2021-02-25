@@ -134,7 +134,7 @@ def get_atom_properties(atom_list):
     for i, atoms in enumerate(atom_list):
 
         # if i>60: break
-        print("i", i)
+        # print("i", i)
         # print("atoms",atoms)
         # for i, atom in enumerate(atoms):
         #     print(i, atom)
@@ -182,12 +182,12 @@ def get_atom_properties(atom_list):
         # res.append((all_atom_properties-np.min(all_atom_properties, axis=0))/(1+np.max(all_atom_properties, axis=0)-np.min(all_atom_properties, axis=0)))
 
         res.append(scaler.fit_transform(all_atom_properties))
-        print("res", res[-1].shape)
+        # print("res", res[-1].shape)
         #
         # res.append(scaler.fit_transform(all_atom_properties))
 
         dex.append(i)
-    print("dex", dex)
+    # print("dex", dex)
 
     # normalization
 
