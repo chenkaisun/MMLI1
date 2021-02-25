@@ -95,6 +95,7 @@ class RE(torch.nn.Module):
             res_d1=[]
             res_d2=[]
             for i, (hid_ent1_g, hid_ent2_g) in enumerate(zip(hid_ent1_gs, hid_ent2_gs)):
+                print("i", i)
                 cur_hid_ent1_d = hid_ent1_d[i, :, :]
                 cur_hid_ent2_d = hid_ent2_d[i, :, :]
                 tmp_hid_ent1_d, tmp_hid_ent2_d = self.map2smaller(cur_hid_ent1_d), self.map2smaller(cur_hid_ent2_d)
@@ -105,6 +106,11 @@ class RE(torch.nn.Module):
                 res_g2.append(cur_hid_ent2_g)
                 res_d1.append(cur_hid_ent1_d)
                 res_d2.append(cur_hid_ent2_d)
+                print(hid_texts.shape)
+                print(cur_hid_ent1_g.shape)
+                print(cur_hid_ent2_g.shape)
+                print(cur_hid_ent1_d.shape)
+                print(cur_hid_ent2_d.shape)
             modals.extend([hid_texts, torch.cat(res_g1, dim=0), torch.cat(res_g2, dim=0),
                            torch.cat(res_d1, dim=0), torch.cat(res_d1, dim=0)])
 
