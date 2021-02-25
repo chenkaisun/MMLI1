@@ -262,7 +262,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
             if cid is not None and str(cid) in cmpd_info:
                 cid=str(cid)
                 if "canonical_smiles" in cmpd_info[cid]:
-                    # print("found")
+                    print("found1")
                     modal_feats[0].append(cmpd_info[cid]["canonical_smiles"])
                     modal_feat_mask[0].append(1)
                 else:
@@ -271,6 +271,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
 
                 if "pubchem_description" in cmpd_info[cid] and 'descriptions' in cmpd_info[cid]['pubchem_description'] and\
                     len(cmpd_info[cid]['pubchem_description']['descriptions']):
+                    print("dfound1")
                     modal_feats[1].append(cmpd_info[cid]['pubchem_description']['descriptions'][0]["description"])
                     modal_feat_mask[1].append(1)
                 else:
@@ -343,13 +344,18 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
 
     assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
         modal_feats2[1])
-
+    valid_num=0
+    total_num=0
     for i, (
     text, label, ent1_g, ent1_g_mask, ent1_d, ent1_d_mask, ent2_g, ent2_g_mask, ent2_d, ent2_d_mask) in enumerate(
             zip(texts, labels, modal_feats1[0], modal_feat_mask1[0], modal_feats1[1], modal_feat_mask1[1],
                 modal_feats2[0], modal_feat_mask2[0], modal_feats2[1], modal_feat_mask2[1])):
-
-
+        total_num+=1
+        if ent1_g_mask==1: valid_num+=1
+        # print("ent1_g_mask", ent1_g_mask)
+        # print("ent1_d_mask", ent1_d_mask)
+        # print("ent2_g_mask", ent2_g_mask)
+        # print("ent2_g_mask", ent2_g_mask)
         instances.append({"text": text,
                           "id": i,
                           "label": label,
@@ -363,6 +369,9 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                           "ent2_d_mask": ent2_d_mask,
                           "tokenizer": tokenizer
                           })
+
+    print("valid_num", valid_num)
+    print("total_num", total_num)
     # print(instances)
     # exit()
     args.out_dim = len(rel2id)
@@ -371,6 +380,11 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
     if args.cache_filename:
         dump_file({"instances": instances, "rel2id": rel2id}, args.cache_filename)
 
+
+    # print(sum([instance["ent1_g_mask"] for instance in instances])//len(instances))
+    # print(sum([instance["ent2_g_mask"] for instance in instances])//len(instances))
+    # print(sum([instance["ent1_d_mask"] for instance in instances])//len(instances))
+    # print(sum([instance["ent2_d_mask"] for instance in instances])//len(instances))
     return instances
 
     # for each sent
