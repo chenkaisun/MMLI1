@@ -64,7 +64,7 @@ class RE(torch.nn.Module):
         modals=[]
         hid_texts, hid_ent1_d, hid_ent2_d, hid_ent1_g, hid_ent2_g = None, None, None, None, None
         if 'tdgx' not in args.model_type:
-            print('not tdgx')
+            # print('not tdgx')
             if 't' in args.model_type:
                 # hid_texts = self.plm(**texts, return_dict=True).pooler_output
                 hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]

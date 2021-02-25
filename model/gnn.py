@@ -88,6 +88,7 @@ class MoleGNN(torch.nn.Module):
         # print("x", x)
         # x=self.dropout(x)
         # x=torch.dropout(x, p=self.dropout, train=self.training)
+
         x=self.conv1(x, edge_index)
         # x=self.mid(x)
         # x=torch.nn.functional.relu(x)
@@ -98,8 +99,8 @@ class MoleGNN(torch.nn.Module):
         # x=self.mid(x)
         # x=self.mid(x)
         # x=torch.nn.functional.relu(x)
-        x=torch.relu(x)
-        x=self.conv3(x, edge_index)
+        # x=torch.relu(x)
+        # x=self.conv3(x, edge_index)
         # x=self.conv4(x, edge_index)
         # x=self.conv5(x, edge_index)
 
