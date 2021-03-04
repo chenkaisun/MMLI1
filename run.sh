@@ -9,7 +9,7 @@ for _plm_lr in 2e-5 5e-5; do
             for _g_mult_mask in 0 1; do
 
               nohup python main_re.py \
-              --use_cache 1 \
+              --use_cache 0 \
               --batch_size 24 \
               --num_epoch 15 \
               --grad_accumulation_steps 1 \
