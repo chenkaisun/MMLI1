@@ -153,3 +153,4 @@ data/*
 model/states/
 other_repo*/
 wandb/
+#wikipedia_html_for_pubchem_compounds/
