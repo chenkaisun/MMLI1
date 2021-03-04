@@ -19,8 +19,8 @@ if __name__ == '__main__':
     if args.debug:
         # args.plm="bert-ba"
         # args.use_amp=False
-        args.use_cache=False
-        args.use_cache=True
+        # args.use_cache=False
+        # args.use_cache=True
         # data
         data_dir = "data_online/ChemProt_Corpus/chemprot_preprocessed/"
         args.train_file = data_dir + "train.txt"
