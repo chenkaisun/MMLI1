@@ -1,11 +1,12 @@
 from train import train
 from data import load_data_chemprot_re, load_mole_data
 import torch
+import os
 # from train_utils import setup_common
 # from utils import mkdir
 # from model.load_model import get
 # from transformers import BertTokenizer
-# from transformers import AutoTokenizer
+from transformers import AutoTokenizer
 
 torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.deterministic = True
@@ -19,6 +20,7 @@ if __name__ == '__main__':
         # args.plm="bert-ba"
         # args.use_amp=False
         args.use_cache=False
+        args.use_cache=True
         # data
         data_dir = "data_online/ChemProt_Corpus/chemprot_preprocessed/"
         args.train_file = data_dir + "train.txt"
@@ -30,7 +32,7 @@ if __name__ == '__main__':
         # args.batch_size = 4
         args.burn_in = 1
         args.lr = 1e-4
-        args.grad_accumulation_steps = 1
+        args.grad_accumulation_steps = 32
         # args.plm="prajjwal1/bert-medium"
         args.plm="prajjwal1/bert-tiny"
         # args.plm = "allenai/scibert_scivocab_uncased"
@@ -38,16 +40,18 @@ if __name__ == '__main__':
         args.g_dim = 128
         # args.bert_only=1
         args.exp = "re"
-        # args.g_only=True
+        args.model_type="tdg"
         # args.t_only=True
         # args.g_dim=32
         # args.use_cache=False
 
     set_seeds(args)
     print("tokenizer1")
-    # tokenizer = AutoTokenizer.from_pretrained(args.plm)
+    if not os.path.exists("tokenizer.pkl"):
+        tokenizer = AutoTokenizer.from_pretrained(args.plm)
+        dump_file(tokenizer, "tokenizer.pkl")
     tokenizer=load_file("tokenizer.pkl")
-    # dump_file(tokenizer, "tokenizer.pkl")
+    #
 
     print("tokenizer2")
     train_data, val_data, test_data = load_data_chemprot_re(args, args.train_file, tokenizer), \

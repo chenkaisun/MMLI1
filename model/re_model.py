@@ -33,10 +33,10 @@ class RE(torch.nn.Module):
             self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
         elif 'tdg' in args.model_type:
             print("args.tdg")
-            self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 3 + args.g_dim, args.out_dim)
         elif 'tg' in args.model_type:
             print("args.tg")
-            self.combiner = Linear(args.plm_hidden_dim + 2 * args.g_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim +  args.g_dim, args.out_dim)
         elif 'td' in args.model_type:
             print("args.td")
             self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
@@ -58,8 +58,8 @@ class RE(torch.nn.Module):
         batch_ent2_d_mask = input['batch_ent2_d_mask']
         batch_ent1_g = input['batch_ent1_g']
         batch_ent1_g_mask = input['batch_ent1_g_mask']
-        batch_ent2_g = input['batch_ent2_g']
-        batch_ent2_g_mask = input['batch_ent2_g_mask']
+        # batch_ent2_g = input['batch_ent2_g']
+        # batch_ent2_g_mask = input['batch_ent2_g_mask']
         ids = input['ids']
         labels = input['labels']
         in_train = input['in_train']
@@ -99,7 +99,7 @@ class RE(torch.nn.Module):
             hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state
             hid_ent2_d = self.dropout(hid_ent2_d)
             hid_ent1_gs = self.gnn(batch_ent1_g, global_pooling=False)
-            hid_ent2_gs = self.gnn(batch_ent2_g, global_pooling=False)
+            # hid_ent2_gs = self.gnn(batch_ent2_g, global_pooling=False)
             # print('e0')
             # print(hid_ent1_gs.shape)
             # print(hid_ent2_gs.shape)

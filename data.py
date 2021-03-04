@@ -19,7 +19,7 @@ import json
 # from collections import defaultdict
 # import re
 import pandas as pd
-
+import torch
 
 # def mol2graph( mol ):
 #     admatrix = rdmolops.GetAdjacencyMatrix( mol )
@@ -125,7 +125,7 @@ def get_graph_info(input_smiles, args):
     in_dim = args.g_dim  # node_attr[0].shape[-1]
 
     # dummy data
-    res = [Data(x=torch.rand(2, in_dim), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
+    res = [Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
                 edge_attr=torch.tensor([1,1], dtype=torch.long)) for _ in
            range(len(input_smiles))]
     res_mask = [0 for _ in range(len(input_smiles))]
@@ -386,16 +386,20 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
         print("Loading Cached Data...", args.cache_filename)
         data = load_file(args.cache_filename)
 
-        print(sum([instance["ent1_g_mask"] for instance in data['instances']]) // len(data['instances']))
-        print(sum([instance["ent2_g_mask"] for instance in data['instances']]) // len(data['instances']))
-        print(sum([instance["ent1_d_mask"] for instance in data['instances']]) // len(data['instances']))
-        print(sum([instance["ent2_d_mask"] for instance in data['instances']]) // len(data['instances']))
+        # print(sum([instance["ent1_g_mask"] for instance in data['instances']]) // len(data['instances']))
+        # print(sum([instance["ent2_g_mask"] for instance in data['instances']]) // len(data['instances']))
+        # print(sum([instance["ent1_d_mask"] for instance in data['instances']]) // len(data['instances']))
+        # print(sum([instance["ent2_d_mask"] for instance in data['instances']]) // len(data['instances']))
         args.out_dim = len(data['rel2id'])
-        args.in_dim = data['instances'][0]["ent1_g"].x.shape[-1]
-
+        # args.in_dim = data['instances'][0]["ent1_g"].x.shape[-1]
+        args.in_dim=args.g_dim
         print("args.in_dim", args.in_dim)
         print("args.out_dim", args.out_dim)
         print(data['rel2id'])
+        #
+        # print(data['instances'][0]["modal_data"][0][0].x.dtype)
+        # import torch
+
 
         return data['instances']
 
@@ -448,7 +452,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                     modal_feat_mask[0].append(0)
                     if "definition" in prot_info[pid]:
                         print("found1")
-                        modal_feats[1].append(prot_info[pid]["definition"])
+                        modal_feats[1].append(prot_info[pid]["definition"]['text'])
                         modal_feat_mask[1].append(1)
                     else:
                         modal_feats[1].append("[[NULL]]")
@@ -521,21 +525,25 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
 
     # exit()
 
-    print(len(modal_feats1[0]))
-    print(len(modal_feat_mask1[0]))
-    print(len(modal_feats1[1]))
-    print(len(modal_feat_mask1[1]))
-    print(len(modal_feats2[0]))
-    print(len(modal_feat_mask2[0]))
-    print(len(modal_feats2[1]))
-    print(len(modal_feat_mask2[1]))
-
-    print(modal_feats1)
-    print(modal_feats2)
-    print(modal_feat_mask1)
-    print(modal_feat_mask2)
-
-    exit()
+    # print(len(modal_feats1[0]))
+    # print(len(modal_feat_mask1[0]))
+    # print(len(modal_feats1[1]))
+    # print(len(modal_feat_mask1[1]))
+    # print(len(modal_feats2[0]))
+    # print(len(modal_feat_mask2[0]))
+    # print(len(modal_feats2[1]))
+    # print(len(modal_feat_mask2[1]))
+    #
+    # print(modal_feats1[0][:5])
+    # print(modal_feats1[1][:5])
+    # print(modal_feats2[0][:5])
+    # print(modal_feats2[1][:5])
+    # print(modal_feat_mask1[0][:5])
+    # print(modal_feat_mask1[1][:5])
+    # print(modal_feat_mask2[0][:5])
+    # print(modal_feat_mask2[1][:5])
+    #
+    # exit()
     assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
         modal_feats2[1])
 
@@ -716,14 +724,23 @@ class CustomBatch:
         self.ids = [f["id"] for f in batch]
         self.labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
 
-        self.batch_modal_data = [[Batch.from_data_list([f["modal_data"][0][0] for f in batch]),
+
+        g_data=Batch.from_data_list([f["modal_data"][0][0] for f in batch])
+        g_data.x=torch.as_tensor(g_data.x, dtype=torch.long)
+
+        self.batch_modal_data = [[g_data,
                                   batch[0]["tokenizer"]([f["modal_data"][0][1] for f in batch], return_tensors='pt', padding=True),
                                   torch.tensor([f["modal_data"][0][2] for f in batch]).unsqueeze(-1),
                                   torch.tensor([f["modal_data"][0][3] for f in batch]).unsqueeze(-1)],
                                  [batch[0]["tokenizer"]([f["modal_data"][1][0] for f in batch], return_tensors='pt', padding=True),
                                   torch.tensor([f["modal_data"][1][1] for f in batch]).unsqueeze(-1)]]
 
-
+        # print(self.batch_modal_data[0][0])
+        # print(list(self.batch_modal_data[0][0]))
+        # print(self.batch_modal_data[0][0][0].x)
+        # print(self.batch_modal_data[0][0][0].x.dtype)
+        #
+        # embed()
 
 
         # self.batch_modal_data[0][0] = Batch.from_data_list([f["modal_data"][0][0] for f in batch])

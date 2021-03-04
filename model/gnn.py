@@ -94,6 +94,8 @@ class MoleGNN2(torch.nn.Module):
         self.atom_lin.reset_parameters()
 
     def forward(self, data, global_pooling=True):
+        # print("data.x", data.x)
+
         x = self.atom_encoder(data.x.squeeze())
         # print(x.shape)
         # print(data.edge_attr.unsqueeze(1).shape)
