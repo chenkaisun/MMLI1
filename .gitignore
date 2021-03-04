@@ -144,7 +144,7 @@ missMDA/
 *.pt
 *.npz
 *.xlsx
-upload.sh
+#upload.sh
 latex*.txt
 testing*.py
 note*.txt
