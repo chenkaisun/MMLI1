@@ -5,7 +5,7 @@ import torch.utils.data
 from torch.nn import Linear
 from transformers import AutoModel
 
-from model.gnn import MoleGNN
+from model.gnn import MoleGNN, MoleGNN2
 # from train_utils import get_tensor_info
 from model.model_utils import get_tensor_info, LabelSmoothingCrossEntropy
 
@@ -15,7 +15,9 @@ class RE(torch.nn.Module):
         super(RE, self).__init__()
 
         if 'g' in args.model_type:
-            self.gnn = MoleGNN(args)
+            # self.gnn = MoleGNN(args)
+            self.gnn = MoleGNN2(args)
+
 
         self.plm = AutoModel.from_pretrained(args.plm)
         # if args.g_only:
@@ -25,23 +27,25 @@ class RE(torch.nn.Module):
         # else:
         # self.combiner = Linear(args.g_dim, 1)
         # self.combiner = Linear(args.plm_hidden_dim, 1)
-        if 't' in args.model_type:
-            print("args.t")
-            self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
-        if 'td' in args.model_type:
-            print("args.td")
-            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
-        if 'tg' in args.model_type:
-            print("args.tg")
-            self.combiner = Linear(args.plm_hidden_dim + 2 * args.g_dim, args.out_dim)
-        if 'tdg' in args.model_type:
-            print("args.tdg")
-            self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+
         if 'tdgx' in args.model_type:
             print("tdgx")
             self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+        elif 'tdg' in args.model_type:
+            print("args.tdg")
+            self.combiner = Linear(args.plm_hidden_dim * 3 + 2 * args.g_dim, args.out_dim)
+        elif 'tg' in args.model_type:
+            print("args.tg")
+            self.combiner = Linear(args.plm_hidden_dim + 2 * args.g_dim, args.out_dim)
+        elif 'td' in args.model_type:
+            print("args.td")
+            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
+        elif 't' in args.model_type:
+            print("args.t")
+            self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
 
         self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
+
         self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
         self.dropout = torch.nn.Dropout(args.dropout)
         self.loss = torch.nn.CrossEntropyLoss()
@@ -68,22 +72,24 @@ class RE(torch.nn.Module):
             if 't' in args.model_type:
                 # hid_texts = self.plm(**texts, return_dict=True).pooler_output
                 hid_texts = self.plm(**texts, return_dict=True).last_hidden_state[:, 0, :]
-                hid_texts = self.dropout(hid_texts)
+                # hid_texts = self.dropout(hid_texts)
                 modals.append(hid_texts)
             if 'd' in args.model_type:
-                hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]
-                hid_ent1_d = self.dropout(hid_ent1_d)
-                hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]
-                hid_ent2_d = self.dropout(hid_ent2_d)
+                # try lstm
+
+                hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]*batch_ent1_d_mask
+                # hid_ent1_d = self.dropout(hid_ent1_d)
+                hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]*batch_ent2_d_mask
+                # hid_ent2_d = self.dropout(hid_ent2_d)
                 modals.extend([hid_ent1_d, hid_ent2_d])
             if 'g' in args.model_type:
                 # print("batch_ent1_g", batch_ent1_g)
-                hid_ent1_g = self.gnn(batch_ent1_g)# * batch_ent1_g_mask
-                hid_ent2_g = self.gnn(batch_ent2_g)# * batch_ent2_g_mask
+                hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
+                # hid_ent2_g = self.gnn(batch_ent2_g)# * batch_ent2_g_mask
                 # print("gnn hid_ent1_g", hid_ent1_g)
                 # print("gnn hid_ent2_g", hid_ent2_g)
 
-                modals.extend([hid_ent1_g, hid_ent2_g])
+                modals.extend([hid_ent1_g])
         else:
             hid_texts = self.plm(**texts, return_dict=True).last_hidden_state
             hid_texts = self.dropout(hid_texts)

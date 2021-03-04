@@ -8,7 +8,7 @@ import torch.utils.data
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error, \
     precision_score, recall_score
 import numpy as np
-from data import collate_fn_re
+from data import collate_wrapper, collate_fn
 
 
 
@@ -29,7 +29,7 @@ def evaluate(args, model, data):
                                 drop_last=False)
     else:
 
-        dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,
+        dataloader = DataLoader(data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_wrapper,
                                 drop_last=False)
     preds = []
     targets = []
@@ -44,24 +44,29 @@ def evaluate(args, model, data):
                       'in_train': False,
                       }
         else:
-            texts = batch[0]
-            batch_ent1_d = batch[1]
-            batch_ent2_d = batch[3]
+            # texts = batch[0]
+            # batch_ent1_d = batch[1]
+            # batch_ent2_d = batch[3]
+            #
+            # # print("encoded_input", encoded_input)
+            # inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
+            #           "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
+            #           "batch_ent1_d_mask": batch[2].to(args.device),
+            #           "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
+            #           "batch_ent2_d_mask": batch[4].to(args.device),
+            #           "batch_ent1_g": batch[5].to(args.device),
+            #           "batch_ent1_g_mask": batch[6].to(args.device),
+            #           "batch_ent2_g": batch[7].to(args.device),
+            #           "batch_ent2_g_mask": batch[8].to(args.device),
+            #           "ids": batch[9],
+            #           "labels": batch[10].to(args.device),
+            #           'in_train': False,
+            #           }
+            #
+            batch.in_train=False
+            inputs = batch.to(args.device)
 
-            # print("encoded_input", encoded_input)
-            inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
-                      "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
-                      "batch_ent1_d_mask": batch[2].to(args.device),
-                      "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
-                      "batch_ent2_d_mask": batch[4].to(args.device),
-                      "batch_ent1_g": batch[5].to(args.device),
-                      "batch_ent1_g_mask": batch[6].to(args.device),
-                      "batch_ent2_g": batch[7].to(args.device),
-                      "batch_ent2_g_mask": batch[8].to(args.device),
-                      "ids": batch[9],
-                      "labels": batch[10].to(args.device),
-                      'in_train': False,
-                      }
+
         with torch.no_grad():
             pred = model(inputs, args)
             # print(pred.shape)

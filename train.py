@@ -9,7 +9,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR
 # import logging
 # from utils import *
 from evaluate import evaluate
-from data import collate_fn, collate_fn_re
+from data import collate_fn, CustomBatch, collate_wrapper
 # from train_utils import get_logger
 # from torch_geometric.data import DataLoader
 import gc
@@ -34,7 +34,9 @@ def train(args, model, optimizer, data):
                                   drop_last=False)
     else:
         print('args.exp', args.exp)
-        train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,
+        # train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,
+        #                           drop_last=False)
+        train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_wrapper,
                                   drop_last=False)
 
     # model = args.model
@@ -84,31 +86,31 @@ def train(args, model, optimizer, data):
                           'in_train': True,
                           }
             else:
-
-                texts = batch[0]
-                batch_ent1_d = batch[1]
-                batch_ent2_d = batch[3]
-
-                # lb = batch[10].int().numpy()
-                # tmp=np.zeros((len(lb), 13))
+                # texts = batch[0]
+                # batch_ent1_d = batch[1]
+                # batch_ent2_d = batch[3]
                 #
-                # tmp[np.arange(len(lb)), lb] = 1
-                # tmp=torch.tensor(tmp)
-                # print("encoded_input", encoded_input)
-                inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
-                          "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
-                          "batch_ent1_d_mask": batch[2].to(args.device),
-                          "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
-                          "batch_ent2_d_mask": batch[4].to(args.device),
-                          "batch_ent1_g": batch[5].to(args.device),
-                          "batch_ent1_g_mask": batch[6].to(args.device),
-                          "batch_ent2_g": batch[7].to(args.device),
-                          "batch_ent2_g_mask": batch[8].to(args.device),
-                          "ids": batch[9],
-                          # "labels": tmp.to(args.device),
-                          "labels": batch[10].to(args.device),
-                          'in_train': True,
-                          }
+                # # lb = batch[10].int().numpy()
+                # # tmp=np.zeros((len(lb), 13))
+                # #
+                # # tmp[np.arange(len(lb)), lb] = 1
+                # # tmp=torch.tensor(tmp)
+                # # print("encoded_input", encoded_input)
+                # inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
+                #           "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
+                #           "batch_ent1_d_mask": batch[2].to(args.device),
+                #           "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
+                #           "batch_ent2_d_mask": batch[4].to(args.device),
+                #           "batch_ent1_g": batch[5].to(args.device),
+                #           "batch_ent1_g_mask": batch[6].to(args.device),
+                #           "batch_ent2_g": batch[7].to(args.device),
+                #           "batch_ent2_g_mask": batch[8].to(args.device),
+                #           "ids": batch[9],
+                #           # "labels": tmp.to(args.device),
+                #           "labels": batch[10].to(args.device),
+                #           'in_train': True,
+                #           }
+                inputs=batch.to(args.device)
             # inputs = {'input_ids': {key:encoded_input[key].to(args.device) for key in encoded_input},
             #           'edge_indices': batch[1].to(args.device),
             #           'node_attrs': batch[2].to(args.device),
