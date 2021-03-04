@@ -13,14 +13,14 @@ for _plm_lr in 2e-5 5e-5; do
               --batch_size 24 \
               --num_epoch 15 \
               --grad_accumulation_steps 1 \
-              --plm_lr _plm_lr \
-              --lr _lr \
-              --model_type _model_type \
-              --g_dim _g_dim \
+              --plm_lr $_plm_lr \
+              --lr $_lr \
+              --model_type $_model_type \
+              --g_dim $_g_dim \
               --patience 8 \
-              --max_grad_norm _max_grad_norm \
-              --mult_mask _mult_mask \
-              --g_mult_mask _g_mult_mask
+              --max_grad_norm $_max_grad_norm \
+              --mult_mask $_mult_mask \
+              --g_mult_mask $_g_mult_mask
 
             done
           done
