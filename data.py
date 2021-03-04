@@ -126,7 +126,7 @@ def get_graph_info(input_smiles, args):
 
     # dummy data
     res = [Data(x=torch.rand(2, in_dim), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
-                edge_attr=torch.tensor([[0, 1], [1, 0]], dtype=torch.long)) for _ in
+                edge_attr=torch.tensor([1,1], dtype=torch.long)) for _ in
            range(len(input_smiles))]
     res_mask = [0 for _ in range(len(input_smiles))]
 
@@ -441,16 +441,19 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                     modal_feat_mask[1].append(0)
                 return
         else:
-            pid = mention2protid[ent]
-            if pid is not None and pid in prot_info:
-                if "definition" in prot_info[pid]:
-                    print("found1")
-                    modal_feats[1].append(prot_info[pid]["definition"])
-                    modal_feat_mask[1].append(1)
-                else:
-                    modal_feats[1].append("[[NULL]]")
-                    modal_feat_mask[1].append(0)
-
+            if ent in mention2protid:
+                pid = mention2protid[ent]
+                if pid is not None and pid in prot_info:
+                    modal_feats[0].append("[[NULL]]")
+                    modal_feat_mask[0].append(0)
+                    if "definition" in prot_info[pid]:
+                        print("found1")
+                        modal_feats[1].append(prot_info[pid]["definition"])
+                        modal_feat_mask[1].append(1)
+                    else:
+                        modal_feats[1].append("[[NULL]]")
+                        modal_feat_mask[1].append(0)
+                    return
         modal_feats[0].append("[[NULL]]")
         modal_feat_mask[0].append(0)
         modal_feats[1].append("[[NULL]]")
@@ -485,7 +488,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
             # print("ent1, ent2", ent1,"|",  ent2)
             # print("looking for ent1")
 
-            if ent1 in mention2protid:
+            if ent2 in mention2cid:
                 ent1, ent2 = ent2, ent1
             fill_modal_data(ent2, modal_feats2, modal_feat_mask2, is_prot=True)
             fill_modal_data(ent1, modal_feats1, modal_feat_mask1, is_prot=False)
@@ -518,8 +521,24 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
 
     # exit()
 
+    print(len(modal_feats1[0]))
+    print(len(modal_feat_mask1[0]))
+    print(len(modal_feats1[1]))
+    print(len(modal_feat_mask1[1]))
+    print(len(modal_feats2[0]))
+    print(len(modal_feat_mask2[0]))
+    print(len(modal_feats2[1]))
+    print(len(modal_feat_mask2[1]))
+
+    print(modal_feats1)
+    print(modal_feats2)
+    print(modal_feat_mask1)
+    print(modal_feat_mask2)
+
+    exit()
     assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
         modal_feats2[1])
+
     valid_num = np.zeros((3))
     total_num = 0
 
@@ -532,12 +551,12 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                           "label": labels[i],
                           "modal_data": [
                               [modal_feats1[0][i], modal_feats1[1][i], modal_feat_mask1[0][i],
-                               modal_feat_mask1[0][i], ],
+                               modal_feat_mask1[1][i], ],
                               [modal_feats2[1][i], modal_feat_mask2[1][i]]
                           ],
                           "tokenizer": tokenizer
                           })
-
+    print("instances",instances[0])
     # for i, (
     #         text, label, ent1_g, ent1_g_mask, ent1_d, ent1_d_mask, ent2_g, ent2_g_mask, ent2_d,
     #         ent2_d_mask) in enumerate(

@@ -110,7 +110,7 @@ class MoleGNN2(torch.nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.atom_lin(x)
         x = F.relu(x)
-        x = F.dropout(x, self.dropout, training=self.training)
+        # x = F.dropout(x, self.dropout, training=self.training)
         # x = self.lin(x)
         # print("22222")
         # print(x.shape)
