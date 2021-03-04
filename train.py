@@ -50,8 +50,8 @@ def train(args, model, optimizer, data):
     train_iterator = range(args.start_epoch, int(args.num_epochs) + args.start_epoch)
     total_steps = int(len(train_loader) * args.num_epochs)
     warmup_steps = int(total_steps * args.warmup_ratio)
-    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
-    #                                             num_training_steps=total_steps)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
+                                                num_training_steps=total_steps)
     # scheduler = CosineAnnealingLR(optimizer, T_max=(int(args.num_epochs) // 4) + 1, eta_min=0)
 
     logger.debug(f"Total steps: {total_steps}")
@@ -135,7 +135,7 @@ def train(args, model, optimizer, data):
                         torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
                     scaler.step(optimizer)
                     scaler.update()
-                    # scheduler.step()
+                    scheduler.step()
                     optimizer.zero_grad()
             else:
                 loss = model(inputs, args)

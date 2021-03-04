@@ -77,14 +77,18 @@ class RE(torch.nn.Module):
             if 'd' in args.model_type:
                 # try lstm
 
-                hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]*batch_ent1_d_mask
+                hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]#*batch_ent1_d_mask
+                if args.mult_mask:hid_ent1_d*=batch_ent1_d_mask
                 # hid_ent1_d = self.dropout(hid_ent1_d)
-                hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]*batch_ent2_d_mask
+                hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]#*batch_ent2_d_mask
+                if args.mult_mask:hid_ent2_d*=batch_ent2_d_mask
+
                 # hid_ent2_d = self.dropout(hid_ent2_d)
                 modals.extend([hid_ent1_d, hid_ent2_d])
             if 'g' in args.model_type:
                 # print("batch_ent1_g", batch_ent1_g)
-                hid_ent1_g = self.gnn(batch_ent1_g) * batch_ent1_g_mask
+                hid_ent1_g = self.gnn(batch_ent1_g)# * batch_ent1_g_mask
+                if args.g_mult_mask: hid_ent1_g *= batch_ent1_g_mask
                 # hid_ent2_g = self.gnn(batch_ent2_g)# * batch_ent2_g_mask
                 # print("gnn hid_ent1_g", hid_ent1_g)
                 # print("gnn hid_ent2_g", hid_ent2_g)

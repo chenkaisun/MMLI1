@@ -67,6 +67,8 @@ def read_args():
     parser.add_argument('--tdg', default=0)
     parser.add_argument('--tdg_x', default=0)
     parser.add_argument('--model_type', default="tdg")
+    parser.add_argument('--mult_mask', default=0)
+    parser.add_argument('--g_mult_mask', default=0)
 
 
     # auxiliary
