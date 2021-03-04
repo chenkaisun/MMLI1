@@ -427,7 +427,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
             if cid is not None and str(cid) in cmpd_info:
                 cid = str(cid)
                 if "canonical_smiles" in cmpd_info[cid]:
-                    print("found canonical_smiles")
+                    # print("found canonical_smiles")
                     modal_feats[0].append(cmpd_info[cid]["canonical_smiles"])
                     modal_feat_mask[0].append(1)
                 else:
@@ -437,7 +437,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                 if "pubchem_description" in cmpd_info[cid] and 'descriptions' in cmpd_info[cid][
                     'pubchem_description'] and \
                         len(cmpd_info[cid]['pubchem_description']['descriptions']):
-                    print("dfound pubchem_description")
+                    # print("dfound pubchem_description")
                     modal_feats[1].append(cmpd_info[cid]['pubchem_description']['descriptions'][0]["description"])
                     modal_feat_mask[1].append(1)
                 else:
@@ -451,7 +451,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                     modal_feats[0].append("[[NULL]]")
                     modal_feat_mask[0].append(0)
                     if "definition" in prot_info[pid]:
-                        print("found1")
+                        # print("found1")
                         modal_feats[1].append(prot_info[pid]["definition"]['text'])
                         modal_feat_mask[1].append(1)
                     else:
