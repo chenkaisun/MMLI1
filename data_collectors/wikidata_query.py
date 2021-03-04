@@ -51,7 +51,7 @@ def get_results(endpoint_url, query):
     return sparql.query().convert()
 
 res={}
-mkdir("data_online/")
+mkdir("../data_online/")
 html_folder="data_online/wikipedia_html_for_pubchem_compounds/"
 mkdir(html_folder)
 # query all wikidata pubchem cid entries with a wikipedia link

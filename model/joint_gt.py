@@ -4,13 +4,15 @@ import torch.utils.data
 from torch.nn import Linear
 from transformers import AutoModel
 
-from model.gnn import MoleGNN
+from model.gnn import MoleGNN, MoleGNN2
 
 
 class JNet(torch.nn.Module):
     def __init__(self, args):
         super(JNet, self).__init__()
-        self.gnn = MoleGNN(args)
+        # self.gnn = MoleGNN(args)
+        self.gnn = MoleGNN2(args)
+
         self.plm = AutoModel.from_pretrained(args.plm)
         if args.g_only:
             self.combiner = Linear(args.g_dim, 1)

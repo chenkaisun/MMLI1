@@ -5,9 +5,20 @@ from data import collate_fn
 import torch
 # import torch.nn.functional as F
 import torch.utils.data
-from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_squared_error, mean_absolute_error, \
+    precision_score, recall_score
 import numpy as np
 from data import collate_fn_re
+
+
+
+def get_prf(targets, preds, average="micro", verbose=True):
+    precision = precision_score(targets, preds, average=average)
+    recall = recall_score(targets, preds, average=average)
+    f1 = f1_score(targets, preds, average=average)
+
+    if verbose: print(f"{average}: precision {precision} recall {recall} f1 {f1}")
+    return precision, recall, f1
 
 def evaluate(args, model, data):
     # print("Evaluate")
@@ -63,27 +74,33 @@ def evaluate(args, model, data):
             # print(inputs["ids"], inputs["batch_graph_data"].y, inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1), list(inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1)))
             # print("ergf", list(inputs["batch_graph_data"].y.cpu().numpy().squeeze()))
 
-            if args.exp == "mol_pred": targets.extend(list(inputs["batch_graph_data"].y.cpu().numpy()))
-            else:targets.extend(list(inputs["labels"].cpu().numpy()))
+            if args.exp == "mol_pred":
+                targets.extend(list(inputs["batch_graph_data"].y.cpu().numpy()))
+            else:
+                targets.extend(list(inputs["labels"].cpu().numpy()))
             # print("new targets", targets)
 
     # print("preds  ", preds)
     # print("targets", targets)
     # score = roc_auc_score(targets, preds)
 
-    preds=np.array(preds)
+    preds = np.array(preds)
     if args.exp == "mol_pred":
         # print(targets, preds.tolist())
         score = roc_auc_score(targets, preds.tolist())
-        preds[preds>=0.5]=1
-        preds[preds<0.5]=0
+        preds[preds >= 0.5] = 1
+        preds[preds < 0.5] = 0
         score2 = accuracy_score(targets, preds.tolist())
+
         args.logger.debug(f"accuracy_score {score2}")
         args.logger.debug(f"auc_score {score}", )
-        # f1 = f1_score(targets, preds, average='macro')
+        # preds[preds >= 0.5] = 1
+        # preds[preds < 0.5] = 0
+        # score = accuracy_score(targets, preds.tolist())
+        # args.logger.debug(f"accuracy_score {score}", )
+        # # f1 = f1_score(targets, preds, average='macro')
     else:
-        score = f1_score(targets, preds.tolist(), average="micro")
-        # print(targets, preds.tolist())
+        precision, recall, score=get_prf(targets, preds.tolist(), average="micro")
 
     # output = None
     return score, pred

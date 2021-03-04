@@ -51,7 +51,10 @@ def get_adj_matrix_coo(molecules):
         am = Chem.GetAdjacencyMatrix(mol)
         # print("am\n", am)
         for i in range(np.array(am).shape[0]):
-            am[i, i] = 1
+            for j in range(np.array(am).shape[0]):
+                if am[i, j]>=1:
+                    am[j,i] = am[i, j]
+                    # am[i, i] = 1
 
         am[am>1]=1
 
@@ -72,8 +75,6 @@ def get_adj_matrix_coo(molecules):
 
 # =================================================================================== #
 """                                GRAPH ATTRIBUTES                                 """
-
-
 # =================================================================================== #
 
 def get_num_bonds(molecules):
@@ -126,9 +127,30 @@ class AtomProp:
     def __init__(self):
         pass
 
+
+
 def get_atom_properties(atom_list):
     res = []
     dex = []
+
+    """new"""
+
+    # atom symbol to id mapping
+    atom_dict={}
+    for i, atoms in enumerate(atom_list):
+        cur_atoms=[atom.GetSymbol() for atom in atoms]
+        tmp=[]
+        print("cur_atoms", cur_atoms)
+        for atom in cur_atoms:
+            if atom not in atom_dict:
+                atom_dict[atom] = len(atom_dict)
+            tmp.append([atom_dict[atom]])
+        res.append(tmp)
+        dex.append(i)
+    # print(len(atom_dict))
+    # exit()
+    return res, dex
+    """prev"""
     prop_dict = {}
     scaler = StandardScaler()
     for i, atoms in enumerate(atom_list):

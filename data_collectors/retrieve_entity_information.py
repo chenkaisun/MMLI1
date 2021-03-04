@@ -20,12 +20,12 @@ from utils import dump_file, join, get_mole_desciption, request_get
 from bs4 import BeautifulSoup
 import requests
 import time
-from crawler_config import headers
+# from crawler_config import headers
 
 tr = "data_online/ChemProt_Corpus/chemprot_training/chemprot_training_entities.tsv"
 dev = "data_online/ChemProt_Corpus/chemprot_development/chemprot_development_entities.tsv"
 test = "data_online/ChemProt_Corpus/chemprot_test_gs/chemprot_test_entities_gs.tsv"
-data_dir = 'data_online/ChemProt_Corpus/'
+data_dir = '../data_online/ChemProt_Corpus/'
 
 mention2ent = {}
 cmpd_info = {}

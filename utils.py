@@ -14,14 +14,19 @@ from bs4 import BeautifulSoup
 # import torch.nn.functional as F
 # from pynvml import *
 import requests
-from crawler_config import headers
+from data_collectors.crawler_config import headers
 
 
-def request_get(url):
+def request_get(url, headers):
     try:
         r = requests.get(url, headers=headers)
-        if r.ok: return r
-        else: return None
+        if r.ok:
+            # print(r)
+            return r
+        else:
+
+            print(r)
+            return None
     except Exception as e:
         print(e)
         return None

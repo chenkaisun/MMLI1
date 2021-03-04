@@ -4,10 +4,11 @@ import torch
 from model.joint_gt import JNet
 
 from model.re_model import RE
-
+from model.gnn import *
 
 def get_model(args):
     if args.model_name=="joint_gt":
+        # return MoleGNN2(args)
         return JNet(args)
     if args.model_name=="re_model":
         return RE(args)

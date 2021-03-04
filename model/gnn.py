@@ -2,8 +2,121 @@ import torch
 import torch.nn
 from torch.nn import functional as F
 from torch_geometric.nn import BatchNorm, GATConv, global_mean_pool
-
+from torch.nn import Embedding, ModuleList
+from torch.nn import Sequential, Linear, BatchNorm1d, ReLU
+from torch_scatter import scatter
+from torch_geometric.nn import GINConv, GINEConv
+from IPython import embed
 import numpy as np
+
+
+class AtomEncoder(torch.nn.Module):
+    def __init__(self, hidden_channels):
+        super(AtomEncoder, self).__init__()
+
+        self.embeddings = torch.nn.ModuleList()
+
+        for i in range(9):
+            self.embeddings.append(Embedding(100, hidden_channels))
+
+    def reset_parameters(self):
+        for embedding in self.embeddings:
+            embedding.reset_parameters()
+
+    def forward(self, x):
+        if x.dim() == 1:
+            x = x.unsqueeze(1)
+        # print("xshape",x.shape)
+        out = 0
+        for i in range(x.size(1)):
+            out += self.embeddings[i](x[:, i])
+        return out
+
+
+class BondEncoder(torch.nn.Module):
+    def __init__(self, hidden_channels):
+        super(BondEncoder, self).__init__()
+
+        self.embeddings = torch.nn.ModuleList()
+
+        for i in range(3):
+            self.embeddings.append(Embedding(6, hidden_channels))
+
+    def reset_parameters(self):
+        for embedding in self.embeddings:
+            embedding.reset_parameters()
+
+    def forward(self, edge_attr):
+        if edge_attr.dim() == 1:
+            edge_attr = edge_attr.unsqueeze(1)
+
+        out = 0
+        for i in range(edge_attr.size(1)):
+            out += self.embeddings[i](edge_attr[:, i])
+        return out
+
+
+class MoleGNN2(torch.nn.Module):
+    def __init__(self, args):
+        super(MoleGNN2, self).__init__()
+        hidden_channels, num_layers, dropout = args.g_dim, args.num_gnn_layers, args.dropout
+
+        self.num_layers = args.num_gnn_layers
+        self.dropout = args.dropout
+        self.atom_encoder = AtomEncoder(args.g_dim)
+
+        self.bond_encoders = ModuleList()
+        self.atom_convs = ModuleList()
+        self.atom_batch_norms = ModuleList()
+
+        for _ in range(args.num_gnn_layers):
+            self.bond_encoders.append(BondEncoder(hidden_channels))
+            nn = Sequential(
+                Linear(hidden_channels, 2 * hidden_channels),
+                # BatchNorm1d(2 * hidden_channels),
+                # ReLU(),
+                Linear(2 * hidden_channels, hidden_channels),
+            )
+            self.atom_convs.append(GINEConv(nn, train_eps=True))
+            self.atom_batch_norms.append(BatchNorm1d(hidden_channels))
+
+        self.atom_lin = Linear(hidden_channels, hidden_channels)
+
+    def reset_parameters(self):
+        self.atom_encoder.reset_parameters()
+
+        for emb, conv, batch_norm in zip(self.bond_encoders, self.atom_convs,
+                                         self.atom_batch_norms):
+            emb.reset_parameters()
+            conv.reset_parameters()
+            batch_norm.reset_parameters()
+
+        self.atom_lin.reset_parameters()
+
+    def forward(self, data, global_pooling=True):
+        x = self.atom_encoder(data.x.squeeze())
+        # print(x.shape)
+        # print(data.edge_attr.unsqueeze(1).shape)
+        # embed()
+        # exit()
+        for i in range(self.num_layers):
+            edge_attr = self.bond_encoders[i](data.edge_attr)
+            x = self.atom_convs[i](x, data.edge_index, edge_attr)
+            x = self.atom_batch_norms[i](x)
+            x = F.relu(x)
+        x = scatter(x, data.batch, dim=0, reduce='mean')
+        # print("33333")
+        # print(x.shape)
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = self.atom_lin(x)
+        x = F.relu(x)
+        x = F.dropout(x, self.dropout, training=self.training)
+        # x = self.lin(x)
+        # print("22222")
+        # print(x.shape)
+        # embed()
+        return x
+
 class MoleGNN(torch.nn.Module):
     def __init__(self, args):
         super(MoleGNN, self).__init__()
@@ -25,7 +138,7 @@ class MoleGNN(torch.nn.Module):
         #     BatchNorm(32),
         #     GINConv(Linear(32, 32)),
         # )
-        self.mid=torch.nn.Sequential(
+        self.mid = torch.nn.Sequential(
             # GELU(),
             # Dropout(self.dropout),
             BatchNorm(32),
@@ -38,9 +151,9 @@ class MoleGNN(torch.nn.Module):
         # self.conv5 = GINConv(nn=Linear(32, 32))
         print("args.in_dim", args.in_dim)
         self.conv1 = GATConv(args.in_dim, args.g_dim, dropout=args.dropout)
-        self.conv2 = GATConv(args.g_dim,args.g_dim, dropout=args.dropout)
-        self.conv3 = GATConv(args.g_dim,args.g_dim, dropout=args.dropout)
-        self.conv4 = GATConv(args.g_dim,args.g_dim, dropout=args.dropout)
+        self.conv2 = GATConv(args.g_dim, args.g_dim, dropout=args.dropout)
+        self.conv3 = GATConv(args.g_dim, args.g_dim, dropout=args.dropout)
+        self.conv4 = GATConv(args.g_dim, args.g_dim, dropout=args.dropout)
         self.conv5 = GATConv(args.g_dim, args.g_dim, dropout=args.dropout)
         # self.conv1 = GATConv(5, 32)
         # self.conv2 = GATConv(32, 32)
@@ -89,12 +202,12 @@ class MoleGNN(torch.nn.Module):
         # x=self.dropout(x)
         # x=torch.dropout(x, p=self.dropout, train=self.training)
 
-        x=self.conv1(x, edge_index)
+        x = self.conv1(x, edge_index)
         # x=self.mid(x)
         # x=torch.nn.functional.relu(x)
         # x=self.mid(x)
-        x=torch.relu(x)
-        x=self.conv2(x, edge_index)
+        x = torch.relu(x)
+        x = self.conv2(x, edge_index)
         # torch.nn.functional.tanh(x)
         # x=self.mid(x)
         # x=self.mid(x)
@@ -113,22 +226,21 @@ class MoleGNN(torch.nn.Module):
         # x = F.relu(x)
         # x = F.dropout(x, p=self.dropout,training=self.training)
         # x = self.conv2(x.float(), edge_index.long())
-        x=torch.relu(x)
+        x = torch.relu(x)
         # print("later", x)
 
         if not global_pooling:
-            graph_list=[]
-            max_num_nodes=-1
-            graph_ids=torch.unique(batch).cpu().numpy().astype(int)
-            batch_ids=batch.cpu().numpy().astype(int)
+            graph_list = []
+            max_num_nodes = -1
+            graph_ids = torch.unique(batch).cpu().numpy().astype(int)
+            batch_ids = batch.cpu().numpy().astype(int)
 
             print("graph_ids", graph_ids)
             print("batch_ids", batch_ids)
             for graph_id in graph_ids:
-
-                indices=np.argwhere(batch_ids==graph_id).flatten()
+                indices = np.argwhere(batch_ids == graph_id).flatten()
                 print("indices", indices)
-                max_num_nodes=max(max_num_nodes, len(indices))
+                max_num_nodes = max(max_num_nodes, len(indices))
                 graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
 
             return graph_list

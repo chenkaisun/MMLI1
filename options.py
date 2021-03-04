@@ -47,11 +47,14 @@ def read_args():
     # model params
     parser.add_argument("--in_dim", default=14, type=float, help="Feature dim")
     parser.add_argument("--out_dim", default=14, type=float, help="Feature dim")
-    parser.add_argument('--g_dim', type=int, default=32, help='Number of final hidden units for graph.')
     parser.add_argument("--dropout", default=0.1, type=float, help="Dropout")
+
+    parser.add_argument('--g_dim', type=int, default=128, help='Number of final hidden units for graph.')
+    parser.add_argument('--num_gnn_layers', type=int, default=3, help='Number of final hidden units for graph.')
+
+    parser.add_argument('--plm_hidden_dim', type=int, default=128, help='Number of hidden units for plm.')
     parser.add_argument('--hidden_dim', type=int, default=128, help='Number of hidden units.')
     parser.add_argument('--embedding_dim', type=int, default=16, help='Number of embedding units.')
-    parser.add_argument('--plm_hidden_dim', type=int, default=128, help='Number of hidden units for plm.')
     parser.add_argument('--batch_norm', default=False, help="Please give a value for batch_norm")
     parser.add_argument('--i_only', default=0)
     parser.add_argument('--g_only', default=0)
