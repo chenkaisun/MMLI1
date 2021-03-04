@@ -46,11 +46,11 @@ if __name__ == '__main__':
 
     set_seeds(args)
     print("tokenizer1")
-    if not os.path.exists("tokenizer.pkl"):
-        tokenizer = AutoTokenizer.from_pretrained(args.plm)
-        dump_file(tokenizer, "tokenizer.pkl")
-    tokenizer=load_file("tokenizer.pkl")
-    #
+    # if not os.path.exists("tokenizer.pkl"):
+    #     tokenizer = AutoTokenizer.from_pretrained(args.plm)
+    #     dump_file(tokenizer, "tokenizer.pkl")
+    # tokenizer=load_file("tokenizer.pkl")
+    tokenizer = AutoTokenizer.from_pretrained(args.plm)
 
     print("tokenizer2")
     train_data, val_data, test_data = load_data_chemprot_re(args, args.train_file, tokenizer), \

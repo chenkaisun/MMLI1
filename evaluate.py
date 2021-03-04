@@ -105,6 +105,8 @@ def evaluate(args, model, data):
         # args.logger.debug(f"accuracy_score {score}", )
         # # f1 = f1_score(targets, preds, average='macro')
     else:
+        print("fff1", f1_score(targets, preds.tolist(), average="micro"))
+
         precision, recall, score=get_prf(targets, preds.tolist(), average="micro")
 
     # output = None
