@@ -5,10 +5,10 @@ for _plm_lr in 2e-5 5e-5; do
     for _lr in 1e-4 1e-3; do
       for _max_grad_norm in 0 1; do
         for _g_dim in 128 256; do
-          for _mult_mask in 0 1; do
+          for _mult_mask in 1 0; do
             for _g_mult_mask in 0 1; do
 
-              python main_re.py \
+              nohup python main_re.py \
               --use_cache 1 \
               --batch_size 24 \
               --num_epoch 15 \
@@ -20,7 +20,7 @@ for _plm_lr in 2e-5 5e-5; do
               --patience 8 \
               --max_grad_norm $_max_grad_norm \
               --mult_mask $_mult_mask \
-              --g_mult_mask $_g_mult_mask
+              --g_mult_mask $_g_mult_mask &
 
             done
           done
