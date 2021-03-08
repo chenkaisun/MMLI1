@@ -46,10 +46,11 @@ if __name__ == '__main__':
 
     set_seeds(args)
     print("tokenizer1")
-    # if not os.path.exists("tokenizer.pkl"):
+    tk_name=args.plm.split("/")[-1].replace("-", "_")+"_tokenizer.pkl"
+    # if not os.path.exists(tk_name):
     #     tokenizer = AutoTokenizer.from_pretrained(args.plm)
-    #     dump_file(tokenizer, "tokenizer.pkl")
-    # tokenizer=load_file("tokenizer.pkl")
+    #     dump_file(tokenizer, tk_name)
+    # tokenizer=load_file(tk_name)
     tokenizer = AutoTokenizer.from_pretrained(args.plm)
 
     print("tokenizer2")

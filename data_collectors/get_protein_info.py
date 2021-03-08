@@ -9,10 +9,13 @@ import time
 import sys
 import json
 from data_collectors.crawler_config import *
+
+
+"""directly run to collect protein data """
 tr = "data_online/ChemProt_Corpus/chemprot_training/chemprot_training_entities.tsv"
 dev = "data_online/ChemProt_Corpus/chemprot_development/chemprot_development_entities.tsv"
 test = "data_online/ChemProt_Corpus/chemprot_test_gs/chemprot_test_entities_gs.tsv"
-data_dir = 'data_online/ChemProt_Corpus/'
+data_dir = '../data_online/ChemProt_Corpus/'
 
 # mention2ent = {}
 # cmpd_info = {}

@@ -140,7 +140,7 @@ def get_atom_properties(atom_list):
     for i, atoms in enumerate(atom_list):
         cur_atoms=[atom.GetSymbol() for atom in atoms]
         tmp=[]
-        print("cur_atoms", cur_atoms)
+        # print("cur_atoms", cur_atoms)
         for atom in cur_atoms:
             if atom not in atom_dict:
                 atom_dict[atom] = len(atom_dict)
