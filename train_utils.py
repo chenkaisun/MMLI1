@@ -113,7 +113,7 @@ def gpu_setup(use_gpu=True, gpu_id=0, use_random_available=True):
         if not torch.cuda.is_available():
             print('cuda not available')
         device = torch.device("cpu")
-    return device, num_gpus
+    return device
 
 
 def view_model_param(args, model):
