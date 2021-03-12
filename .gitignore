@@ -154,5 +154,6 @@ model/states/
 other_repo*/
 wandb/
 hello/
+analyze/
 nohup*.out
 #wikipedia_html_for_pubchem_compounds/
