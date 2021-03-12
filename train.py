@@ -10,11 +10,13 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, CyclicLR
 # from utils import *
 from evaluate import evaluate
 from data import collate_fn, CustomBatch, collate_wrapper
-# from train_utils import get_logger
+from train_utils import seed_worker
 # from torch_geometric.data import DataLoader
 import gc
 import numpy as np
 from torch.nn.functional import one_hot
+import random
+import numpy
 
 def train(args, model, optimizer, data):
     train_data, val_data, test_data = data
@@ -31,7 +33,7 @@ def train(args, model, optimizer, data):
 
     if args.exp == "mol_pred":
         train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
-                                  drop_last=False)
+                                  drop_last=False, num_workers=args.num_workers, worker_init_fn=seed_worker)
     else:
         print('args.exp', args.exp)
         # train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,

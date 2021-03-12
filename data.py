@@ -710,7 +710,7 @@ def collate_fn(batch):
 
     # print("f[graph_data]", batch[0]["graph_data"])
     batch_graph_data = Batch.from_data_list([f["graph_data"] for f in batch])
-
+    
     # Label Smoothing
     # output = (smiles, edge_indices, node_attrs,edge_attrs, Ys, ids)
     output = (smiles, batch_graph_data, ids)
@@ -727,7 +727,6 @@ class CustomBatch:
 
         g_data=Batch.from_data_list([f["modal_data"][0][0] for f in batch])
         g_data.x=torch.as_tensor(g_data.x, dtype=torch.long)
-
         self.batch_modal_data = [[g_data,
                                   batch[0]["tokenizer"]([f["modal_data"][0][1] for f in batch], return_tensors='pt', padding=True),
                                   torch.tensor([f["modal_data"][0][2] for f in batch]).unsqueeze(-1),

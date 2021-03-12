@@ -8,6 +8,7 @@ from transformers import AutoTokenizer
 
 torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.deterministic = True
+torch.use_deterministic_algorithms(True)
 
 from train_utils import *
 

@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 # from pynvml import *
 import requests
 from data_collectors.crawler_config import headers
+from numba import jit
 
 
 def request_get(url, headers):
@@ -56,7 +57,9 @@ def get_mole_desciption(r):
 
 
 
-def is_symmetric(g):
+
+@jit(nopython=True)
+def is_symmetric(g):b
     return np.sum(np.abs(g.T - g)) == 0
 
 

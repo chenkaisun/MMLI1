@@ -43,6 +43,7 @@ def read_args():
     parser.add_argument("--use_gpu", default=1, type=int, help="Using gpu or cpu", )
     parser.add_argument("--use_amp", default=1, type=int, help="Using mixed precision")
     parser.add_argument("--grad_accumulation_steps", default=1, type=int, help="Using mixed precision")
+    parser.add_argument("--num_workers", default=1, type=int)
 
     # model params
     parser.add_argument("--in_dim", default=14, type=float, help="Feature dim")
