@@ -11,7 +11,6 @@ import numpy as np
 from data import collate_wrapper, collate_fn
 
 
-
 def get_prf(targets, preds, average="micro", verbose=True):
     precision = precision_score(targets, preds, average=average)
     recall = recall_score(targets, preds, average=average)
@@ -19,6 +18,7 @@ def get_prf(targets, preds, average="micro", verbose=True):
     print(precision, recall, f1)
     if verbose: print(f"{average}: precision {precision} recall {recall} f1 {f1}")
     return precision, recall, f1
+
 
 def evaluate(args, model, data):
     # print("Evaluate")
@@ -33,6 +33,7 @@ def evaluate(args, model, data):
                                 drop_last=False)
     preds = []
     targets = []
+    ids = []
     for batch in dataloader:
         model.eval()
 
@@ -63,9 +64,8 @@ def evaluate(args, model, data):
             #           'in_train': False,
             #           }
             #
-            batch.in_train=False
+            batch.in_train = False
             inputs = batch.to(args.device)
-
 
         with torch.no_grad():
             pred = model(inputs, args)
@@ -75,7 +75,7 @@ def evaluate(args, model, data):
             # print(pred.cpu().numpy().squeeze(-1))
             pred = list(pred.cpu().numpy())
             preds.extend(pred)
-
+            ids.extend(batch.ids)
             # print(inputs["ids"], inputs["batch_graph_data"].y, inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1), list(inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1)))
             # print("ergf", list(inputs["batch_graph_data"].y.cpu().numpy().squeeze()))
 
@@ -105,9 +105,8 @@ def evaluate(args, model, data):
         # args.logger.debug(f"accuracy_score {score}", )
         # # f1 = f1_score(targets, preds, average='macro')
     else:
-        print("fff1", f1_score(targets, preds.tolist(), average="micro"))
 
-        precision, recall, score=get_prf(targets, preds.tolist(), average="micro")
+        precision, recall, score = get_prf(targets, preds.tolist(), average="micro")
 
     # output = None
-    return score, pred
+    return score, [list(item) for item in zip(ids, preds.tolist())]

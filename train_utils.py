@@ -12,10 +12,13 @@ from options import read_args
 from utils import mkdir
 from torch.utils.tensorboard import SummaryWriter
 import numpy
+
+
 def seed_worker(worker_id):
-    worker_seed = torch.initial_seed() % 2**32
+    worker_seed = torch.initial_seed() % 2 ** 32
     numpy.random.seed(worker_seed)
     random.seed(worker_seed)
+
 
 def get_logger(args):
     # if os.path.exists(args.experiment_path + args.experiment + ".txt"):
@@ -59,33 +62,29 @@ def setup_common(args):
     #     args.plm="prajjwal1/bert-tiny"
 
     if "-tiny" in args.plm:
-        args.plm_hidden_dim=128
+        args.plm_hidden_dim = 128
     elif "-mini" in args.plm:
-        args.plm_hidden_dim=256
+        args.plm_hidden_dim = 256
     elif "-small" in args.plm:
-        args.plm_hidden_dim=512
+        args.plm_hidden_dim = 512
     elif "-medium" in args.plm:
-        args.plm_hidden_dim=512
-    else: args.plm_hidden_dim=768
+        args.plm_hidden_dim = 512
+    else:
+        args.plm_hidden_dim = 768
 
-
-    # print("args.plm_hidden_dim", args.plm_hidden_dim)
-        # args.plm="prajjwal1/bert-medium"
     model = get_model(args)
-    # print("model", model)
     # view_model_param(args, model)
 
     downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder", "query_encoder", "map2smaller"]
     optimizer = get_optimizer(args, model, downstream_layers)
 
     model, optimizer, args.start_epoch, args.best_dev_score = load_model_from_path(model, optimizer,
-                                                                                   args.model_path,
-                                                                                   gpu=args.use_gpu)
+                                                                                   args)
 
-
-    args.logger=get_logger(args)
+    args.logger = get_logger(args)
+    args.writer = SummaryWriter(log_dir=args.experiment_path + args.exp + "/")
     args.logger.debug("=====begin of args=====")
-    arg_dict=vars(args)
+    arg_dict = vars(args)
     for key in sorted(arg_dict.keys()):
         args.logger.debug(f"{key}: {arg_dict[key]}")
     args.logger.debug("=====end of args=====")
@@ -103,16 +102,18 @@ def gpu_setup(use_gpu=True, gpu_id=0, use_random_available=True):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
+    num_gpus = 1
     if torch.cuda.is_available() and use_gpu:
         print(f"{torch.cuda.device_count()} GPU available")
         print('cuda available with GPU:', torch.cuda.get_device_name(0))
+
         device = torch.device("cuda")
 
     else:
         if not torch.cuda.is_available():
             print('cuda not available')
         device = torch.device("cpu")
-    return device
+    return device, num_gpus
 
 
 def view_model_param(args, model):
@@ -129,7 +130,7 @@ def view_model_param(args, model):
 
 def get_optimizer(args, model, downstream_layers):
     optimizer_grouped_parameters = [
-        {"params": [p for n, p in model.named_parameters() if not any(nd in n for nd in downstream_layers)],},
+        {"params": [p for n, p in model.named_parameters() if not any(nd in n for nd in downstream_layers)], },
         {"params": [p for n, p in model.named_parameters() if any(nd in n for nd in downstream_layers)],
          "lr": args.lr}
     ]
@@ -158,4 +159,4 @@ def set_seeds(args):
     if args.n_gpu > 0 and torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark=True
+    torch.backends.cudnn.benchmark = True

@@ -7,13 +7,12 @@ import os
 # from model.load_model import get
 # from transformers import BertTokenizer
 from transformers import AutoTokenizer
-
-torch.backends.cudnn.benchmark = True
-torch.backends.cudnn.deterministic = True
 from options import read_args
 from train_utils import *
 
 from utils import dump_file, load_file
+from pprint import pprint as pp
+
 if __name__ == '__main__':
     args = read_args()
     if args.debug:
@@ -28,14 +27,14 @@ if __name__ == '__main__':
         args.test_file = data_dir + "test.txt"
         args.model_name = "re_model"
         args.exp = "re"
+        args.burn_in = 1
+        args.plm = "allenai/scibert_scivocab_uncased"
         # args.num_epoch = 300
         # args.batch_size = 4
-        args.burn_in = 1
         # args.lr = 1e-4
         # args.grad_accumulation_steps = 32
         # args.plm="prajjwal1/bert-medium"
         # args.plm="prajjwal1/bert-tiny"
-        args.plm = "allenai/scibert_scivocab_uncased"
         # args.patience = 8
         # args.g_dim = 128
         # args.bert_only=1
@@ -46,20 +45,28 @@ if __name__ == '__main__':
 
     set_seeds(args)
     print("tokenizer1")
-    tk_name=args.plm.split("/")[-1].replace("-", "_")+"_tokenizer.pkl"
-    # if not os.path.exists(tk_name):
-    #     tokenizer = AutoTokenizer.from_pretrained(args.plm)
-    #     dump_file(tokenizer, tk_name)
-    # tokenizer=load_file(tk_name)
-    tokenizer = AutoTokenizer.from_pretrained(args.plm)
+    tk_name = args.plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
+    if not os.path.exists(tk_name):
+        tokenizer = AutoTokenizer.from_pretrained(args.plm)
+        dump_file(tokenizer, tk_name)
+    tokenizer = load_file(tk_name)
+    # tokenizer = AutoTokenizer.from_pretrained(args.plm)
 
     print("tokenizer2")
     train_data, val_data, test_data = load_data_chemprot_re(args, args.train_file, tokenizer), \
                                       load_data_chemprot_re(args, args.val_file, tokenizer), \
                                       load_data_chemprot_re(args, args.test_file, tokenizer)
 
-    # load model and data etc.
-    args, model, optimizer = setup_common(args)
+    if args.analyze:
+        output = load_file("analyze/output.json")
+        for id, pred in output:
+            instance = test_data[id]
+            print("\nid:", id, " pred:", pred, " label:", instance["label"])
+            pp(" modal_data:", instance["modal_data"])
 
-    # train_data, val_data, test_data = load_data(args.train_file), load_data(args.val_file), load_data(args.test_file)
-    train(args, model, optimizer, (train_data, val_data, test_data))
+    else:
+        # load model and data etc.
+        args, model, optimizer = setup_common(args)
+
+        # train_data, val_data, test_data = load_data(args.train_file), load_data(args.val_file), load_data(args.test_file)
+        train(args, model, optimizer, (train_data, val_data, test_data))

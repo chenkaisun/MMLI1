@@ -552,8 +552,9 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
 
     for i in range(len(texts)):
         total_num += 1
-        valid_num += [modal_feat_mask1[0][i] == 1, modal_feat_mask1[1][i] == 1, modal_feat_mask2[1][i] == 1]
+        valid_num += [modal_feat_mask1[0][i] == 1, modal_feat_mask1[1][i] == 1, modal_feat_mask2[1][i] == 1, modal_feat_mask1[1][i] == 1 and modal_feat_mask2[1][i] == 1]
 
+        # also add in original text for analyze purpose
         instances.append({"text": texts[i],
                           "id": i,
                           "label": labels[i],
@@ -565,6 +566,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                           "tokenizer": tokenizer
                           })
     print("instances",instances[0])
+
     # for i, (
     #         text, label, ent1_g, ent1_g_mask, ent1_d, ent1_d_mask, ent2_g, ent2_g_mask, ent2_d,
     #         ent2_d_mask) in enumerate(
@@ -599,6 +601,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
     # # exit()
     print(total_num)
     print(valid_num)
+    embed()
     args.out_dim = len(rel2id)
     # args.in_dim = instances[0]["ent1_g"].x.shape[-1]
 
@@ -720,6 +723,17 @@ def collate_fn(batch):
 
 class CustomBatch:
     def __init__(self, batch):
+        # self.original_texts=[f["text"] for f in batch]
+        # self.original_cmpd_texts=[f["modal_data"][0][1] for f in batch]
+        # self.original_prot_texts=[f["modal_data"][1][0] for f in batch]
+        #
+        # self.original_cmpd_gs=[f["modal_data"][0][0] for f in batch]
+        # self.original_cmpd_gs_mask=[f["modal_data"][0][2] for f in batch]
+        # self.original_cmpd_texts=[[f["modal_data"][0][1] for f in batch]]
+        # self.original_cmpd_texts_mask=[f["modal_data"][0][3] for f in batch]
+        #
+        # self.original_prot_texts_mask=[f["modal_data"][1][1] for f in batch]
+
         self.texts = batch[0]["tokenizer"]([f["text"] for f in batch], return_tensors='pt', padding=True)
         self.ids = [f["id"] for f in batch]
         self.labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
@@ -727,6 +741,8 @@ class CustomBatch:
 
         g_data=Batch.from_data_list([f["modal_data"][0][0] for f in batch])
         g_data.x=torch.as_tensor(g_data.x, dtype=torch.long)
+
+        # first half of a vector is information, then mask, for each modality
         self.batch_modal_data = [[g_data,
                                   batch[0]["tokenizer"]([f["modal_data"][0][1] for f in batch], return_tensors='pt', padding=True),
                                   torch.tensor([f["modal_data"][0][2] for f in batch]).unsqueeze(-1),

@@ -39,6 +39,8 @@ if __name__ == '__main__':
         # args.g_dim=32
         # args.use_cache=False
 
+
+    # Trainer class?
     set_seeds(args)
     print("tokenizer1")
     tokenizer = AutoTokenizer.from_pretrained(args.plm, cache_dir="/")

@@ -14,6 +14,9 @@ def read_args():
     parser.add_argument("--experiment", default="exp", type=str)
     parser.add_argument("--experiment_path", default="experiment/", type=str)
     parser.add_argument("--exp", default="re", type=str)
+    parser.add_argument("--analyze", default=0, type=int)
+
+
 
     # data
     parser.add_argument("--seed", type=int, default=0, help="random seed for initialization")

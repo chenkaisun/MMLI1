@@ -17,6 +17,8 @@ import numpy as np
 from torch.nn.functional import one_hot
 import random
 import numpy
+from torch.utils.tensorboard import SummaryWriter
+from utils import dump_file, mkdir
 
 def train(args, model, optimizer, data):
     train_data, val_data, test_data = data
@@ -48,6 +50,7 @@ def train(args, model, optimizer, data):
 
     # get logger
     logger = args.logger
+    writer = args.writer
 
     train_iterator = range(args.start_epoch, int(args.num_epochs) + args.start_epoch)
     total_steps = int(len(train_loader) * args.num_epochs)
@@ -113,7 +116,7 @@ def train(args, model, optimizer, data):
                 #           "labels": batch[10].to(args.device),
                 #           'in_train': True,
                 #           }
-                inputs=batch.to(args.device)
+                inputs = batch.to(args.device)
             # inputs = {'input_ids': {key:encoded_input[key].to(args.device) for key in encoded_input},
             #           'edge_indices': batch[1].to(args.device),
             #           'node_attrs': batch[2].to(args.device),
@@ -131,7 +134,7 @@ def train(args, model, optimizer, data):
                     loss = model(inputs, args)
                 scaler.scale(loss).backward()
 
-                if (step+1) % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
+                if (step + 1) % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
                     if args.max_grad_norm > 0:
                         scaler.unscale_(optimizer)
                         torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
@@ -171,6 +174,9 @@ def train(args, model, optimizer, data):
 
         val_score, output = evaluate(args, model, val_data)
 
+        mkdir("analyze")
+        dump_file(output, "analyze/output.json")
+
         if epoch > args.burn_in:
             if val_score >= best_val_score:
                 best_val_score, best_epoch, bad_counter = val_score, epoch, 0
@@ -188,6 +194,10 @@ def train(args, model, optimizer, data):
 
         logger.debug(f'Epoch {epoch} | Train Loss {total_loss:.8f} | Val Score {val_score:.4f} | '
                      f'Time Passed {time.time() - t:.4f}s')
+
+        writer.add_scalar('train', total_loss, epoch)
+        writer.add_scalar('val', val_score, epoch)
+
         # wandb.log({'loss_train': loss.data.item(),
         #            'val_score': val_score,
         #            }, step=num_steps)
@@ -199,4 +209,15 @@ def train(args, model, optimizer, data):
     gc.collect()
     model.load_state_dict(torch.load(args.model_path)['model_state_dict'])
     test_score, output = evaluate(args, model, test_data)
+
+    mkdir("analyze")
+    dump_file(output, "analyze/output.json")
+
     logger.debug(f"Test Score {test_score}")
+    writer.add_scalar('test', test_score, 0)
+    writer.add_hparams(
+        {'batch_size': args.batch_size, 'num_epoch': args.num_epoch,
+         'plm_lr': args.plm_lr, 'lr': args.lr, 'g_dim': args.g_dim, 'max_grad_norm': args.max_grad_norm,
+         'mult_mask': args.mult_mask, 'g_mult_mask': args.g_mult_mask},
+        {'hparam/test': test_score, 'hparam/val': best_val_score})
+    writer.close()
