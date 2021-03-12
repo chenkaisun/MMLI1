@@ -59,7 +59,7 @@ def get_mole_desciption(r):
 
 
 @jit(nopython=True)
-def is_symmetric(g):b
+def is_symmetric(g):
     return np.sum(np.abs(g.T - g)) == 0
 
 
