@@ -20,6 +20,7 @@ import numpy
 from torch.utils.tensorboard import SummaryWriter
 from utils import dump_file, mkdir
 
+
 def train(args, model, optimizer, data):
     train_data, val_data, test_data = data
 
@@ -216,7 +217,7 @@ def train(args, model, optimizer, data):
     logger.debug(f"Test Score {test_score}")
     writer.add_scalar('test', test_score, 0)
     writer.add_hparams(
-        {'batch_size': args.batch_size, 'num_epoch': args.num_epoch,
+        {'batch_size': args.batch_size, 'num_epochs': args.num_epochs,
          'plm_lr': args.plm_lr, 'lr': args.lr, 'g_dim': args.g_dim, 'max_grad_norm': args.max_grad_norm,
          'mult_mask': args.mult_mask, 'g_mult_mask': args.g_mult_mask},
         {'hparam/test': test_score, 'hparam/val': best_val_score})

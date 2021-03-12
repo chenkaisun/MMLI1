@@ -109,4 +109,4 @@ def evaluate(args, model, data):
         precision, recall, score = get_prf(targets, preds.tolist(), average="micro")
 
     # output = None
-    return score, [list(item) for item in zip(ids, preds.tolist())]
+    return score, [list(item) for item in zip(ids, preds.tolist(), targets)]

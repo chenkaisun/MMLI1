@@ -12,6 +12,10 @@ from train_utils import *
 
 from utils import dump_file, load_file
 from pprint import pprint as pp
+from sklearn.metrics import f1_score
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+# torch.use_deterministic_algorithms(True)
 
 if __name__ == '__main__':
     args = read_args()
@@ -59,11 +63,24 @@ if __name__ == '__main__':
 
     if args.analyze:
         output = load_file("analyze/output.json")
+        t0,t1=[],[]
         for id, pred in output:
             instance = test_data[id]
-            print("\nid:", id, " pred:", pred, " label:", instance["label"])
-            pp(" modal_data:", instance["modal_data"])
+            print("\nid:", id, "pred:", pred, " label:", instance["label"])
 
+            t0.append(pred)
+            t1.append(instance["label"])
+            pp(" modal_data:")
+            pp( instance["modal_data"])
+        # for id, pred, tgt in output:
+        #     instance = test_data[id]
+        #     print("\nid:", id, " tgt:", tgt,  "pred:", pred, " label:", instance["label"])
+        #
+        #     t0.append(pred)
+        #     t1.append(instance["label"])
+        #     pp(" modal_data:")
+        #     pp( instance["modal_data"])
+        print(f1_score(t1, t0, average="micro"))
     else:
         # load model and data etc.
         args, model, optimizer = setup_common(args)

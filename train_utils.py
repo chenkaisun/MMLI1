@@ -159,4 +159,5 @@ def set_seeds(args):
     if args.n_gpu > 0 and torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = False
+
