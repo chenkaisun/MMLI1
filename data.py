@@ -547,7 +547,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
     assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
         modal_feats2[1])
 
-    valid_num = np.zeros((3))
+    valid_num = np.zeros((4))
     total_num = 0
 
     for i in range(len(texts)):
