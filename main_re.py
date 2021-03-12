@@ -64,14 +64,19 @@ if __name__ == '__main__':
     if args.analyze:
         output = load_file("analyze/output.json")
         t0,t1=[],[]
+        null_cnt=0
+        total_cnt=0
         for id, pred in output:
             instance = test_data[id]
-            print("\nid:", id, "pred:", pred, " label:", instance["label"])
-
-            t0.append(pred)
-            t1.append(instance["label"])
-            pp(" modal_data:")
-            pp( instance["modal_data"])
+            if instance["label"]!=pred:
+                total_cnt+=1
+                if 0 in [instance["modal_data"][0][2], instance["modal_data"][0][3], instance["modal_data"][1][1]]: null_cnt+=1
+                print("\nid:", id, "pred:", pred, " label:", instance["label"])
+                print(str(instance["text"].encode(errors="ignore")))
+                t0.append(pred)
+                t1.append(instance["label"])
+                print("modal_data:")
+                pp( instance["modal_data"])
         # for id, pred, tgt in output:
         #     instance = test_data[id]
         #     print("\nid:", id, " tgt:", tgt,  "pred:", pred, " label:", instance["label"])
@@ -80,6 +85,8 @@ if __name__ == '__main__':
         #     t1.append(instance["label"])
         #     pp(" modal_data:")
         #     pp( instance["modal_data"])
+        print(null_cnt)
+        print(total_cnt)
         print(f1_score(t1, t0, average="micro"))
     else:
         # load model and data etc.

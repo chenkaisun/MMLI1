@@ -414,9 +414,12 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
     mention2protid, prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
                                 load_file("data_online/ChemProt_Corpus/prot_info.json")
 
-    rels = ['AGONIST-ACTIVATOR', 'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
-            'AGONIST', 'INHIBITOR', 'PRODUCT-OF', 'ANTAGONIST', 'ACTIVATOR',
-            'INDIRECT-UPREGULATOR', 'SUBSTRATE', 'INDIRECT-DOWNREGULATOR',
+    rels = ['AGONIST-ACTIVATOR',
+            'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
+            'AGONIST','INHIBITOR',
+            'PRODUCT-OF','ANTAGONIST',
+            'ACTIVATOR','INDIRECT-UPREGULATOR',
+            'SUBSTRATE','INDIRECT-DOWNREGULATOR',
             'AGONIST-INHIBITOR', 'UPREGULATOR', ]
     rel2id = {rel: i for i, rel in enumerate(rels)}
 
