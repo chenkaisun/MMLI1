@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 import requests
 from data_collectors.crawler_config import headers
 from numba import jit
-
+from transformers import AutoTokenizer
 
 def request_get(url, headers):
     try:
@@ -97,3 +97,12 @@ def load_file(filename):
 def mkdir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
+
+def get_tokenizer(plm, save_dir="tokenizer/"):
+    mkdir(save_dir)
+    tk_name = plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
+    tk_name=os.path.join(save_dir, tk_name)
+    if not os.path.exists(tk_name):
+        tokenizer = AutoTokenizer.from_pretrained(plm)
+        dump_file(tokenizer, tk_name)
+    return load_file(tk_name)

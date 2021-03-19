@@ -8,15 +8,13 @@ def read_args():
     parser.add_argument("--plm", default="bert-base-cased", type=str, metavar='N')
     parser.add_argument("--max_seq_len", default=1024, type=int)
 
-    # model
+    # experiment
     parser.add_argument("--model_name", default="", type=str)
     parser.add_argument("--model_path", default="model/states/best_dev.pt", type=str)
     parser.add_argument("--experiment", default="exp", type=str)
     parser.add_argument("--experiment_path", default="experiment/", type=str)
     parser.add_argument("--exp", default="re", type=str)
     parser.add_argument("--analyze", default=0, type=int)
-
-
 
     # data
     parser.add_argument("--seed", type=int, default=0, help="random seed for initialization")
@@ -29,7 +27,7 @@ def read_args():
     parser.add_argument("--cache_data", default=0, type=int)
 
     # training params
-    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for training.")
+    parser.add_argument("--batch_size", default=2, type=int, help="Batch size for training.")
     parser.add_argument("--plm_lr", default=2e-5, type=float, help="The initial learning rate for PLM.")
     parser.add_argument("--lr", default=1e-4, type=float, help="The initial learning rate for Adam.")
     parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
@@ -38,8 +36,8 @@ def read_args():
     parser.add_argument("--warmup_ratio", default=0.06, type=float, help="Warm up ratio for Adam.")
     parser.add_argument("--num_epochs", default=30, type=float, help="Total number of training epochs to perform.")
     parser.add_argument("--eval_epoch", default=30, type=float, help="Number of steps between each evaluation.")
-    parser.add_argument('--patience', type=int, default=10)
-    parser.add_argument('--burn_in', type=int, default=20)
+    parser.add_argument('--patience', type=int, default=8)
+    parser.add_argument('--burn_in', type=int, default=0)
     parser.add_argument('--print_epoch_interval', type=int, default=10)
     parser.add_argument("--scheduler", default="")
     parser.add_argument("--n_gpu", default=1, type=int, help="Number of gpu", )
@@ -53,7 +51,7 @@ def read_args():
     parser.add_argument("--out_dim", default=14, type=float, help="Feature dim")
     parser.add_argument("--dropout", default=0.1, type=float, help="Dropout")
 
-    parser.add_argument('--g_dim', type=int, default=128, help='Number of final hidden units for graph.')
+    parser.add_argument('--g_dim', type=int, default=256, help='Number of final hidden units for graph.')
     parser.add_argument('--num_gnn_layers', type=int, default=3, help='Number of final hidden units for graph.')
 
     parser.add_argument('--plm_hidden_dim', type=int, default=128, help='Number of hidden units for plm.')
@@ -73,11 +71,12 @@ def read_args():
     parser.add_argument('--model_type', default="tdg")
     parser.add_argument('--mult_mask', default=0)
     parser.add_argument('--g_mult_mask', default=0)
+    parser.add_argument('--g_global_pooling', default=0)
 
 
     # auxiliary
     # parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--debug", default=1, type=int, help="Using gpu or cpu", )
+    parser.add_argument("--debug", default=0, type=int, help="Using gpu or cpu", )
     parser.add_argument("--eval", action="store_true")
 
     # # experiment specific

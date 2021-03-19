@@ -80,9 +80,9 @@ def evaluate(args, model, data):
             # print("ergf", list(inputs["batch_graph_data"].y.cpu().numpy().squeeze()))
 
             if args.exp == "mol_pred":
-                targets.extend(list(inputs["batch_graph_data"].y.cpu().numpy()))
+                targets.extend(list(inputs.batch_graph_data.y.cpu().numpy()))
             else:
-                targets.extend(list(inputs["labels"].cpu().numpy()))
+                targets.extend(list(inputs.labels.cpu().numpy()))
             # print("new targets", targets)
 
     # print("preds  ", preds)

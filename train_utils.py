@@ -50,6 +50,8 @@ def setup_common(args):
 
     # set_seeds(args)
     args.device = gpu_setup(use_gpu=args.use_gpu)
+    if "cpu" in str(args.device): args.use_amp = 0
+
     # # wandb.init(config=args, project=args.experiment)
     # if args.debug:
     #     # args.plm="bert-ba"
@@ -75,19 +77,43 @@ def setup_common(args):
     model = get_model(args)
     # view_model_param(args, model)
 
-    downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder", "query_encoder", "map2smaller"]
+    downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder",
+                         "query_encoder", "map2smaller", "cm_attn", 'l_filter', 'l_1', 'l_2', 'l_3', 'l_4', 'l_final',
+                         'l_5']
     optimizer = get_optimizer(args, model, downstream_layers)
-
-    model, optimizer, args.start_epoch, args.best_dev_score = load_model_from_path(model, optimizer,
-                                                                                   args)
+    # print(model.named_parameters())
+    # print("model", model)
+    print("optimizer done")
+    model, optimizer, args.start_epoch, args.best_dev_score = load_model_from_path(model, optimizer, args)
+    print("model to cuda")
 
     args.logger = get_logger(args)
     args.writer = SummaryWriter(log_dir=args.experiment_path + args.exp + "/")
     args.logger.debug("=====begin of args=====")
+
     arg_dict = vars(args)
+    args.important_hparams = {}
     for key in sorted(arg_dict.keys()):
-        args.logger.debug(f"{key}: {arg_dict[key]}")
+
+        if key in ["use_cache",
+                   "batch_size",
+                   "plm_lr",
+                   "lr",
+                   "max_grad_norm",
+                   "num_epochs",
+                   "grad_accumulation_steps",
+                   "dropout",
+                   "g_dim",
+                   "num_gnn_layers",
+                   "plm_hidden_dim",
+                   "model_type",
+                   "mult_mask",
+                   "g_mult_mask",
+                   "g_global_pooling",
+                   "debug", ]:
+            args.logger.debug(f"{key}: {arg_dict[key]}")
     args.logger.debug("=====end of args=====")
+
     # print(sys.argv)
     # args.logger(args)
     # print(vars(args))
@@ -160,4 +186,3 @@ def set_seeds(args):
         torch.cuda.manual_seed_all(args.seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-

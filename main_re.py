@@ -1,5 +1,5 @@
 from train import train
-from data import load_data_chemprot_re, load_mole_data
+from data import load_data_chemprot_re, ChemProtDataset, ModalRetriever
 import torch
 import os
 # from train_utils import setup_common
@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 from options import read_args
 from train_utils import *
 
-from utils import dump_file, load_file
+from utils import dump_file, load_file, get_tokenizer
 from pprint import pprint as pp
 from sklearn.metrics import f1_score
 torch.backends.cudnn.benchmark = False
@@ -19,20 +19,23 @@ torch.backends.cudnn.deterministic = True
 
 if __name__ == '__main__':
     args = read_args()
-    if args.debug:
+    data_dir = "data_online/ChemProt_Corpus/chemprot_preprocessed/"
+    train_file = data_dir + "train.txt"
+    val_file = data_dir + "dev.txt"
+    test_file = data_dir + "test.txt"
+    # if args.debug:
         # args.plm="bert-ba"
         # args.use_amp=False
         # args.use_cache=False
         # args.use_cache=True
         # data
-        data_dir = "data_online/ChemProt_Corpus/chemprot_preprocessed/"
-        args.train_file = data_dir + "train.txt"
-        args.val_file = data_dir + "dev.txt"
-        args.test_file = data_dir + "test.txt"
-        args.model_name = "re_model"
-        args.exp = "re"
-        args.burn_in = 1
-        args.plm = "allenai/scibert_scivocab_uncased"
+    args.model_name = "re_model"
+    args.exp = "re"
+    args.plm = "allenai/scibert_scivocab_uncased"
+    if args.model_type=="tg": args.g_global_pooling=1
+
+    if args.debug:
+        args.plm = "prajjwal1/bert-tiny"
         # args.num_epoch = 300
         # args.batch_size = 4
         # args.lr = 1e-4
@@ -49,19 +52,22 @@ if __name__ == '__main__':
 
     set_seeds(args)
     print("tokenizer1")
-    tk_name = args.plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
-    if not os.path.exists(tk_name):
-        tokenizer = AutoTokenizer.from_pretrained(args.plm)
-        dump_file(tokenizer, tk_name)
-    tokenizer = load_file(tk_name)
-    # tokenizer = AutoTokenizer.from_pretrained(args.plm)
-
+    tokenizer = get_tokenizer(args.plm)
     print("tokenizer2")
-    train_data, val_data, test_data = load_data_chemprot_re(args, args.train_file, tokenizer), \
-                                      load_data_chemprot_re(args, args.val_file, tokenizer), \
-                                      load_data_chemprot_re(args, args.test_file, tokenizer)
 
+    modal_retriever = ModalRetriever()
+    train_data, val_data, test_data = ChemProtDataset(args, train_file, tokenizer, modal_retriever), \
+                                      ChemProtDataset(args, val_file, tokenizer, modal_retriever), \
+                                      ChemProtDataset(args, test_file, tokenizer, modal_retriever)
     if args.analyze:
+        rels = ['AGONIST-ACTIVATOR',
+                'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
+                'AGONIST', 'INHIBITOR',
+                'PRODUCT-OF', 'ANTAGONIST',
+                'ACTIVATOR', 'INDIRECT-UPREGULATOR',
+                'SUBSTRATE', 'INDIRECT-DOWNREGULATOR',
+                'AGONIST-INHIBITOR', 'UPREGULATOR', ]
+
         output = load_file("analyze/output.json")
         t0,t1=[],[]
         null_cnt=0
@@ -71,7 +77,8 @@ if __name__ == '__main__':
             if instance["label"]!=pred:
                 total_cnt+=1
                 if 0 in [instance["modal_data"][0][2], instance["modal_data"][0][3], instance["modal_data"][1][1]]: null_cnt+=1
-                print("\nid:", id, "pred:", pred, " label:", instance["label"])
+
+                print("\nid:", id, "pred:", rels[pred], " label:", rels[instance["label"]])
                 print(str(instance["text"].encode(errors="ignore")))
                 t0.append(pred)
                 t1.append(instance["label"])

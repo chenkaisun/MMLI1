@@ -3,7 +3,7 @@ import torch.nn
 from torch.nn import functional as F
 from torch_geometric.nn import BatchNorm, GATConv, global_mean_pool
 from torch.nn import Embedding, ModuleList
-from torch.nn import Sequential, Linear, BatchNorm1d, ReLU
+from torch.nn import Sequential, Linear, BatchNorm1d, ReLU, GELU, Tanh
 from torch_scatter import scatter
 from torch_geometric.nn import GINConv, GINEConv
 from IPython import embed
@@ -59,6 +59,8 @@ class BondEncoder(torch.nn.Module):
 class MoleGNN2(torch.nn.Module):
     def __init__(self, args):
         super(MoleGNN2, self).__init__()
+        args.g_dim = args.plm_hidden_dim
+
         hidden_channels, num_layers, dropout = args.g_dim, args.num_gnn_layers, args.dropout
 
         self.num_layers = args.num_gnn_layers
@@ -75,10 +77,16 @@ class MoleGNN2(torch.nn.Module):
                 Linear(hidden_channels, 2 * hidden_channels),
                 # BatchNorm1d(2 * hidden_channels),
                 # ReLU(),
+                # Tanh(),
+                Tanh(),
+
                 Linear(2 * hidden_channels, hidden_channels),
             )
             self.atom_convs.append(GINEConv(nn, train_eps=True))
-            self.atom_batch_norms.append(BatchNorm1d(hidden_channels))
+
+            # self.atom_convs.append(GATConv(hidden_channels, hidden_channels))
+
+            # self.atom_batch_norms.append(BatchNorm1d(hidden_channels))
 
         self.atom_lin = Linear(hidden_channels, hidden_channels)
 
@@ -95,29 +103,43 @@ class MoleGNN2(torch.nn.Module):
 
     def forward(self, data, global_pooling=True):
         # print("data.x", data.x)
-
+        # print("g_data")
+        # print(data.x)
+        # print(data.edge_index)
         x = self.atom_encoder(data.x.squeeze())
         # print(x.shape)
         # print(data.edge_attr.unsqueeze(1).shape)
         # embed()
         # exit()
         for i in range(self.num_layers):
+            # print("l i",i)
+            # print("x", x)
+
             edge_attr = self.bond_encoders[i](data.edge_attr)
             x = self.atom_convs[i](x, data.edge_index, edge_attr)
-            x = self.atom_batch_norms[i](x)
-            x = F.relu(x)
+            # x = self.atom_convs[i](x, data.edge_index)
+            # x = self.atom_batch_norms[i](x)
+            x = torch.tanh(x)
+            x = F.dropout(x, self.dropout, training=self.training)
+
+        if not global_pooling:
+            x = self.atom_lin(x)
+            x = torch.tanh(x)
+            return x
+
         x = scatter(x, data.batch, dim=0, reduce='mean')
         # print("33333")
         # print(x.shape)
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.atom_lin(x)
-        x = F.relu(x)
+        x = F.gelu(x)
         # x = F.dropout(x, self.dropout, training=self.training)
         # x = self.lin(x)
         # print("22222")
         # print(x.shape)
         # embed()
         return x
+
 
 class MoleGNN(torch.nn.Module):
     def __init__(self, args):
@@ -165,7 +187,7 @@ class MoleGNN(torch.nn.Module):
         # self.conv3 = GATConv(128, 256)
         # self.lin = Linear(16, 2)
 
-    def forward(self, data, global_pooling=True):
+    def forward(self, data, global_pooling=False):
         # print("data", data.x.shape)
         # num_attr, list_num_atoms = outcome.get_network_params()
         # train, val, test = outcome.splitter(list(outcome.yielder()))
@@ -232,20 +254,22 @@ class MoleGNN(torch.nn.Module):
         # print("later", x)
 
         if not global_pooling:
-            graph_list = []
-            max_num_nodes = -1
-            graph_ids = torch.unique(batch).cpu().numpy().astype(int)
-            batch_ids = batch.cpu().numpy().astype(int)
+            return x
 
-            print("graph_ids", graph_ids)
-            print("batch_ids", batch_ids)
-            for graph_id in graph_ids:
-                indices = np.argwhere(batch_ids == graph_id).flatten()
-                print("indices", indices)
-                max_num_nodes = max(max_num_nodes, len(indices))
-                graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
-
-            return graph_list
+            # graph_list = []
+            # max_num_nodes = -1
+            # graph_ids = torch.unique(batch).cpu().numpy().astype(int)
+            # batch_ids = batch.cpu().numpy().astype(int)
+            #
+            # print("graph_ids", graph_ids)
+            # print("batch_ids", batch_ids)
+            # for graph_id in graph_ids:
+            #     indices = np.argwhere(batch_ids == graph_id).flatten()
+            #     print("indices", indices)
+            #     max_num_nodes = max(max_num_nodes, len(indices))
+            #     graph_list.append(torch.index_select(x, 0, torch.LongTensor(indices).cuda()))
+            #
+            # return graph_list
         return global_mean_pool(x, batch)
 
         # 3. Apply a final classifier
