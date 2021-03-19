@@ -13,6 +13,9 @@ from train_utils import *
 from utils import dump_file, load_file, get_tokenizer
 from pprint import pprint as pp
 from sklearn.metrics import f1_score
+from evaluate import evaluate
+
+
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 # torch.use_deterministic_algorithms(True)
@@ -59,7 +62,15 @@ if __name__ == '__main__':
     train_data, val_data, test_data = ChemProtDataset(args, train_file, tokenizer, modal_retriever), \
                                       ChemProtDataset(args, val_file, tokenizer, modal_retriever), \
                                       ChemProtDataset(args, test_file, tokenizer, modal_retriever)
+
+
     if args.analyze:
+        args, model, optimizer = setup_common(args)
+
+        model.load_state_dict(torch.load(args.model_path)['model_state_dict'])
+        test_score, output = evaluate(args, model, test_data)
+
+        exit()
         rels = ['AGONIST-ACTIVATOR',
                 'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
                 'AGONIST', 'INHIBITOR',
