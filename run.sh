@@ -1,16 +1,14 @@
-
-
 for _plm_lr in 2e-5 5e-5; do
   for _model_type in tdg td t; do
-    for _lr in 1e-4 1e-3; do
+    for _lr in 1e-3 1e-4 1e-2; do
       for _max_grad_norm in 1 0; do
         for _g_dim in 256 128; do
-          for _mult_mask in 1 0; do
+          for _mult_mask in 0 1; do
             for _g_mult_mask in 0 1; do
 
               python main_re.py \
               --use_cache 0 \
-              --batch_size 24 \
+              --batch_size 4 \
               --num_epoch 15 \
               --grad_accumulation_steps 1 \
               --plm_lr $_plm_lr \
