@@ -3,8 +3,8 @@
 for _plm_lr in 2e-5 5e-5; do
   for _model_type in tdg td t; do
     for _lr in 1e-4 1e-3; do
-      for _max_grad_norm in 0 1; do
-        for _g_dim in 128 256; do
+      for _max_grad_norm in 1 0; do
+        for _g_dim in 256 128; do
           for _mult_mask in 1 0; do
             for _g_mult_mask in 0 1; do
 

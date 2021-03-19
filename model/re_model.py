@@ -40,7 +40,7 @@ class RE(torch.nn.Module):
         elif 'tdg' in args.model_type:
             print("args.tdg")
             # self.combiner = Linear(args.plm_hidden_dim * 3 + final_dim, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim * 4 + args.g_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 5 + args.g_dim, args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
 
             # args.plm_hidden_dim
@@ -57,7 +57,7 @@ class RE(torch.nn.Module):
             self.combiner = Linear(args.plm_hidden_dim * 2, args.out_dim)
 
         # self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
-        self.text_transform = Linear(args.plm_hidden_dim, args.plm_hidden_dim)
+        self.text_transform = Linear(args.plm_hidden_dim, args.g_dim)
 
         self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
         # self.dropout = torch.nn.Dropout(args.dropout)
@@ -149,7 +149,7 @@ class RE(torch.nn.Module):
                 # hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]  # *batch_ent1_d_mask
 
                 # hid_ent1_d= self.text_transform(hid_ent1_d)
-                # # # if args.mult_mask: hid_ent1_d *= batch_ent1_d_mask
+                # # # # if args.mult_mask: hid_ent1_d *= batch_ent1_d_mask
                 # hid_ent1_d=torch.tanh(hid_ent1_d)
 
                 # hid_ent1_d = F.dropout(hid_ent1_d, self.dropout, training=self.training)
@@ -158,6 +158,11 @@ class RE(torch.nn.Module):
 
                 # print("d hid_ent1_d", hid_ent1_d)
                 hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]  # *batch_ent2_d_mask
+
+                # hid_ent1_d= self.text_transform(hid_ent2_d)
+                # # # # if args.mult_mask: hid_ent1_d *= batch_ent1_d_mask
+                # hid_ent2_d=torch.tanh(hid_ent2_d)
+
                 # if args.mult_mask: hid_ent2_d *= batch_ent2_d_mask
                 # hid_ent2_d=F.gelu(hid_ent2_d)
                 # hid_ent2_d = F.dropout(hid_ent2_d, self.dropout, training=self.training)
@@ -236,7 +241,7 @@ class RE(torch.nn.Module):
             # print("ent2_embeds", get_tensor_info(ent2_embeds))
 
             # final_vec = torch.cat([hid_texts[:,0,:], ent1_embeds, ent2_embeds], dim=-1)
-            final_vec = torch.cat([ent1_embeds, ent2_embeds], dim=-1)
+            final_vec = torch.cat([hid_texts[:, 0, :],ent1_embeds, ent2_embeds], dim=-1)
 
             # final_vec = hid_texts#[:,0,:]
 

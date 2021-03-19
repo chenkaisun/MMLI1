@@ -198,7 +198,7 @@ def train(args, model, optimizer, data):
 
         logger.debug(f'Epoch {epoch} | Train Loss {total_loss:.8f} | Val Score {val_score:.4f} | '
                      f'Time Passed {time.time() - t:.4f}s')
-        embed()
+        # embed()
 
         writer.add_scalar('train', total_loss, epoch)
         writer.add_scalar('val', val_score, epoch)
