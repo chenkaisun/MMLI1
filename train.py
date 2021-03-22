@@ -74,7 +74,7 @@ def train(args, model, optimizer, data):
     num_steps = 0
     logger.debug(f"{len(train_loader)} steps for each epoch")
     for epoch in train_iterator:
-        logger.debug(f"Epoch {epoch}")
+        # logger.debug(f"Epoch {epoch}")
         t = time.time()
 
         # torch.autograd.set_detect_anomaly(True)

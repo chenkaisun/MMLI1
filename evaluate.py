@@ -11,11 +11,11 @@ import numpy as np
 from data import collate_wrapper, collate_fn
 
 
-def get_prf(targets, preds, average="micro", verbose=True):
+def get_prf(targets, preds, average="micro", verbose=False):
     precision = precision_score(targets, preds, average=average)
     recall = recall_score(targets, preds, average=average)
     f1 = f1_score(targets, preds, average=average)
-    print(precision, recall, f1)
+    # print(precision, recall, f1)
     if verbose: print(f"{average}: precision {precision} recall {recall} f1 {f1}")
     return precision, recall, f1
 
