@@ -615,7 +615,7 @@ def load_data_chemprot_re(args, filename, tokenizer=None):
                                        ["*"], ["*"] + tokenizer.tokenize(ent2) + ["*"]
 
             tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
-            s_pos = len(prior_tokens)
+            s_pos = len(prior_tokens) + 1
             new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
             s_pos += len(ent1_tokens) + len(mid_tokens)
             new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
@@ -768,11 +768,9 @@ def txt_and_entity_to_token(text, ent_pos_list, tokenizer):
 
 
 def sent_with_entity_to_token_ids(sent, ent_pos_list):
-    ent1,ent2=ent_pos_list
-    ent1_spos, ent1_epos=ent1
-    ent2_spos, ent2_epos=ent2
-
-
+    ent1, ent2 = ent_pos_list
+    ent1_spos, ent1_epos = ent1
+    ent2_spos, ent2_epos = ent2
 
 
 class ChemProtDataset(Dataset):
@@ -841,8 +839,8 @@ class ChemProtDataset(Dataset):
             ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
             # lower case
 
-            prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:(ent1_spos-3)]), \
-                                                    tokenizer.tokenize(text[(ent1_epos + 3):(ent2_spos-3)]), \
+            prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:(ent1_spos - 3)]), \
+                                                    tokenizer.tokenize(text[(ent1_epos + 3):(ent2_spos - 3)]), \
                                                     tokenizer.tokenize(text[(ent2_epos + 3):])
             ent1_tokens, ent2_tokens = ["*"] + tokenizer.tokenize(ent1) + ["*"], \
                                        ["*"] + tokenizer.tokenize(ent2) + ["*"]
@@ -852,19 +850,21 @@ class ChemProtDataset(Dataset):
             # print("mid_tokens", mid_tokens)
             # print("post_tokens", post_tokens)
             tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
-            s_pos = len(prior_tokens)+1
+            s_pos = len(prior_tokens) + 1
             # embed()
             # CLS
             new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
             s_pos += len(ent1_tokens) + len(mid_tokens)
             new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
+
+
             # print(tokens)
             # print(new_ent1_pos)
             # print(new_ent2_pos)
             input_ids = tokenizer.convert_tokens_to_ids(tokens)
             token_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
 
-            if ent2 in self.mention2cid or ent1 in self.mention2protid :
+            if ent2 in self.mention2cid:#  or ent1 in self.mention2protid
                 # print("swapped")
                 ent1, ent2 = ent2, ent1
                 new_ent1_pos, new_ent2_pos = new_ent2_pos, new_ent1_pos
@@ -901,9 +901,7 @@ class ChemProtDataset(Dataset):
                                    "id": idx,
                                    "label": label,
                                    "ent": [ent1_dict, ent2_dict],
-                                   "tokenizer": tokenizer,
-                                   "concepts": tokenizer(["chemical compound", "gene/protein"], return_tensors='pt',
-                                                         padding=True)
+                                   "tokenizer": tokenizer
                                    })
             # embed()
         # embed()
@@ -1089,8 +1087,7 @@ class CustomBatch:
 
         self.ent2_d = tokenizer([f["ent"][1]['t'] for f in batch], return_tensors='pt', padding=True)
         self.ent2_d_mask = torch.tensor([f["ent"][1]['t_mask'] for f in batch]).unsqueeze(-1)
-        self.concepts=tokenizer(["chemical compound", "gene/protein"], return_tensors='pt', padding=True)
-
+        self.concepts = tokenizer(["chemical compound", "gene/protein"], return_tensors='pt', padding=True)
 
         self.ent1_pos = torch.tensor([f["ent"][0]['pos'] for f in batch], dtype=torch.long)
         self.ent2_pos = torch.tensor([f["ent"][1]['pos'] for f in batch], dtype=torch.long)
@@ -1139,10 +1136,10 @@ class CustomBatch:
         self.ent2_d = {key: self.ent2_d[key].to(device) for key in self.ent2_d}
         self.ent2_d_mask = self.ent2_d_mask.to(device)
 
-        self.concepts ={key: self.concepts[key].to(device) for key in self.concepts}
+        self.concepts = {key: self.concepts[key].to(device) for key in self.concepts}
 
-        self.ent1_pos=self.ent1_pos.to(device)
-        self.ent2_pos=self.ent2_pos.to(device)
+        self.ent1_pos = self.ent1_pos.to(device)
+        self.ent2_pos = self.ent2_pos.to(device)
 
         # inputs = {  # 'texts': {key: self.texts[key].to(device) for key in self.texts},
         #     'texts': self.texts.to(device),

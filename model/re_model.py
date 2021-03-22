@@ -10,7 +10,7 @@ from model.gnn import MoleGNN, MoleGNN2
 from model.model_utils import get_tensor_info, LabelSmoothingCrossEntropy, CrossModalAttention
 import numpy as np
 from IPython import embed
-
+from torchtext.vocab import GloVe
 
 class RE(torch.nn.Module):
     def __init__(self, args):
@@ -55,7 +55,8 @@ class RE(torch.nn.Module):
             print("args.t")
             # self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim*3, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
+            # self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
 
         # self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
         self.text_transform = Linear(args.plm_hidden_dim, args.g_dim)
@@ -265,7 +266,8 @@ class RE(torch.nn.Module):
             # print("ent2_embeds", get_tensor_info(ent2_embeds))
 
             # final_vec = torch.cat([hid_texts[:,0,:], ent1_embeds, ent2_embeds], dim=-1)
-            final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
+            # final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
+            final_vec = torch.cat([hid_texts[:, 0, :]], dim=-1)
 
             # final_vec = hid_texts#[:,0,:]
 
