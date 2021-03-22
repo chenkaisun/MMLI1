@@ -246,10 +246,10 @@ class RE(torch.nn.Module):
                         # out = self.cm_attn(g_modal[batch_ent1_g.batch == graph_id], d_modal[graph_id])
 
                         if args.cm:
-                            print("batch_ent1_g.batch",batch_ent1_g.batch)
-                            print("batch_ent1_g.batch == graph_id",batch_ent1_g.batch == graph_id)
-                            print("g_modal", get_tensor_info(g_modal))
-                            print("d_modal", get_tensor_info(d_modal))
+                            # print("batch_ent1_g.batch",batch_ent1_g.batch)
+                            # print("batch_ent1_g.batch == graph_id",batch_ent1_g.batch == graph_id)
+                            # print("g_modal", get_tensor_info(g_modal))
+                            # print("d_modal", get_tensor_info(d_modal))
 
                             g_feat, d_feat = self.cm_attn(g_modal[batch_ent1_g.batch == graph_id], d_modal[graph_id])
                         else:
