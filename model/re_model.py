@@ -66,7 +66,7 @@ class RE(torch.nn.Module):
         self.loss = torch.nn.CrossEntropyLoss()
         self.cm_attn = CrossModalAttention(reduction='mean', m1_dim=args.g_dim, m2_dim=args.plm_hidden_dim,
                                            final_dim=final_dim)
-
+        self.emb = nn.Embedding(10, 3)
     def forward(self, input, args):
         # texts = input['texts']
         # texts_mask = input['texts_mask']
@@ -138,10 +138,10 @@ class RE(torch.nn.Module):
             # print("ent1_embeds", get_tensor_info(ent1_embeds))
             ent2_embeds = torch.stack(ent2_embeds, dim=0)  # [n_e, d]
 
-            concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
-
-            ent1_embeds+=concepts_emb[0]
-            ent2_embeds+=concepts_emb[1]
+            # concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
+            #
+            # ent1_embeds+=concepts_emb[0]
+            # ent2_embeds+=concepts_emb[1]
             # print("ent1_embeds",ent1_embeds)
             # print("ent2_embeds",ent2_embeds)concepts
 
