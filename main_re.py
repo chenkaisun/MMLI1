@@ -36,7 +36,7 @@ if __name__ == '__main__':
     args.exp = "re"
     args.plm = "allenai/scibert_scivocab_uncased"
     # if args.model_type=="tg": args.g_global_pooling=1
-    print("args.g_global_pooling first",args.g_global_pooling)
+    # print("args.g_global_pooling first",args.g_global_pooling)
     if args.debug:
         args.plm = "prajjwal1/bert-tiny"
         # args.num_epoch = 300

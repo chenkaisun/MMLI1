@@ -123,7 +123,7 @@ class MoleGNN2(torch.nn.Module):
             x = F.dropout(x, self.dropout, training=self.training)
 
         if not global_pooling:
-            print("global_pooling", global_pooling)
+            # print("global_pooling", global_pooling)
             x = self.atom_lin(x)
             x = torch.tanh(x)
             return x

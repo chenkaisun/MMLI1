@@ -202,10 +202,10 @@ class RE(torch.nn.Module):
                 # print("batch_ent1_g", batch_ent1_g)
 
                 # B'xd
-                print("args.g_global_pooling second",args.g_global_pooling)
-                print("args.g_global_pooling secondd",bool(int(args.g_global_pooling)))
-                embed()
-                print("args.g_global_pooling", bool(args.g_global_pooling))
+                # print("args.g_global_pooling second",args.g_global_pooling)
+                # print("args.g_global_pooling secondd",bool(int(args.g_global_pooling)))
+                # embed()
+                # print("args.g_global_pooling", bool(args.g_global_pooling))
                 hid_ent1_g = self.gnn(batch_ent1_g, args.g_global_pooling)  # * batch_ent1_g_mask
                 # print("hid_ent1_g", hid_ent1_g)
 

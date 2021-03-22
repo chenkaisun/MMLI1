@@ -72,7 +72,7 @@ def read_args():
     parser.add_argument('--mult_mask', default=0, type=int)
     parser.add_argument('--g_mult_mask', default=0, type=int)
     parser.add_argument('--g_global_pooling', default=1, type=int)
-    parser.add_argument('--type_embed', default=0, type=int)
+    parser.add_argument('--type_embed', default=1, type=int)
     parser.add_argument('--cm', default=0, type=int)
 
 
