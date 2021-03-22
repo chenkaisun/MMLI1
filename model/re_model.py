@@ -239,8 +239,14 @@ class RE(torch.nn.Module):
                         # tmp_batch.append(torch.cat([out, hid_ent1_d[graph_id, 0, :]], dim=-1))
 
                         # NO CM
-                        tmp_batch.append(torch.cat([g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0],
-                                                    d_modal[graph_id, 0, :] * batch_ent1_d_mask[graph_id, 0]], dim=-1))
+                        g_feat= (g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0]) if args.g_mult_mask else g_modal[graph_id]
+                        d_feat=d_modal[graph_id, 0, :] * batch_ent1_d_mask[graph_id, 0] if args.mult_mask else d_modal[graph_id, 0, :]
+
+
+                        tmp_batch.append(torch.cat([g_feat,d_feat], dim=-1))
+
+                        # tmp_batch.append(torch.cat([g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0],
+                        #                             d_modal[graph_id, 0, :] * batch_ent1_d_mask[graph_id, 0]], dim=-1))
 
                         # print("batch_ent1_g_mask[graph_id, 0]", batch_ent1_g_mask[graph_id, 0])
                         #
