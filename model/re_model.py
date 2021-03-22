@@ -70,8 +70,8 @@ class RE(torch.nn.Module):
         self.cm_attn = CrossModalAttention(reduction='mean', m1_dim=args.g_dim, m2_dim=args.plm_hidden_dim,
                                            final_dim=final_dim)
         self.emb = nn.Embedding(1, args.plm_hidden_dim)
-        self.the_zero = torch.tensor(0, dtype=torch.long)
-        self.the_one = torch.tensor(1, dtype=torch.long)
+        self.the_zero = torch.tensor(0, dtype=torch.long, device=args.device)
+        self.the_one = torch.tensor(1, dtype=torch.long, device=args.device)
 
     def forward(self, input, args):
         # texts = input['texts']
