@@ -10,6 +10,8 @@ from model.gnn import MoleGNN, MoleGNN2
 from model.model_utils import get_tensor_info, LabelSmoothingCrossEntropy, CrossModalAttention
 import numpy as np
 from IPython import embed
+
+
 # from torchtext.vocab import GloVe
 
 class RE(torch.nn.Module):
@@ -37,11 +39,11 @@ class RE(torch.nn.Module):
 
             # two ent plm*2, mol modal 800, prot modal plm
             # self.combiner = Linear(args.plm_hidden_dim * 3 + final_dim, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim * 5 , args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 5, args.out_dim)
         elif 'tdg' in args.model_type:
             print("args.tdg")
             # self.combiner = Linear(args.plm_hidden_dim * 3 + final_dim, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim * 5 , args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 5, args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
 
             # args.plm_hidden_dim
@@ -67,7 +69,10 @@ class RE(torch.nn.Module):
         self.loss = torch.nn.CrossEntropyLoss()
         self.cm_attn = CrossModalAttention(reduction='mean', m1_dim=args.g_dim, m2_dim=args.plm_hidden_dim,
                                            final_dim=final_dim)
-        self.emb = nn.Embedding(10, 3)
+        self.emb = nn.Embedding(1, args.plm_hidden_dim)
+        self.the_zero = torch.tensor(0, dtype=torch.long)
+        self.the_one = torch.tensor(1, dtype=torch.long)
+
     def forward(self, input, args):
         # texts = input['texts']
         # texts_mask = input['texts_mask']
@@ -97,7 +102,6 @@ class RE(torch.nn.Module):
         ent1_pos = input.ent1_pos
         ent2_pos = input.ent2_pos
         concepts = input.concepts
-
 
         in_train = input.in_train
 
@@ -139,12 +143,11 @@ class RE(torch.nn.Module):
             # print("ent1_embeds", get_tensor_info(ent1_embeds))
             ent2_embeds = torch.stack(ent2_embeds, dim=0)  # [n_e, d]
 
-
             if args.type_embed:
-                concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
+                concepts_emb = self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
 
-                ent1_embeds+=concepts_emb[0]
-                ent2_embeds+=concepts_emb[1]
+                ent1_embeds += concepts_emb[0]
+                ent2_embeds += concepts_emb[1]
             # print("ent1_embeds",ent1_embeds)
             # print("ent2_embeds",ent2_embeds)concepts
 
@@ -159,7 +162,6 @@ class RE(torch.nn.Module):
                 # 1:-1
                 hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, :, :]  # *batch_ent1_d_mask
                 # hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).pooler_output  # *batch_ent1_d_mask
-
 
                 # hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]  # *batch_ent1_d_mask
 
@@ -244,11 +246,17 @@ class RE(torch.nn.Module):
                         # tmp_batch.append(torch.cat([out, hid_ent1_d[graph_id, 0, :]], dim=-1))
 
                         # NO CM
-                        g_feat= (g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0]) if args.g_mult_mask else g_modal[graph_id]
-                        d_feat=d_modal[graph_id, 0, :] * batch_ent1_d_mask[graph_id, 0] if args.mult_mask else d_modal[graph_id, 0, :]
+                        # g_feat= (g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0]) if args.g_mult_mask else g_modal[graph_id]
 
+                        g_feat = g_modal[graph_id]
+                        if args.g_mult_mask:
+                            g_feat = self.emb[0] * (self.the_one - batch_ent1_g_mask[graph_id, 0]) + g_modal[graph_id] * \
+                                     batch_ent1_g_mask[graph_id, 0]
 
-                        tmp_batch.append(torch.cat([g_feat,d_feat], dim=-1))
+                        d_feat = d_modal[graph_id, 0, :] * batch_ent1_d_mask[
+                            graph_id, 0] if args.mult_mask else d_modal[graph_id, 0, :]
+
+                        tmp_batch.append(torch.cat([g_feat, d_feat], dim=-1))
 
                         # tmp_batch.append(torch.cat([g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0],
                         #                             d_modal[graph_id, 0, :] * batch_ent1_d_mask[graph_id, 0]], dim=-1))
@@ -264,7 +272,14 @@ class RE(torch.nn.Module):
 
                     ent1_embeds = torch.cat([ent1_embeds, torch.stack(tmp_batch, dim=0)], dim=-1)
                 else:
-                    ent1_embeds = torch.cat([ent1_embeds, hid_ent1_g], dim=-1)
+                    g_feat = hid_ent1_g
+                    if args.g_mult_mask:
+                        g_feat = self.emb[0] * (self.the_one - batch_ent1_g_mask) + hid_ent1_g * \
+                                 batch_ent1_g_mask
+
+                    ent1_embeds = torch.cat([ent1_embeds, g_feat], dim=-1)
+
+                    # ent1_embeds = torch.cat([ent1_embeds, hid_ent1_g], dim=-1)
 
             # print("ent1_embeds", get_tensor_info(ent1_embeds))
             # print("ent2_embeds", get_tensor_info(ent2_embeds))
