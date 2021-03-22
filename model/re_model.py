@@ -187,8 +187,10 @@ class RE(torch.nn.Module):
                 # print("d hid_ent2_d", hid_ent2_d)
 
                 if not 'g' in self.model_type:
+                    d_feat = hid_ent1_d[:, 0, :] * batch_ent1_d_mask if args.mult_mask else hid_ent1_d[:, 0, :]
+
                     # ent1_embeds = torch.cat([ent1_embeds, hid_ent1_d], dim=-1)
-                    ent1_embeds = torch.cat([ent1_embeds, hid_ent1_d[:, 0, :]], dim=-1)
+                    ent1_embeds = torch.cat([ent1_embeds, d_feat], dim=-1)
 
                 # ent2_embeds = torch.cat([ent2_embeds, hid_ent2_d], dim=-1)
                 # print("ent2_embeds 2", get_tensor_info(ent2_embeds))
