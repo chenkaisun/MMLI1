@@ -83,9 +83,9 @@ def setup_common(args):
     optimizer = get_optimizer(args, model, downstream_layers)
     # print(model.named_parameters())
     # print("model", model)
-    print("optimizer done")
+    print("optimizer built")
     model, optimizer, args.start_epoch, args.best_dev_score = load_model_from_path(model, optimizer, args)
-    print("model to cuda")
+    print("model moved to gpu")
 
     args.logger = get_logger(args)
     args.writer = SummaryWriter(log_dir=args.experiment_path + args.exp + "/")

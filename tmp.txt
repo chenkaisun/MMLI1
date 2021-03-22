@@ -297,6 +297,7 @@ modal_data:
   1],
  ['[[NULL]]', 0]]
 
+**************
 id: 120 pred: INHIBITOR  label: SUBSTRATE
 b'with respect to the << quinone >> co-substrate of the [[ dihydroorotate dehydrogenase ]], atovaquone (kic = 2.7 microm) and dichloroally-lawsone (kic = 9.8 nm) were shown to be competitive inhibitors of human dihydroorotate dehydrogenase.'
 modal_data:
@@ -587,6 +588,8 @@ modal_data:
   1],
  ['[[NULL]]', 0]]
 
+
+***
 id: 411 pred: UPREGULATOR  label: ACTIVATOR
 b'the increase in << ampk alpha2 >> activity was likely due to a change in muscle energy status because atp and phosphocreatine concentrations were lower after [[ metformin ]] treatment.'
 modal_data:

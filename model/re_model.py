@@ -36,17 +36,18 @@ class RE(torch.nn.Module):
             print("tdgx")
 
             # two ent plm*2, mol modal 800, prot modal plm
-            self.combiner = Linear(args.plm_hidden_dim * 3 + final_dim, args.out_dim)
+            # self.combiner = Linear(args.plm_hidden_dim * 3 + final_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 5 , args.out_dim)
         elif 'tdg' in args.model_type:
             print("args.tdg")
             # self.combiner = Linear(args.plm_hidden_dim * 3 + final_dim, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim * 5 + args.g_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 5 , args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
 
             # args.plm_hidden_dim
         elif 'tg' in args.model_type:
             print("args.tg")
-            self.combiner = Linear(args.plm_hidden_dim*2 + args.g_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 2 + args.g_dim, args.out_dim)
         elif 'td' in args.model_type:
             print("args.td")
             self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
@@ -94,14 +95,16 @@ class RE(torch.nn.Module):
 
         ent1_pos = input.ent1_pos
         ent2_pos = input.ent2_pos
+        concepts = input.concepts
+
 
         in_train = input.in_train
 
         # print("batch_graph_data", batch_graph_data)
 
         # bert
-        token_id_offset = 1
-        modals = []
+        # token_id_offset = 1
+        # modals = []
         hid_texts, hid_ent1_d, hid_ent2_d, hid_ent1_g, hid_ent2_g = None, None, None, None, None
         final_vec = []
 
@@ -134,11 +137,17 @@ class RE(torch.nn.Module):
             ent1_embeds = torch.stack(ent1_embeds, dim=0)  # [n_e, d]
             # print("ent1_embeds", get_tensor_info(ent1_embeds))
             ent2_embeds = torch.stack(ent2_embeds, dim=0)  # [n_e, d]
+
+            concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
+
+            ent1_embeds+=concepts_emb[0]
+            ent2_embeds+=concepts_emb[1]
             # print("ent1_embeds",ent1_embeds)
-            # print("ent2_embeds",ent2_embeds)
+            # print("ent2_embeds",ent2_embeds)concepts
 
             #
-            # # print("ent2_embeds", get_tensor_info(ent2_embeds))
+            # print("ent1_embeds", get_tensor_info(ent1_embeds))
+            # print("ent2_embeds", get_tensor_info(ent2_embeds))
             # print()
             # modals.append(hid_texts)
             if 'd' in self.model_type:
@@ -157,7 +166,7 @@ class RE(torch.nn.Module):
                 # print("hid_ent1_d", get_tensor_info(hid_ent1_d))
 
                 # print("d hid_ent1_d", hid_ent1_d)
-                hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]  # *batch_ent2_d_mask
+                # hid_ent2_d = self.plm(**batch_ent2_d, return_dict=True).last_hidden_state[:, 0, :]  # *batch_ent2_d_mask
 
                 # hid_ent1_d= self.text_transform(hid_ent2_d)
                 # # # # if args.mult_mask: hid_ent1_d *= batch_ent1_d_mask
@@ -175,7 +184,7 @@ class RE(torch.nn.Module):
                     # ent1_embeds = torch.cat([ent1_embeds, hid_ent1_d], dim=-1)
                     ent1_embeds = torch.cat([ent1_embeds, hid_ent1_d[:, 0, :]], dim=-1)
 
-                ent2_embeds = torch.cat([ent2_embeds, hid_ent2_d], dim=-1)
+                # ent2_embeds = torch.cat([ent2_embeds, hid_ent2_d], dim=-1)
                 # print("ent2_embeds 2", get_tensor_info(ent2_embeds))
 
                 # modals.extend([hid_ent1_d, hid_ent2_d])
@@ -219,14 +228,20 @@ class RE(torch.nn.Module):
                         #                                       torch.tensor([graph_id], dtype=torch.long,
                         #                                                    device=g_modal.device)).squeeze())
 
-
-
-                        out = self.cm_attn(g_modal[batch_ent1_g.batch == graph_id], d_modal[graph_id])
+                        # tmp rmv
+                        # out = self.cm_attn(g_modal[batch_ent1_g.batch == graph_id], d_modal[graph_id])
 
                         # tmp_batch.append(out)
                         # tmp_batch.append(torch.cat([hid_ent1_d[graph_id, 0, :]], dim=-1))
-                        tmp_batch.append(torch.cat([out, hid_ent1_d[graph_id, 0, :]], dim=-1))
+                        # tmp_batch.append(torch.cat([out, hid_ent1_d[graph_id, 0, :]], dim=-1))
 
+                        # NO CM
+                        tmp_batch.append(torch.cat([g_modal[graph_id] * batch_ent1_g_mask[graph_id, 0],
+                                                    d_modal[graph_id, 0, :] * batch_ent1_d_mask[graph_id, 0]], dim=-1))
+
+                        # print("batch_ent1_g_mask[graph_id, 0]", batch_ent1_g_mask[graph_id, 0])
+                        #
+                        # print("tmp_batch[-1].shape", get_tensor_info(tmp_batch[-1]))
                         # indices = np.argwhere(batch_ids == graph_id).flatten()
                         # print("indices", indices)
                         # max_num_nodes = max(max_num_nodes, len(indices))
@@ -241,7 +256,7 @@ class RE(torch.nn.Module):
             # print("ent2_embeds", get_tensor_info(ent2_embeds))
 
             # final_vec = torch.cat([hid_texts[:,0,:], ent1_embeds, ent2_embeds], dim=-1)
-            final_vec = torch.cat([hid_texts[:, 0, :],ent1_embeds, ent2_embeds], dim=-1)
+            final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
 
             # final_vec = hid_texts#[:,0,:]
 

@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
         model.load_state_dict(torch.load(args.model_path)['model_state_dict'])
         test_score, output = evaluate(args, model, test_data)
-
+        print(test_score)
         exit()
         rels = ['AGONIST-ACTIVATOR',
                 'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',

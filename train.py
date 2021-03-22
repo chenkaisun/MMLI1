@@ -24,12 +24,11 @@ from IPython import embed
 def train(args, model, optimizer, data):
     train_data, val_data, test_data = data
 
-    # torch.autograd.set_detect_anomaly(True)
 
     if args.debug:
-        pass
+        torch.autograd.set_detect_anomaly(True)
 
-        # train_data = train_data.instances[:4]
+    # train_data = train_data.instances[:4]
         # val_data = val_data.instances[:4]
         # test_data = test_data.instances[:4]
 
