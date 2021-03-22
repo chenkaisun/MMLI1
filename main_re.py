@@ -35,7 +35,7 @@ if __name__ == '__main__':
     args.model_name = "re_model"
     args.exp = "re"
     args.plm = "allenai/scibert_scivocab_uncased"
-    if args.model_type=="tg": args.g_global_pooling=1
+    # if args.model_type=="tg": args.g_global_pooling=1
 
     if args.debug:
         args.plm = "prajjwal1/bert-tiny"
