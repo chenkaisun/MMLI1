@@ -139,10 +139,12 @@ class RE(torch.nn.Module):
             # print("ent1_embeds", get_tensor_info(ent1_embeds))
             ent2_embeds = torch.stack(ent2_embeds, dim=0)  # [n_e, d]
 
-            concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
 
-            ent1_embeds+=concepts_emb[0]
-            ent2_embeds+=concepts_emb[1]
+            if args.type_embed:
+                concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
+
+                ent1_embeds+=concepts_emb[0]
+                ent2_embeds+=concepts_emb[1]
             # print("ent1_embeds",ent1_embeds)
             # print("ent2_embeds",ent2_embeds)concepts
 
