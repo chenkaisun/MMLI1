@@ -55,8 +55,8 @@ class RE(torch.nn.Module):
             print("args.t")
             # self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim*3, args.out_dim)
-            # self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
+            # self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
 
         # self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
         self.text_transform = Linear(args.plm_hidden_dim, args.g_dim)
@@ -139,10 +139,10 @@ class RE(torch.nn.Module):
             # print("ent1_embeds", get_tensor_info(ent1_embeds))
             ent2_embeds = torch.stack(ent2_embeds, dim=0)  # [n_e, d]
 
-            # concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
-            #
-            # ent1_embeds+=concepts_emb[0]
-            # ent2_embeds+=concepts_emb[1]
+            concepts_emb=self.plm(**concepts, return_dict=True).last_hidden_state[:, 0, :]
+
+            ent1_embeds+=concepts_emb[0]
+            ent2_embeds+=concepts_emb[1]
             # print("ent1_embeds",ent1_embeds)
             # print("ent2_embeds",ent2_embeds)concepts
 
@@ -266,8 +266,8 @@ class RE(torch.nn.Module):
             # print("ent2_embeds", get_tensor_info(ent2_embeds))
 
             # final_vec = torch.cat([hid_texts[:,0,:], ent1_embeds, ent2_embeds], dim=-1)
-            # final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
-            final_vec = torch.cat([hid_texts[:, 0, :]], dim=-1)
+            final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
+            # final_vec = torch.cat([hid_texts[:, 0, :]], dim=-1)
 
             # final_vec = hid_texts#[:,0,:]
 
