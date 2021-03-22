@@ -122,8 +122,8 @@ class CrossModalAttention(nn.Module):
             # m2 = F.dropout(m2, 0.1, training=self.training)
             attended_m2 = F.dropout(attended_m2, 0.1, training=self.training)
             # filter = torch.sigmoid(self.l_filter(torch.cat([attended_m1, m2], dim=-1)))  # .sum(0)
-            filter1 = torch.sigmoid(self.l_filter1(torch.cat([attended_m1], dim=-1)).mean(0))  # .sum(0)
-            filter2 = torch.sigmoid(self.l_filter2(torch.cat([attended_m2], dim=-1)).mean(0))  # .sum(0)
+            filter1 = torch.sigmoid(self.l_filter1(torch.cat([attended_m2], dim=-1)).mean(0))  # .sum(0)
+            filter2 = torch.sigmoid(self.l_filter2(torch.cat([attended_m1], dim=-1)).mean(0))  # .sum(0)
 
             # print("dropout attended_m1", attended_m1)
             # print("dropout m2", m2)
@@ -138,7 +138,7 @@ class CrossModalAttention(nn.Module):
             # print("transformed_m1", get_tensor_info(transformed_m1))
             # print("transformed_m2", get_tensor_info(transformed_m2))
 
-            return transformed_m1 * filter1 + transformed_m2 * filter2
+            return transformed_m1 * filter1, transformed_m2 * filter2
 
         return attended_m1, m2
 
