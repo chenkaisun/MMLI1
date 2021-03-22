@@ -250,7 +250,7 @@ class RE(torch.nn.Module):
 
                         g_feat = g_modal[graph_id]
                         if args.g_mult_mask:
-                            g_feat = self.emb[0] * (self.the_one - batch_ent1_g_mask[graph_id, 0]) + g_modal[graph_id] * \
+                            g_feat = self.emb[self.the_zero] * (self.the_one - batch_ent1_g_mask[graph_id, 0]) + g_modal[graph_id] * \
                                      batch_ent1_g_mask[graph_id, 0]
 
                         d_feat = d_modal[graph_id, 0, :] * batch_ent1_d_mask[
@@ -274,7 +274,7 @@ class RE(torch.nn.Module):
                 else:
                     g_feat = hid_ent1_g
                     if args.g_mult_mask:
-                        g_feat = self.emb[0] * (self.the_one - batch_ent1_g_mask) + hid_ent1_g * \
+                        g_feat = self.emb[self.the_zero] * (self.the_one - batch_ent1_g_mask) + hid_ent1_g * \
                                  batch_ent1_g_mask
 
                     ent1_embeds = torch.cat([ent1_embeds, g_feat], dim=-1)
