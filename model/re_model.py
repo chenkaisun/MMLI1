@@ -10,7 +10,7 @@ from model.gnn import MoleGNN, MoleGNN2
 from model.model_utils import get_tensor_info, LabelSmoothingCrossEntropy, CrossModalAttention
 import numpy as np
 from IPython import embed
-from torchtext.vocab import GloVe
+# from torchtext.vocab import GloVe
 
 class RE(torch.nn.Module):
     def __init__(self, args):
