@@ -47,7 +47,7 @@ class RE(torch.nn.Module):
             # args.plm_hidden_dim
         elif 'tg' in args.model_type:
             print("args.tg")
-            self.combiner = Linear(args.plm_hidden_dim * 2 + args.g_dim, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 3 + args.g_dim, args.out_dim)
         elif 'td' in args.model_type:
             print("args.td")
             self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
@@ -55,7 +55,7 @@ class RE(torch.nn.Module):
             print("args.t")
             # self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim*3, args.out_dim)
-            self.combiner = Linear(args.plm_hidden_dim * 2, args.out_dim)
+            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
 
         # self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
         self.text_transform = Linear(args.plm_hidden_dim, args.g_dim)
@@ -155,6 +155,9 @@ class RE(torch.nn.Module):
                 # try lstm
                 # 1:-1
                 hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, :, :]  # *batch_ent1_d_mask
+                # hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).pooler_output  # *batch_ent1_d_mask
+
+
                 # hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state[:, 0, :]  # *batch_ent1_d_mask
 
                 # hid_ent1_d= self.text_transform(hid_ent1_d)
