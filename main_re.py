@@ -52,7 +52,7 @@ if __name__ == '__main__':
         # args.t_only=True
         # args.g_dim=32
         # args.use_cache=False
-
+    print("args.plm",args.plm)
     set_seeds(args)
     print("tokenizer1")
     tokenizer = get_tokenizer(args.plm)
