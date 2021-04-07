@@ -158,4 +158,5 @@ analyze/
 tmp*.txt
 nohup*.out
 nohup.out
+data_online/ChemProt_Corpus/mention2concepts.json
 #wikipedia_html_for_pubchem_compounds/
