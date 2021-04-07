@@ -1,4 +1,4 @@
-from utils import join, dump_file
+from ..utils import join, dump_file
 import pubchempy as pcp
 # from mediawiki import MediaWiki
 import csv
