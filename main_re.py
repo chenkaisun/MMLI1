@@ -35,6 +35,7 @@ if __name__ == '__main__':
     args.model_name = "re_model"
     args.exp = "re"
     args.plm = "allenai/scibert_scivocab_uncased"
+    # args.plm = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
     # if args.model_type=="tg": args.g_global_pooling=1
     # print("args.g_global_pooling first",args.g_global_pooling)
     if args.debug:
