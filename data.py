@@ -22,6 +22,8 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from copy import deepcopy
+import csv
+from utils import *
 
 
 # def mol2graph( mol ):
@@ -793,16 +795,45 @@ class ChemProtDataset(Dataset):
                                            load_file("data_online/ChemProt_Corpus/cmpd_info.json")
         self.mention2protid, self.prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
                                               load_file("data_online/ChemProt_Corpus/prot_info.json")
+        self.mention2concepts = load_file("data_online/ChemProt_Corpus/mention2concepts.json")
+
+        # self.chem_mentions = load_file("data_online/ChemProt_Corpus/chem_mentions.json")
+        self.get_mentions()
 
         self.modal_retriever = modal_retriever
 
         self.rels = ['AGONIST-ACTIVATOR',
-                     'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
-                     'AGONIST', 'INHIBITOR',
-                     'PRODUCT-OF', 'ANTAGONIST',
-                     'ACTIVATOR', 'INDIRECT-UPREGULATOR',
-                     'SUBSTRATE', 'INDIRECT-DOWNREGULATOR',
-                     'AGONIST-INHIBITOR', 'UPREGULATOR', ]
+                     'DOWNREGULATOR',
+                     'SUBSTRATE_PRODUCT-OF',
+                     'AGONIST',
+                     'INHIBITOR',
+                     'PRODUCT-OF',
+                     'ANTAGONIST',
+                     'ACTIVATOR',
+                     'INDIRECT-UPREGULATOR',
+                     'SUBSTRATE',
+                     'INDIRECT-DOWNREGULATOR',
+                     'AGONIST-INHIBITOR',
+                     'UPREGULATOR', ]
+
+        self.label_desc = {'AGONIST-ACTIVATOR': "Agonists bind to a receptor and increase its biological response.",
+                         'DOWNREGULATOR': "Chemical down-regulates Gene/Protein",
+                         'SUBSTRATE_PRODUCT-OF': "Chemicals that are both, substrate and products of enzymatic reactions.",
+                         'AGONIST': "A Chemical binds to a receptor and alters the receptor state resulting in a biological response.",
+                         'INHIBITOR': "Chemical binds to a Gene/Protein (typically a protein) and decreases its activity",
+                         'PRODUCT-OF': "Chemical as the product of an enzymatic reaction or a transporter",
+                         'ANTAGONIST': "Chemical reduces the action of another Chemical, generally an agonist.",
+                         'ACTIVATOR': "Chemical binds to a Gene/Protein (typically a protein) and decreases its activity",
+                         'INDIRECT-UPREGULATOR': "Chemicals that induce/stimulate/enhance the frequency, "
+                                                 "rate or extent of gene expression or transcription, protein expression, "
+                                                 "protein release/uptake or protein functions.",
+                         'SUBSTRATE': "Chemical upon which a Gene/Protein (typically protein) acts.",
+                         'INDIRECT-DOWNREGULATOR': "Chemicals that decrease gene expression or transcription, "
+                                                   "protein expression, protein release /uptake or indirectly, "
+                                                   "protein functions.",
+                         'AGONIST-INHIBITOR': "Agonists bind to a receptor and decrease its biological response.",
+                         'UPREGULATOR': "Chemical up-regulates Gene/Protein"}
+
         self.rel2id = {rel: i for i, rel in enumerate(self.rels)}
         print("self.rel2id", self.rel2id)
         args.out_dim = len(self.rel2id)
@@ -814,12 +845,15 @@ class ChemProtDataset(Dataset):
 
         """loading"""
         self.instances = []
+        label_text = [self.label_desc[lb] for lb in self.rels]
         for idx in range(len(self.original_data)):
             # if torch.is_tensor(idx):
             #     idx = idx.tolist()
 
             sample = json.loads(self.original_data[idx])
             label = self.rel2id[sample["label"]]
+
+
             # print(label)
             assert not sample["metadata"]
 
@@ -830,33 +864,42 @@ class ChemProtDataset(Dataset):
             # exclusive
             ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
             ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
-            # print(text)
-            # print(ent1_spos)
-            # print(ent1_epos)
-            # print(ent2_spos)
-            # print(ent2_epos)
-
+            assert ent1_spos < ent2_spos, "ent1 after ent2"
             ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
-            # lower case
 
+            print(text)
+            if args.add_concept:
+                range1, range2, range3 = text[:ent1_epos], text[ent1_epos:ent2_epos], text[ent2_epos:]
+                ent1_c, ent2_c = list(self.mention2concepts[ent1].keys())[:10], \
+                                 list(self.mention2concepts[ent2].keys())[:10]
+                ent1_c = " (e.g., " + ", ".join(ent1_c) + " )" if ent1_c else ""
+                ent2_c = " (e.g., " + ", ".join(ent2_c) + " )" if ent2_c else ""
+                text = range1 + ent1_c + range2 + ent2_c + range3
+                print(text)
+
+                ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
+                ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
+                ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
+            # lower case
+            embed()
             prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:(ent1_spos - 3)]), \
                                                     tokenizer.tokenize(text[(ent1_epos + 3):(ent2_spos - 3)]), \
                                                     tokenizer.tokenize(text[(ent2_epos + 3):])
             ent1_tokens, ent2_tokens = ["*"] + tokenizer.tokenize(ent1) + ["*"], \
                                        ["*"] + tokenizer.tokenize(ent2) + ["*"]
+
             # print("ent1_tokens", ent1_tokens)
             # print("ent2_tokens", ent2_tokens)
             # print("prior_tokens", prior_tokens)
             # print("mid_tokens", mid_tokens)
             # print("post_tokens", post_tokens)
             tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
+
+            # +1 for CLS
             s_pos = len(prior_tokens) + 1
-            # embed()
-            # CLS
             new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
             s_pos += len(ent1_tokens) + len(mid_tokens)
             new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
-
 
             # print(tokens)
             # print(new_ent1_pos)
@@ -864,7 +907,7 @@ class ChemProtDataset(Dataset):
             input_ids = tokenizer.convert_tokens_to_ids(tokens)
             token_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
 
-            if ent2 in self.mention2cid:#  or ent1 in self.mention2protid
+            if ent2 in self.chem_mentions:  # or ent1 in self.mention2protid
                 # print("swapped")
                 ent1, ent2 = ent2, ent1
                 new_ent1_pos, new_ent2_pos = new_ent2_pos, new_ent1_pos
@@ -901,10 +944,9 @@ class ChemProtDataset(Dataset):
                                    "id": idx,
                                    "label": label,
                                    "ent": [ent1_dict, ent2_dict],
+                                   "label_text":label_text,
                                    "tokenizer": tokenizer
                                    })
-            # embed()
-        # embed()
 
         if args.cache_filename:
             dump_file({"instances": self.instances, "rel2id": self.rel2id}, args.cache_filename)
@@ -915,111 +957,38 @@ class ChemProtDataset(Dataset):
     def __getitem__(self, idx):
         return self.instances[idx]
 
-        # return {"text": token_ids,
-        #                   "id": idx,
-        #                   "label": label,
-        #                   "ent": [ent1, ent2],
-        #                   "tokenizer": tokenizer
-        #                   }
-    # def fill_modal_data(self, ent, is_prot=False):
-    #
-    #     g_modal, g_modal_mask = "[[NULL]]", 0
-    #     d_modal, d_modal_mask = "[[NULL]]", 0
-    #     if not is_prot:
-    #         # cmpound
-    #         if ent in self.mention2cid:
-    #             cid = self.mention2cid[ent]
-    #             if cid is not None and str(cid) in self.cmpd_info:
-    #                 cid = str(cid)
-    #                 if "canonical_smiles" in self.cmpd_info[cid]:
-    #                     g_modal, g_modal_mask= self.cmpd_info[cid]["canonical_smiles"], 1
-    #                 if "pubchem_description" in self.cmpd_info[cid] and 'descriptions' in self.cmpd_info[cid][
-    #                     'pubchem_description'] and \
-    #                         len(self.cmpd_info[cid]['pubchem_description']['descriptions']):
-    #                     d_modal, d_modal_mask=self.cmpd_info[cid]['pubchem_description']['descriptions'][0]["description"], 1
-    #         return g_modal, g_modal_mask, d_modal, d_modal_mask
-    #     else:
-    #         if ent in self.mention2protid:
-    #             pid = self.mention2protid[ent]
-    #             if pid is not None and pid in self.prot_info and "definition" in self.prot_info[pid]:
-    #                 d_modal, d_modal_mask=self.prot_info[pid]["definition"]['text'], 1
-    #
-    #         return d_modal, d_modal_mask
+    def get_mentions(self):
+        data_dir = 'data_online/ChemProt_Corpus/'
+        tr = join(data_dir, "chemprot_training/chemprot_training_entities.tsv")
+        dev = join(data_dir, "chemprot_development/chemprot_development_entities.tsv")
+        test = join(data_dir, "chemprot_test_gs/chemprot_test_entities_gs.tsv")
 
+        chem_mentions = {}
+        prot_mentions = {}
 
-# def preprocess(file='D:\Research\MMLI\MMLI1\data\ChemProt_Corpus\cmpd_info.json'):
-#     from torchtext.data import Field, BucketIterator, TabularDataset
-#     from torchtext.vocab import GloVe
-#
-#     # json
-#     original_data = load_file(file)
-#     data = []
-#     smiless = []
-#     descriptions = []
-#     for sample in original_data.values():
-#         print(sample)
-#         if 'canonical_smiles' in sample and "description" in sample:
-#             smiless.append(sample['canonical_smiles'])
-#             descriptions.append(sample["description"])
-#             data.append([sample['canonical_smiles'], sample["description"]])
-#     dex, node_attr, edge_index = get_graph_info(smiless)
-#     smiless = smiless[dex]
-#     descriptions = descriptions[dex]
-#
-#     dir = "data/ChemProt_Corpus/"
-#     dump_file([{'description': d, 'smiles': s} for d, s in zip(descriptions, smiless)],
-#               dir + "preprocessed_ae_samples.json")
-#
-#     with open(dir + "preprocessed_ae_samples_description.tsv", mode="w+") as f:
-#         f.write('description\n')
-#         for i, d in enumerate(descriptions):
-#             if i > 0:  f.write('\n')
-#             f.write(d)
-#     # dump_file([{'description': d} for d  in descriptions], dir+"preprocessed_ae_samples_description.tsv")
-#
-#     spacy_en = spacy.load('en_core_web_sm')
-#
-#     def tokenize_en(text):
-#         """
-#         Tokenizes English text from a string into a list of strings
-#         """
-#         return [tok.text for tok in spacy_en.tokenizer(text)]
-#
-#     from torchtext.data import Example
-#     SRC = Field(tokenize=tokenize_en,
-#                 init_token='<sos>',
-#                 eos_token='<eos>',
-#                 lower=True, )
-#     # desc = data.Field(lower=True, include_lengths=True, batch_first=True)
-#     # LABEL = data.Field(sequential=False)
-#     fields = [('description', SRC)]
-#     tmp = TabularDataset(path=dir + "preprocessed_ae_samples_description.tsv", format="tsv", fields=fields)
-#     SRC.build_vocab(tmp, min_freq=2, vectors=GloVe(name='6B', dim=300))  #
-#
-#     instances = []
-#     print("start adding")
-#     for i, (smiles, node_a, edge_i) in enumerate(zip(smiless, node_attr, edge_index)):
-#         instances.append({"smiles": smiles,
-#                           "id": i,
-#                           "graph_data": Data(x=node_a, edge_index=edge_i, y=edge_i),
-#                           "tokenizer": tokenizer
-#                           })
-#
-#     # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
-#     # instances=[{"smiles":smiles[instance_id],
-#     #             "edge_index":edge_index[instance_id],
-#     #             "node_attr":node_attr[instance_id],
-#     #             "edge_attr":edge_attr[instance_id],
-#     #             "Y_data":Y_data[instance_id],
-#     #             "instance_id":instance_id,
-#     #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
-#     train, tmp = model_selection.train_test_split(instances, train_size=0.6, shuffle=False)
-#     val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
-#
-#     if args.cache_filename:
-#         dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
-#
-#     return train, val, test
+        if os.path.exists(join(data_dir, "chem_mentions.json")):
+            chem_mentions = load_file(join(data_dir, "chem_mentions.json"))
+            prot_mentions = load_file(join(data_dir, "prot_mentions.json"))
+        else:
+            for file in [tr, dev, test]:
+                with open(file, encoding='utf-8') as fd:
+                    rd = list(csv.reader(fd, delimiter="\t", quotechar='"'))
+
+                    for i, row in enumerate(rd):
+
+                        if not row: continue
+                        if row[2] == "CHEMICAL":
+                            if row[-1] not in chem_mentions:
+                                chem_mentions[row[-1]] = 0
+                            chem_mentions[row[-1]] += 1
+                        else:
+                            if row[-1] not in prot_mentions:
+                                prot_mentions[row[-1]] = 0
+                            prot_mentions[row[-1]] += 1
+            dump_file(chem_mentions, join(data_dir, "chem_mentions.json"))
+            dump_file(prot_mentions, join(data_dir, "prot_mentions.json"))
+        self.chem_mentions = chem_mentions
+        self.prot_mentions = prot_mentions
 
 
 def collate_fn(batch):
@@ -1050,22 +1019,12 @@ def collate_fn(batch):
 
 class CustomBatch:
     def __init__(self, batch):
-        # self.original_texts=[f["text"] for f in batch]
-        # self.original_cmpd_texts=[f["modal_data"][0][1] for f in batch]
-        # self.original_prot_texts=[f["modal_data"][1][0] for f in batch]
-        #
-        # self.original_cmpd_gs=[f["modal_data"][0][0] for f in batch]
-        # self.original_cmpd_gs_mask=[f["modal_data"][0][2] for f in batch]
-        # self.original_cmpd_texts=[[f["modal_data"][0][1] for f in batch]]
-        # self.original_cmpd_texts_mask=[f["modal_data"][0][3] for f in batch]
-        #
-        # self.original_prot_texts_mask=[f["modal_data"][1][1] for f in batch]
-        # print("batch",batch)
         max_len = max([len(f["text"]) for f in batch])
         input_ids = [f["text"] + [0] * (max_len - len(f["text"])) for f in batch]
         input_mask = [[1.0] * len(f["text"]) + [0.0] * (max_len - len(f["text"])) for f in batch]
-        self.texts = torch.tensor(input_ids, dtype=torch.long)
-        self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)
+
+        self.texts = torch.tensor(input_ids, dtype=torch.long)[:, :512]
+        self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)[:, :512]
 
         # print("self.texts ",self.texts )
         # print("self.texts_attn_mask ",self.texts_attn_mask )
@@ -1075,6 +1034,8 @@ class CustomBatch:
         self.labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
 
         tokenizer = batch[0]["tokenizer"]
+        self.label_text=tokenizer(batch[0]["label_text"], return_tensors='pt', padding=True)
+
 
         g_data = Batch.from_data_list([f["ent"][0]['g'] for f in batch])
         g_data.x = torch.as_tensor(g_data.x, dtype=torch.long)
@@ -1091,34 +1052,6 @@ class CustomBatch:
 
         self.ent1_pos = torch.tensor([f["ent"][0]['pos'] for f in batch], dtype=torch.long)
         self.ent2_pos = torch.tensor([f["ent"][1]['pos'] for f in batch], dtype=torch.long)
-        #
-        # # first half of a vector is information, then mask, for each modality
-        # self.batch_modal_data = [[g_data,
-        #                           batch[0]["tokenizer"]([f["modal_data"][0][1] for f in batch], return_tensors='pt',
-        #                                                 padding=True),
-        #                           torch.tensor([f["modal_data"][0][2] for f in batch]).unsqueeze(-1),
-        #                           torch.tensor([f["modal_data"][0][3] for f in batch]).unsqueeze(-1)],
-        #                          [batch[0]["tokenizer"]([f["modal_data"][1][0] for f in batch], return_tensors='pt',
-        #                                                 padding=True),
-        #                           torch.tensor([f["modal_data"][1][1] for f in batch]).unsqueeze(-1)]]
-
-        # print(self.batch_modal_data[0][0])
-        # print(list(self.batch_modal_data[0][0]))
-        # print(self.batch_modal_data[0][0][0].x)
-        # print(self.batch_modal_data[0][0][0].x.dtype)
-        #
-        # embed()
-
-        # self.batch_modal_data[0][0] = Batch.from_data_list([f["modal_data"][0][0] for f in batch])
-        # self.batch_modal_data[0][1] = batch[0]["tokenizer"]([f["modal_data"][0][1] for f in batch], return_tensors='pt',
-        #                                                     padding=True)
-        # self.batch_modal_data[0][2] = torch.tensor([f["modal_data"][0][2] for f in batch]).unsqueeze(-1)
-        # self.batch_modal_data[0][3] = torch.tensor([f["modal_data"][0][3] for f in batch]).unsqueeze(-1)
-        #
-        # self.batch_modal_data[1][0] = batch[0]["tokenizer"]([f["modal_data"][1][0] for f in batch], return_tensors='pt',
-        #                                                     padding=True)
-        # self.batch_modal_data[1][1] = torch.tensor([f["modal_data"][1][1] for f in batch]).unsqueeze(-1)
-        # print("self.ent1_pos ",self.ent1_pos )
 
         self.in_train = True
         # embed()
@@ -1127,6 +1060,7 @@ class CustomBatch:
         self.texts = self.texts.to(device)
         self.texts_attn_mask = self.texts_attn_mask.to(device)
         self.labels = self.labels.to(device)
+        self.label_text={key: self.label_text[key].to(device) for key in self.label_text}
 
         self.ent1_g = self.ent1_g.to(device)
         self.ent1_g_mask = self.ent1_g_mask.to(device)
@@ -1140,26 +1074,6 @@ class CustomBatch:
 
         self.ent1_pos = self.ent1_pos.to(device)
         self.ent2_pos = self.ent2_pos.to(device)
-
-        # inputs = {  # 'texts': {key: self.texts[key].to(device) for key in self.texts},
-        #     'texts': self.texts.to(device),
-        #     'texts_attn_mask': self.texts_attn_mask.to(device),
-        #     "batch_ent1_d": {key: self.batch_modal_data[0][1][key].to(device) for key in
-        #                      self.batch_modal_data[0][1]},
-        #     "batch_ent1_d_mask": self.batch_modal_data[0][3].to(device),
-        #     "batch_ent2_d": {key: self.batch_modal_data[1][0][key].to(device) for key in
-        #                      self.batch_modal_data[1][0]},
-        #     "batch_ent2_d_mask": self.batch_modal_data[1][1].to(device),
-        #     "batch_ent1_g": self.batch_modal_data[0][0].to(device),
-        #     "batch_ent1_g_mask": self.batch_modal_data[0][2].to(device),
-        #     # "batch_ent2_g": batch[7].to(args.device),
-        #     # "batch_ent2_g_mask": batch[8].to(args.device),
-        #     "ids": self.ids,
-        #     "labels": self.labels.to(device),
-        #     'in_train': self.in_train,
-        # }
-        # return inputs
-        # embed()/
         return self
 
     # custom memory pinning method on custom type
@@ -1171,78 +1085,3 @@ class CustomBatch:
 
 def collate_wrapper(batch):
     return CustomBatch(batch)
-
-# def collate_fn_re(batch):
-#     # max_len = max([len(f["input_ids"]) for f in batch])
-#     # input_ids = [f["input_ids"] + [0] * (max_len - len(f["input_ids"])) for f in batch]
-#     # input_mask = [[1.0] * len(f["input_ids"]) + [0.0] * (max_len - len(f["input_ids"])) for f in batch]
-#     # input_ids = torch.tensor(input_ids, dtype=torch.long)
-#     # input_mask = torch.tensor(input_mask, dtype=torch.float)
-#     # index = torch.arange(start=0, end=len(batch))
-#     # {"text": text,
-#     #  "id": i,
-#     #  "label": label,
-#     #  "ent1_g": ent1_g,
-#     #  "ent1_g_mask": ent1_g_mask,
-#     #  "ent1_d": ent1_d_mask,
-#     #  "ent1_d_mask": ent1_d_mask,
-#     #  "ent2_g": ent2_g_mask,
-#     #  "ent2_g_mask": ent1_g_mask,
-#     #  "ent2_d": ent1_d_mask,
-#     #  "ent2_d_mask": ent1_d_mask,
-#     #  "tokenizer": tokenizer
-#     #  }
-#     texts = batch[0]["tokenizer"]([f["text"] for f in batch], return_tensors='pt', padding=True)
-#     ids = [f["id"] for f in batch]
-#     labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
-#     "modal_data": [
-#         [modal_feats1[0][i], modal_feats1[1][i], modal_feat_mask1[0][i], modal_feat_mask1[0][i], ],
-#         [modal_feats2[1][i], modal_feat_mask2[1][i]]
-#     ],
-#
-#     batch_modal_data = [[[], [], [], []],
-#                         [[], []]]
-#
-#     batch_modal_data[0][0] = Batch.from_data_list([f["modal_data"][0][0] for f in batch])
-#     batch_modal_data[0][1] = batch[0]["tokenizer"]([f["modal_data"][0][1] for f in batch], return_tensors='pt',
-#                                                    padding=True)
-#     batch_modal_data[0][2] = torch.tensor([f["modal_data"][0][2] for f in batch]).unsqueeze(-1)
-#     batch_modal_data[0][3] = torch.tensor([f["modal_data"][0][3] for f in batch]).unsqueeze(-1)
-#
-#     batch_modal_data[1][0] = batch[0]["tokenizer"]([f["modal_data"][1][0] for f in batch], return_tensors='pt',
-#                                                    padding=True)
-#     batch_modal_data[1][1] = torch.tensor([f["modal_data"][1][1] for f in batch]).unsqueeze(-1)
-#
-#     # batch_ent1_g = Batch.from_data_list([f["ent1_g"] for f in batch])
-#     # batch_ent1_g_mask = torch.tensor([f["ent1_g_mask"] for f in batch]).unsqueeze(-1)
-#     # batch_ent1_d = batch[0]["tokenizer"]([f["ent1_d"] for f in batch], return_tensors='pt', padding=True, )
-#     # batch_ent1_d_mask = torch.tensor([f["ent1_d_mask"] for f in batch]).unsqueeze(-1)
-#     # # print("batch_ent1_d")
-#     # # pp(batch_ent1_d)
-#     # # print("batch_ent1_g")
-#     # # pp(batch_ent1_g)
-#     # batch_ent2_g = Batch.from_data_list([f["ent2_g"] for f in batch])
-#     # batch_ent2_g_mask = torch.tensor([f["ent2_g_mask"] for f in batch]).unsqueeze(-1)
-#     # batch_ent2_d = batch[0]["tokenizer"]([f["ent2_d"] for f in batch], return_tensors='pt', padding=True, )
-#     # batch_ent2_d_mask = torch.tensor([f["ent2_d_mask"] for f in batch]).unsqueeze(-1)
-#     # # print("batch_ent2_d")
-#     # # pp(batch_ent2_d)
-#     # # print("batch_ent2_g")
-#     # # pp(batch_ent2_g)
-#     # # Label Smoothing
-#     # # output = (smiles, edge_indices, node_attrs,edge_attrs, Ys, ids)
-#
-#     output = (texts,
-#               batch_ent1_d,
-#               batch_ent1_d_mask,
-#               batch_ent2_d,
-#               batch_ent2_d_mask,
-#               batch_ent1_g,
-#               batch_ent1_g_mask,
-#               batch_ent2_g,
-#               batch_ent2_g_mask,
-#               ids,
-#               labels,
-#               )
-#     return output
-# collate

@@ -59,6 +59,9 @@ class RE(torch.nn.Module):
             # self.combiner = Linear(args.plm_hidden_dim*3, args.out_dim)
             self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
             # self.combiner = Linear(args.plm_hidden_dim, args.out_dim)
+            if args.add_label_text:
+                print("add_label_text")
+                self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
 
         # self.map2smaller = Linear(args.plm_hidden_dim, args.g_dim)
         self.text_transform = Linear(args.plm_hidden_dim, args.g_dim)
@@ -104,6 +107,7 @@ class RE(torch.nn.Module):
         concepts = input.concepts
 
         in_train = input.in_train
+        label_text = input.label_text
 
         # print("batch_graph_data", batch_graph_data)
 
@@ -111,6 +115,7 @@ class RE(torch.nn.Module):
         # token_id_offset = 1
         # modals = []
         hid_texts, hid_ent1_d, hid_ent2_d, hid_ent1_g, hid_ent2_g = None, None, None, None, None
+        hid_label_text = None
         final_vec = []
 
         if 'tdgx' not in self.model_type:
@@ -121,6 +126,12 @@ class RE(torch.nn.Module):
             # print("texts", texts)
             hid_texts = self.plm(input_ids=texts, attention_mask=texts_attn_mask,
                                  return_dict=True).last_hidden_state[:, :, :]
+
+            if args.add_label_text:
+                hid_label_text = self.plm(**label_text, return_dict=True).last_hidden_state[:, 0, :]
+                att = torch.softmax(hid_texts[:, 0, :].mm(hid_label_text.t()), dim=-1)
+                hid_label_text = att.mm(hid_label_text)
+
             # hid_texts=self.text_transform(hid_texts)
             # hid_texts=F.gelu(hid_texts)
             # hid_texts = self.plm(input_ids=texts, attention_mask=texts_attn_mask,
@@ -298,7 +309,12 @@ class RE(torch.nn.Module):
             # print("ent2_embeds", get_tensor_info(ent2_embeds))
 
             # final_vec = torch.cat([hid_texts[:,0,:], ent1_embeds, ent2_embeds], dim=-1)
-            final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
+
+            if args.add_label_text:
+
+                final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds, hid_label_text], dim=-1)
+            else:
+                final_vec = torch.cat([hid_texts[:, 0, :], ent1_embeds, ent2_embeds], dim=-1)
             # final_vec = torch.cat([hid_texts[:, 0, :]], dim=-1)
 
             # final_vec = hid_texts#[:,0,:]
