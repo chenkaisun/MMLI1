@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 from options import read_args
 from train_utils import *
 
-from utils import dump_file, load_file, get_tokenizer
+from utils import dump_file, load_file
 from pprint import pprint as pp
 from sklearn.metrics import f1_score
 from evaluate import evaluate

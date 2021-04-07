@@ -14,9 +14,8 @@ from bs4 import BeautifulSoup
 # import torch.nn.functional as F
 # from pynvml import *
 import requests
-from data_collectors.crawler_config import headers
-from numba import jit
-from transformers import AutoTokenizer
+# from numba import jit
+
 
 def request_get(url, headers):
     try:
@@ -58,7 +57,7 @@ def get_mole_desciption(r):
 
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def is_symmetric(g):
     return np.sum(np.abs(g.T - g)) == 0
 
@@ -98,11 +97,3 @@ def mkdir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
 
-def get_tokenizer(plm, save_dir="tokenizer/"):
-    mkdir(save_dir)
-    tk_name = plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
-    tk_name=os.path.join(save_dir, tk_name)
-    if not os.path.exists(tk_name):
-        tokenizer = AutoTokenizer.from_pretrained(plm)
-        dump_file(tokenizer, tk_name)
-    return load_file(tk_name)

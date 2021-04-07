@@ -6,10 +6,11 @@ import sys
 import numpy as np
 import torch
 from torch import optim
+from transformers import AutoTokenizer
 
 from model.load_model import get_model, load_model_from_path
 from options import read_args
-from utils import mkdir
+from utils import mkdir, dump_file, load_file
 from torch.utils.tensorboard import SummaryWriter
 import numpy
 
@@ -186,3 +187,13 @@ def set_seeds(args):
         torch.cuda.manual_seed_all(args.seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+
+def get_tokenizer(plm, save_dir="tokenizer/"):
+    mkdir(save_dir)
+    tk_name = plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
+    tk_name=os.path.join(save_dir, tk_name)
+    if not os.path.exists(tk_name):
+        tokenizer = AutoTokenizer.from_pretrained(plm)
+        dump_file(tokenizer, tk_name)
+    return load_file(tk_name)
