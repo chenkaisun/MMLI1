@@ -48,6 +48,6 @@ for file in [tr, dev, test]:
                 r = request(url.format(tmp), headers)
                 if r:
                     mention2concepts[mention] = get_concepts(r)
-                    print(mention2concepts)
+                    # print(mention2concepts)
             if not i % 100 or i == rd_len - 1:
                 dump_file(mention2concepts, join(data_dir, "mention2concepts.json"))
