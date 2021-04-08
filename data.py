@@ -6,7 +6,7 @@
 # from rdkit.Chem import rdmolops
 # import igraph
 from pprint import pprint as pp
-# from features import *
+from features import *
 from utils import dump_file, load_file
 # from transformers import BartTokenizer
 from torch_geometric.data import Data, Batch
