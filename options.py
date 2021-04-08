@@ -80,7 +80,7 @@ def read_args():
 
     # auxiliary
     # parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--debug", default=1, type=int, help="Using gpu or cpu", )
+    parser.add_argument("--debug", default=0, type=int, help="Using gpu or cpu", )
     parser.add_argument("--eval", action="store_true")
 
     # # experiment specific

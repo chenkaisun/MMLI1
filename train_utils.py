@@ -111,7 +111,7 @@ def setup_common(args):
                    "mult_mask",
                    "g_mult_mask",
                    "g_global_pooling",
-                   "debug", ]:
+                   "debug","add_concept" ,"add_label_text"]:
             args.logger.debug(f"{key}: {arg_dict[key]}")
     args.logger.debug("=====end of args=====")
 
