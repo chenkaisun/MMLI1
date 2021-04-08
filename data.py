@@ -6,14 +6,14 @@
 # from rdkit.Chem import rdmolops
 # import igraph
 from pprint import pprint as pp
-from features import *
+# from features import *
 from utils import dump_file, load_file
 # from transformers import BartTokenizer
 from torch_geometric.data import Data, Batch
 from sklearn import model_selection
 from IPython import embed
 import os
-# from torch_geometric import utils
+from torch_geometric import utils
 import spacy
 import json
 # from collections import defaultdict
@@ -24,7 +24,7 @@ from torch.utils.data import Dataset
 from copy import deepcopy
 import csv
 from utils import *
-
+import scipy
 
 # def mol2graph( mol ):
 #     admatrix = rdmolops.GetAdjacencyMatrix( mol )
@@ -52,360 +52,360 @@ from utils import *
 #     print(am)
 #
 
-def retrieve_atom_info(atoms):
-    res = []
-    dex = []
-
-    """new"""
-
-    # atom symbol to id mapping
-    atom_dict = {}
-    cur_atoms = [atom.GetSymbol() for atom in atoms]
-    tmp = []
-    # print("cur_atoms", cur_atoms)
-    for atom in cur_atoms:
-        if atom not in atom_dict:
-            atom_dict[atom] = len(atom_dict)
-        tmp.append([atom_dict[atom]])
-    res.append(tmp)
-    return res
-
-
-def retreive_graph_info(input_smile, args):
-    c = None
-    is_valid = False
-    if len(input_smile):
-        try:
-            c = Chem.MolFromSmiles(input_smile)
-        except Exception as e:
-            print(e)
-
-
-def get_graph_info(input_smiles, args):
-    smiles = []
-    suppl, targets = [], []
-    dex = []
-    for i, s in enumerate(list(input_smiles)):
-        if s == "[[NULL]]":
-            # print("isnull")
-            continue
-        try:
-            c = Chem.MolFromSmiles(s)
-        except Exception as e:
-            print(e)
-            continue
-        if c:
-            dex.append(i)
-            smiles.append(s)
-            suppl.append(c)
-
-    # res, exclude
-    all_atom_properties, tmp_dex = get_atom_properties(get_atom_symbols(suppl))
-
-    # updated valid dex
-    # dex is valid index in original input
-    dex = [dex[d] for d in tmp_dex]
-    assert len(tmp_dex) == len(dex), embed()
-
-    # args.in_dim = all_atom_properties[0].shape[1]
-    # print("args.in_dim")
-
-    suppl = [suppl[d] for d in tmp_dex]
-    # targets = [targets[d] for d in dex]
-    # smiles = [smiles[d] for d in dex]
-
-    # suppl = [Chem.MolFromSmiles(s) for s in smiles]
-
-    # embed()
-    # smiles = open("10_rndm_zinc_drugs_clean.smi").read().splitlines()
-    # print("adj_matrix")
-    adj = list(get_adj_matrix_coo(suppl))
-    # number_of_bonds = list(get_num_bonds(suppl))
-
-    # print("bond_types")
-    # bond_types = list(get_bonds_info(suppl))
-    bond_types = []
-
-    for k, mol in enumerate(suppl):
-        # tmp=[]
-        # for i, j in adj[k].t().numpy():
-        #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
-
-        tmp = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in adj[k].t().numpy()]
-        bond_types.append(tmp)
-
-    # targets = list(get_targets(get_atom_symbols(suppl)))
-
-    # num_classes = max(targets) + 1
-    # print("num_classes", num_classes)
-    print("edge_index")
-    edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
-    print(len(edge_index))
-    print(edge_index[0].shape)
-
-    print("node_attr")
-    node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
-    print(len(node_attr))
-    print(node_attr[0].shape)
-
-    print("edge_attr")
-    edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]  # list(seperator(bond_types))
-    print(len(edge_attr))
-    print(edge_attr[0].shape)
-
-    # print("Y_data")
-    args.in_dim = args.g_dim
-    # Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
-    in_dim = args.g_dim  # node_attr[0].shape[-1]
-
-    # dummy data
-    res = [Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
-                edge_attr=torch.tensor([1, 1], dtype=torch.long)) for _ in
-           range(len(input_smiles))]
-    res_mask = [0 for _ in range(len(input_smiles))]
-
-    # d is the actualy index in inputsmile
-    for i, d in enumerate(dex):
-        res_mask[d] = 1
-        res[d] = Data(x=node_attr[i], edge_index=edge_index[i], edge_attr=edge_attr[i])
-
-    return res_mask, res
-
-    return dex, node_attr, edge_index
-
-
-def load_mole_data2(args, filename, tokenizer):
-    args.cache_filename = os.path.splitext(args.train_file)[0] + ".pkl"
-    if args.use_cache and os.path.exists(args.cache_filename):
-        print("Loading Cached Data...")
-        data = load_file(args.cache_filename)
-        train, val, test = data['train'], data['val'], data['test']
-        # for f in [train, val, test]:
-        #     for d in f:
-        #         # d["graph_data"].x=torch.cat([d["graph_data"].x[:, :-13], d["graph_data"].x[:, 8:]])
-        #         d["graph_data"].x[:, 6] = torch.rand_like(d["graph_data"].x[:, 6])
-
-        # d["graph_data"].x = torch.rand_like(d["graph_data"].x)
-        # args.in_dim = train[0]["graph_data"].x.shape[1]
-        args.in_dim = args.g_dim
-
-        print("args.in_dim", args.in_dim)
-        return train, val, test
-
-    if os.path.exists(args.cache_filename):
-        os.remove(args.cache_filename)
-
-    df = pd.read_csv(filename)
-    # samples=df.to_dict(orient='records')
-
-    smiles = []
-    suppl, targets = [], []
-
-    for s, t in zip(list(df['smiles']), list(df[args.tgt_name])):
-        try:
-            c = Chem.MolFromSmiles(s)
-        except Exception as e:
-            print(e)
-            continue
-        if c:
-            smiles.append(s)
-            suppl.append(c)
-            targets.append(t)
-
-    # res, exclude
-    all_atom_properties, dex = get_atom_properties(get_atom_symbols(suppl))
-    args.in_dim = all_atom_properties[0].shape[1]
-
-    args.in_dim = args.g_dim
-    # all_atom_properties[0].shape[1]
-
-    suppl = [suppl[d] for d in dex]
-    targets = [targets[d] for d in dex]
-    smiles = [smiles[d] for d in dex]
-
-    adj = list(get_adj_matrix_coo(suppl))
-    number_of_bonds = list(get_num_bonds(suppl))
-    bond_types = []
-    # print("adj", adj)
-    # exit()
-    # for k, mol in enumerate(suppl):
-    #     # tmp=[]
-    #     # for i, j in adj[k].t().numpy():
-    #     #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
-    #
-    #     tmp = [int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()) for i,j in adj[k].t().numpy()]
-    #     bond_types.append(tmp)
-    #
-    # print(adj[0].shape)
-    # print(len(bond_types[0]))
-
-    # embed()
-    # targets = list(get_targets(get_atom_symbols(suppl)))
-
-    num_classes = max(targets) + 1
-    print("num_classes", num_classes)
-    print("edge_index")
-    edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
-    print("node_attr")
-    node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
-    # list(seperator(all_atom_properties))
-    print("node_attr.shape", node_attr[0].shape)
-
-    print("edge_attr")
-    edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]
-    print("edge_attr.shape", edge_attr[0].shape)
-
-    print("Y_data")
-    Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
-    print("Y_data", Y_data)
-
-    instances = []
-    print("start adding")
-    for i, (s, node_a, edge_i, edge_a, tgt) in enumerate(zip(smiles, node_attr, edge_index, edge_attr, Y_data)):
-        # print("print")
-        # print(tgt)
-        # print(node_a, edge_i, edge_a, tgt)
-        # print(i)
-        # print(s, tgt)
-        # print(Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt))
-        # exit()
-        instances.append({"smiles": s,
-                          "id": i,
-                          "graph_data": Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt),
-                          "tokenizer": tokenizer
-                          })
-
-    # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
-    # instances=[{"smiles":smiles[instance_id],
-    #             "edge_index":edge_index[instance_id],
-    #             "node_attr":node_attr[instance_id],
-    #             "edge_attr":edge_attr[instance_id],
-    #             "Y_data":Y_data[instance_id],
-    #             "instance_id":instance_id,
-    #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
-    train, tmp = model_selection.train_test_split(instances, train_size=0.4, shuffle=False)
-    val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
-
-    if args.cache_filename:
-        dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
-
-    return train, val, test
-
-
-def load_mole_data(args, filename, tokenizer):
-    args.cache_filename = os.path.splitext(args.train_file)[0] + ".pkl"
-    if args.use_cache and os.path.exists(args.cache_filename):
-        print("Loading Cached Data...")
-        data = load_file(args.cache_filename)
-        train, val, test = data['train'], data['val'], data['test']
-        # for f in [train, val, test]:
-        #     for d in f:
-        #         # d["graph_data"].x=torch.cat([d["graph_data"].x[:, :-13], d["graph_data"].x[:, 8:]])
-        #         d["graph_data"].x[:, 6] = torch.rand_like(d["graph_data"].x[:, 6])
-
-        # d["graph_data"].x = torch.rand_like(d["graph_data"].x)
-        # args.in_dim = train[0]["graph_data"].x.shape[1]
-        args.in_dim = args.g_dim
-
-        print("args.in_dim", args.in_dim)
-        return train, val, test
-
-    if os.path.exists(args.cache_filename):
-        os.remove(args.cache_filename)
-
-    df = pd.read_csv(filename)
-    # samples=df.to_dict(orient='records')
-
-    smiles = []
-    suppl, targets = [], []
-
-    for s, t in zip(list(df['smiles']), list(df[args.tgt_name])):
-        try:
-            c = Chem.MolFromSmiles(s)
-        except Exception as e:
-            print(e)
-            continue
-        if c:
-            smiles.append(s)
-            suppl.append(c)
-            targets.append(t)
-
-    # res, exclude
-    all_atom_properties, dex = get_atom_properties(get_atom_symbols(suppl))
-    args.in_dim = args.g_dim
-    # all_atom_properties[0].shape[1]
-
-    suppl = [suppl[d] for d in dex]
-    targets = [targets[d] for d in dex]
-    smiles = [smiles[d] for d in dex]
-
-    adj = list(get_adj_matrix_coo(suppl))
-    number_of_bonds = list(get_num_bonds(suppl))
-    bond_types = []
-    # print("adj", adj)
-    # exit()
-    for k, mol in enumerate(suppl):
-        # tmp=[]
-        # for i, j in adj[k].t().numpy():
-        #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
-
-        tmp = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in adj[k].t().numpy()]
-        bond_types.append(tmp)
-
-    print(adj[0].shape)
-    print(len(bond_types[0]))
-
-    # embed()
-    # targets = list(get_targets(get_atom_symbols(suppl)))
-
-    num_classes = max(targets) + 1
-    print("num_classes", num_classes)
-    print("edge_index")
-    edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
-    print("node_attr")
-    node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
-    # list(seperator(all_atom_properties))
-    print("node_attr.shape", node_attr[0].shape)
-
-    print("edge_attr")
-    edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]
-    print("edge_attr.shape", edge_attr[0].shape)
-
-    print("Y_data")
-    Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
-    print("Y_data", Y_data)
-
-    instances = []
-    print("start adding")
-    for i, (s, node_a, edge_i, edge_a, tgt) in enumerate(zip(smiles, node_attr, edge_index, edge_attr, Y_data)):
-        # print("print")
-        # print(tgt)
-        # print(node_a, edge_i, edge_a, tgt)
-        # print(i)
-        # print(s, tgt)
-        # print(Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt))
-        # exit()
-        instances.append({"smiles": s,
-                          "id": i,
-                          "graph_data": Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt),
-                          "tokenizer": tokenizer
-                          })
-
-    # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
-    # instances=[{"smiles":smiles[instance_id],
-    #             "edge_index":edge_index[instance_id],
-    #             "node_attr":node_attr[instance_id],
-    #             "edge_attr":edge_attr[instance_id],
-    #             "Y_data":Y_data[instance_id],
-    #             "instance_id":instance_id,
-    #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
-    train, tmp = model_selection.train_test_split(instances, train_size=0.6, shuffle=False)
-    val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
-
-    if args.cache_filename:
-        dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
-
-    return train, val, test
+# def retrieve_atom_info(atoms):
+#     res = []
+#     dex = []
+#
+#     """new"""
+#
+#     # atom symbol to id mapping
+#     atom_dict = {}
+#     cur_atoms = [atom.GetSymbol() for atom in atoms]
+#     tmp = []
+#     # print("cur_atoms", cur_atoms)
+#     for atom in cur_atoms:
+#         if atom not in atom_dict:
+#             atom_dict[atom] = len(atom_dict)
+#         tmp.append([atom_dict[atom]])
+#     res.append(tmp)
+#     return res
+#
+#
+# def retreive_graph_info(input_smile, args):
+#     c = None
+#     is_valid = False
+#     if len(input_smile):
+#         try:
+#             c = Chem.MolFromSmiles(input_smile)
+#         except Exception as e:
+#             print(e)
+#
+#
+# def get_graph_info(input_smiles, args):
+#     smiles = []
+#     suppl, targets = [], []
+#     dex = []
+#     for i, s in enumerate(list(input_smiles)):
+#         if s == "[[NULL]]":
+#             # print("isnull")
+#             continue
+#         try:
+#             c = Chem.MolFromSmiles(s)
+#         except Exception as e:
+#             print(e)
+#             continue
+#         if c:
+#             dex.append(i)
+#             smiles.append(s)
+#             suppl.append(c)
+#
+#     # res, exclude
+#     all_atom_properties, tmp_dex = get_atom_properties(get_atom_symbols(suppl))
+#
+#     # updated valid dex
+#     # dex is valid index in original input
+#     dex = [dex[d] for d in tmp_dex]
+#     assert len(tmp_dex) == len(dex), embed()
+#
+#     # args.in_dim = all_atom_properties[0].shape[1]
+#     # print("args.in_dim")
+#
+#     suppl = [suppl[d] for d in tmp_dex]
+#     # targets = [targets[d] for d in dex]
+#     # smiles = [smiles[d] for d in dex]
+#
+#     # suppl = [Chem.MolFromSmiles(s) for s in smiles]
+#
+#     # embed()
+#     # smiles = open("10_rndm_zinc_drugs_clean.smi").read().splitlines()
+#     # print("adj_matrix")
+#     adj = list(get_adj_matrix_coo(suppl))
+#     # number_of_bonds = list(get_num_bonds(suppl))
+#
+#     # print("bond_types")
+#     # bond_types = list(get_bonds_info(suppl))
+#     bond_types = []
+#
+#     for k, mol in enumerate(suppl):
+#         # tmp=[]
+#         # for i, j in adj[k].t().numpy():
+#         #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
+#
+#         tmp = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in adj[k].t().numpy()]
+#         bond_types.append(tmp)
+#
+#     # targets = list(get_targets(get_atom_symbols(suppl)))
+#
+#     # num_classes = max(targets) + 1
+#     # print("num_classes", num_classes)
+#     print("edge_index")
+#     edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
+#     print(len(edge_index))
+#     print(edge_index[0].shape)
+#
+#     print("node_attr")
+#     node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
+#     print(len(node_attr))
+#     print(node_attr[0].shape)
+#
+#     print("edge_attr")
+#     edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]  # list(seperator(bond_types))
+#     print(len(edge_attr))
+#     print(edge_attr[0].shape)
+#
+#     # print("Y_data")
+#     args.in_dim = args.g_dim
+#     # Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
+#     in_dim = args.g_dim  # node_attr[0].shape[-1]
+#
+#     # dummy data
+#     res = [Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
+#                 edge_attr=torch.tensor([1, 1], dtype=torch.long)) for _ in
+#            range(len(input_smiles))]
+#     res_mask = [0 for _ in range(len(input_smiles))]
+#
+#     # d is the actualy index in inputsmile
+#     for i, d in enumerate(dex):
+#         res_mask[d] = 1
+#         res[d] = Data(x=node_attr[i], edge_index=edge_index[i], edge_attr=edge_attr[i])
+#
+#     return res_mask, res
+#
+#     return dex, node_attr, edge_index
+#
+#
+# def load_mole_data2(args, filename, tokenizer):
+#     args.cache_filename = os.path.splitext(args.train_file)[0] + ".pkl"
+#     if args.use_cache and os.path.exists(args.cache_filename):
+#         print("Loading Cached Data...")
+#         data = load_file(args.cache_filename)
+#         train, val, test = data['train'], data['val'], data['test']
+#         # for f in [train, val, test]:
+#         #     for d in f:
+#         #         # d["graph_data"].x=torch.cat([d["graph_data"].x[:, :-13], d["graph_data"].x[:, 8:]])
+#         #         d["graph_data"].x[:, 6] = torch.rand_like(d["graph_data"].x[:, 6])
+#
+#         # d["graph_data"].x = torch.rand_like(d["graph_data"].x)
+#         # args.in_dim = train[0]["graph_data"].x.shape[1]
+#         args.in_dim = args.g_dim
+#
+#         print("args.in_dim", args.in_dim)
+#         return train, val, test
+#
+#     if os.path.exists(args.cache_filename):
+#         os.remove(args.cache_filename)
+#
+#     df = pd.read_csv(filename)
+#     # samples=df.to_dict(orient='records')
+#
+#     smiles = []
+#     suppl, targets = [], []
+#
+#     for s, t in zip(list(df['smiles']), list(df[args.tgt_name])):
+#         try:
+#             c = Chem.MolFromSmiles(s)
+#         except Exception as e:
+#             print(e)
+#             continue
+#         if c:
+#             smiles.append(s)
+#             suppl.append(c)
+#             targets.append(t)
+#
+#     # res, exclude
+#     all_atom_properties, dex = get_atom_properties(get_atom_symbols(suppl))
+#     args.in_dim = all_atom_properties[0].shape[1]
+#
+#     args.in_dim = args.g_dim
+#     # all_atom_properties[0].shape[1]
+#
+#     suppl = [suppl[d] for d in dex]
+#     targets = [targets[d] for d in dex]
+#     smiles = [smiles[d] for d in dex]
+#
+#     adj = list(get_adj_matrix_coo(suppl))
+#     number_of_bonds = list(get_num_bonds(suppl))
+#     bond_types = []
+#     # print("adj", adj)
+#     # exit()
+#     # for k, mol in enumerate(suppl):
+#     #     # tmp=[]
+#     #     # for i, j in adj[k].t().numpy():
+#     #     #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
+#     #
+#     #     tmp = [int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()) for i,j in adj[k].t().numpy()]
+#     #     bond_types.append(tmp)
+#     #
+#     # print(adj[0].shape)
+#     # print(len(bond_types[0]))
+#
+#     # embed()
+#     # targets = list(get_targets(get_atom_symbols(suppl)))
+#
+#     num_classes = max(targets) + 1
+#     print("num_classes", num_classes)
+#     print("edge_index")
+#     edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
+#     print("node_attr")
+#     node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
+#     # list(seperator(all_atom_properties))
+#     print("node_attr.shape", node_attr[0].shape)
+#
+#     print("edge_attr")
+#     edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]
+#     print("edge_attr.shape", edge_attr[0].shape)
+#
+#     print("Y_data")
+#     Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
+#     print("Y_data", Y_data)
+#
+#     instances = []
+#     print("start adding")
+#     for i, (s, node_a, edge_i, edge_a, tgt) in enumerate(zip(smiles, node_attr, edge_index, edge_attr, Y_data)):
+#         # print("print")
+#         # print(tgt)
+#         # print(node_a, edge_i, edge_a, tgt)
+#         # print(i)
+#         # print(s, tgt)
+#         # print(Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt))
+#         # exit()
+#         instances.append({"smiles": s,
+#                           "id": i,
+#                           "graph_data": Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt),
+#                           "tokenizer": tokenizer
+#                           })
+#
+#     # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
+#     # instances=[{"smiles":smiles[instance_id],
+#     #             "edge_index":edge_index[instance_id],
+#     #             "node_attr":node_attr[instance_id],
+#     #             "edge_attr":edge_attr[instance_id],
+#     #             "Y_data":Y_data[instance_id],
+#     #             "instance_id":instance_id,
+#     #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
+#     train, tmp = model_selection.train_test_split(instances, train_size=0.4, shuffle=False)
+#     val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
+#
+#     if args.cache_filename:
+#         dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
+#
+#     return train, val, test
+#
+#
+# def load_mole_data(args, filename, tokenizer):
+#     args.cache_filename = os.path.splitext(args.train_file)[0] + ".pkl"
+#     if args.use_cache and os.path.exists(args.cache_filename):
+#         print("Loading Cached Data...")
+#         data = load_file(args.cache_filename)
+#         train, val, test = data['train'], data['val'], data['test']
+#         # for f in [train, val, test]:
+#         #     for d in f:
+#         #         # d["graph_data"].x=torch.cat([d["graph_data"].x[:, :-13], d["graph_data"].x[:, 8:]])
+#         #         d["graph_data"].x[:, 6] = torch.rand_like(d["graph_data"].x[:, 6])
+#
+#         # d["graph_data"].x = torch.rand_like(d["graph_data"].x)
+#         # args.in_dim = train[0]["graph_data"].x.shape[1]
+#         args.in_dim = args.g_dim
+#
+#         print("args.in_dim", args.in_dim)
+#         return train, val, test
+#
+#     if os.path.exists(args.cache_filename):
+#         os.remove(args.cache_filename)
+#
+#     df = pd.read_csv(filename)
+#     # samples=df.to_dict(orient='records')
+#
+#     smiles = []
+#     suppl, targets = [], []
+#
+#     for s, t in zip(list(df['smiles']), list(df[args.tgt_name])):
+#         try:
+#             c = Chem.MolFromSmiles(s)
+#         except Exception as e:
+#             print(e)
+#             continue
+#         if c:
+#             smiles.append(s)
+#             suppl.append(c)
+#             targets.append(t)
+#
+#     # res, exclude
+#     all_atom_properties, dex = get_atom_properties(get_atom_symbols(suppl))
+#     args.in_dim = args.g_dim
+#     # all_atom_properties[0].shape[1]
+#
+#     suppl = [suppl[d] for d in dex]
+#     targets = [targets[d] for d in dex]
+#     smiles = [smiles[d] for d in dex]
+#
+#     adj = list(get_adj_matrix_coo(suppl))
+#     number_of_bonds = list(get_num_bonds(suppl))
+#     bond_types = []
+#     # print("adj", adj)
+#     # exit()
+#     for k, mol in enumerate(suppl):
+#         # tmp=[]
+#         # for i, j in adj[k].t().numpy():
+#         #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
+#
+#         tmp = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in adj[k].t().numpy()]
+#         bond_types.append(tmp)
+#
+#     print(adj[0].shape)
+#     print(len(bond_types[0]))
+#
+#     # embed()
+#     # targets = list(get_targets(get_atom_symbols(suppl)))
+#
+#     num_classes = max(targets) + 1
+#     print("num_classes", num_classes)
+#     print("edge_index")
+#     edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
+#     print("node_attr")
+#     node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
+#     # list(seperator(all_atom_properties))
+#     print("node_attr.shape", node_attr[0].shape)
+#
+#     print("edge_attr")
+#     edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]
+#     print("edge_attr.shape", edge_attr[0].shape)
+#
+#     print("Y_data")
+#     Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
+#     print("Y_data", Y_data)
+#
+#     instances = []
+#     print("start adding")
+#     for i, (s, node_a, edge_i, edge_a, tgt) in enumerate(zip(smiles, node_attr, edge_index, edge_attr, Y_data)):
+#         # print("print")
+#         # print(tgt)
+#         # print(node_a, edge_i, edge_a, tgt)
+#         # print(i)
+#         # print(s, tgt)
+#         # print(Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt))
+#         # exit()
+#         instances.append({"smiles": s,
+#                           "id": i,
+#                           "graph_data": Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt),
+#                           "tokenizer": tokenizer
+#                           })
+#
+#     # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
+#     # instances=[{"smiles":smiles[instance_id],
+#     #             "edge_index":edge_index[instance_id],
+#     #             "node_attr":node_attr[instance_id],
+#     #             "edge_attr":edge_attr[instance_id],
+#     #             "Y_data":Y_data[instance_id],
+#     #             "instance_id":instance_id,
+#     #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
+#     train, tmp = model_selection.train_test_split(instances, train_size=0.6, shuffle=False)
+#     val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
+#
+#     if args.cache_filename:
+#         dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
+#
+#     return train, val, test
 
 
 class ModalRetriever:
