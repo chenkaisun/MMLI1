@@ -27,14 +27,9 @@ def train(args, model, optimizer, data):
 
     if args.debug:
         torch.autograd.set_detect_anomaly(True)
-
-    # train_data = train_data.instances[:4]
-        # val_data = val_data.instances[:4]
-        # test_data = test_data.instances[:4]
-
-    # collate_fn_map = {"mol_pred": collate_fn
-    #
-    #                   }
+        train_data.instances = train_data.instances[:50]
+        val_data.instances = val_data.instances[:50]
+        test_data.instances = test_data.instances[:50]
 
     if args.exp == "mol_pred":
         train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
@@ -78,6 +73,7 @@ def train(args, model, optimizer, data):
     t_total = time.time()
     num_steps = 0
     logger.debug(f"{len(train_loader)} steps for each epoch")
+    # print("train_iterator",train_iterator)
     for epoch in train_iterator:
         # logger.debug(f"Epoch {epoch}")
         t = time.time()

@@ -40,8 +40,8 @@ if __name__ == '__main__':
     # print("args.g_global_pooling first",args.g_global_pooling)
     if args.debug:
         args.plm = "prajjwal1/bert-tiny"
-        # args.num_epoch = 300
-        # args.batch_size = 4
+        # args.num_epoch = 50
+        args.batch_size = 32
         # args.lr = 1e-4
         # args.grad_accumulation_steps = 32
         # args.plm="prajjwal1/bert-medium"

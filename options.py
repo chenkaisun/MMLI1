@@ -15,8 +15,8 @@ def read_args():
     parser.add_argument("--experiment_path", default="experiment/", type=str)
     parser.add_argument("--exp", default="re", type=str)
     parser.add_argument("--analyze", default=0, type=int)
-    parser.add_argument("--add_concept", default=1, type=int)
-    parser.add_argument("--add_label_text", default=1, type=int)
+    parser.add_argument("--add_concept", default=0, type=int)
+    parser.add_argument("--add_label_text", default=0, type=int)
 
     # data
     parser.add_argument("--seed", type=int, default=0, help="random seed for initialization")
@@ -74,13 +74,13 @@ def read_args():
     parser.add_argument('--mult_mask', default=0, type=int)
     parser.add_argument('--g_mult_mask', default=0, type=int)
     parser.add_argument('--g_global_pooling', default=1, type=int)
-    parser.add_argument('--type_embed', default=1, type=int)
+    parser.add_argument('--type_embed', default=0, type=int)
     parser.add_argument('--cm', default=0, type=int)
 
 
     # auxiliary
     # parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--debug", default=0, type=int, help="Using gpu or cpu", )
+    parser.add_argument("--debug", default=1, type=int, help="Using gpu or cpu", )
     parser.add_argument("--eval", action="store_true")
 
     # # experiment specific
