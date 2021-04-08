@@ -34,7 +34,13 @@ if __name__ == '__main__':
         # data
     args.model_name = "re_model"
     args.exp = "re"
-    args.plm = "allenai/scibert_scivocab_uncased"
+    plm_dict={
+        "base":"bert-base-cased",
+        "sap":"cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR",
+        "sci":"allenai/scibert_scivocab_uncased"
+    }
+    args.plm=plm_dict[args.plm]
+    # args.plm = "allenai/scibert_scivocab_uncased"
     # args.plm = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
     # if args.model_type=="tg": args.g_global_pooling=1
     # print("args.g_global_pooling first",args.g_global_pooling)
