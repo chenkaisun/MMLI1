@@ -99,7 +99,7 @@ def setup_common(args):
         if key in ["use_cache",
                    "batch_size",
                    "plm_lr",
-                   "lr",
+                   "lr","plm",
                    "max_grad_norm",
                    "num_epochs",
                    "grad_accumulation_steps",
