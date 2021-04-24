@@ -47,7 +47,7 @@ if __name__ == '__main__':
     if args.debug:
         args.plm = "prajjwal1/bert-tiny"
         # args.num_epoch = 50
-        args.batch_size = 32
+        args.batch_size = 2
         # args.lr = 1e-4
         # args.grad_accumulation_steps = 32
         # args.plm="prajjwal1/bert-medium"
@@ -69,6 +69,8 @@ if __name__ == '__main__':
     train_data, val_data, test_data = ChemProtDataset(args, train_file, tokenizer, modal_retriever), \
                                       ChemProtDataset(args, val_file, tokenizer, modal_retriever), \
                                       ChemProtDataset(args, test_file, tokenizer, modal_retriever)
+
+    # ef
 
 
     if args.analyze:
