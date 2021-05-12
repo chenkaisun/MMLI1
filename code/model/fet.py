@@ -222,8 +222,8 @@ class FET(torch.nn.Module):
 
         "=========Original Text Encoder=========="
         # embed()
-        print("texts", get_tensor_info(texts))
-        print("texts_attn_mask", get_tensor_info(texts_attn_mask))
+        # print("texts", get_tensor_info(texts))
+        # print("texts_attn_mask", get_tensor_info(texts_attn_mask))
         hid_texts = self.plm(input_ids=texts, attention_mask=texts_attn_mask, return_dict=True).last_hidden_state
 
         hid_mask_texts = None
