@@ -424,6 +424,8 @@ class ChemetDataset(Dataset):
 
     def __init__(self, args, filename, tokenizer=None, modal_retriever=None, labels=None):
 
+        print("\nLoading ChemetDataset...")
+
         args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
         if args.use_cache and os.path.exists(args.cache_filename):
             print("Loading Cached Data...", args.cache_filename)
@@ -448,9 +450,11 @@ class ChemetDataset(Dataset):
         # label_text = [self.label_desc[lb] for lb in self.labels]
         args.out_dim = len(self.label2id)
         print("\nself.label2id", self.label2id)
+        self.original_data = load_file(filename)
+        # with open(filename, mode="r", encoding="utf-8") as fin:
+        #     self.original_data = [line.strip() for i, line in enumerate(fin)]
+        #     self.original_data =load
 
-        with open(filename, mode="r", encoding="utf-8") as fin:
-            self.original_data = [line.strip() for i, line in enumerate(fin)]
 
         # """get sentence segments and mention positions"""
         # # Type 1 multiple mention in each sent
@@ -489,7 +493,9 @@ class ChemetDataset(Dataset):
         self.instances = []
         sample_id = 0
         for idx in range(len(self.original_data)):
-            sample = json.loads(self.original_data[idx])
+            # sample = json.loads(self.original_data[idx])
+            sample = self.original_data[idx]
+
             text = sample["tokens"]
             ent_pos_list = []
 
@@ -552,14 +558,21 @@ class ChemetDataset(Dataset):
     def collect_labels(cls, files, path):
         labels = set()
         for filename in files:
-            with open(filename, mode="r", encoding="utf-8") as fin:
-                data = [line.strip() for i, line in enumerate(fin)]
-                for idx in range(len(data)):
+            data=load_file(filename)
+            for idx in range(len(data)):
 
-                    sample = json.loads(data[idx])
+                sample = data[idx]
 
-                    for m in sample["annotations"]:
-                        labels = labels.union(m["labels"])
+                for m in sample["annotations"]:
+                    labels = labels.union(m["labels"])
+            # with open(filename, mode="r", encoding="utf-8") as fin:
+            #     data = [line.strip() for i, line in enumerate(fin)]
+            #     for idx in range(len(data)):
+            #
+            #         sample = json.loads(data[idx])
+            #
+            #         for m in sample["annotations"]:
+            #             labels = labels.union(m["labels"])
         labels = list(labels)
         dump_file(labels, path)
 

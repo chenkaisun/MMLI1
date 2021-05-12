@@ -142,18 +142,18 @@ class FET(torch.nn.Module):
 
         if "g" in self.model_type and "d" not in self.model_type:
             self.gnn = MoleGNN2(args)
-        if "g" in self.model_type and "d" in self.model_type:
+        if "m" in self.model_type:
             self.cm_attn = CrossModal(args)
         final_dim = args.plm_hidden_dim
 
-        if 'tdg' in args.model_type:
-            print("args.tdg")
+        if 'tdgm' in args.model_type:
+            print("args.tdgm")
             self.combiner = Linear(args.plm_hidden_dim * 5, args.out_dim)
-        elif 'tg' in args.model_type:
+        elif 'tdg' in args.model_type:
+            print("args.tdg")
+            self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
+        elif 'tg' in args.model_type or 'td' in args.model_type:
             print("args.tg")
-            self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
-        elif 'td' in args.model_type:
-            print("args.td")
             self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
         elif 't' in args.model_type:
             print("args.t")
@@ -167,7 +167,7 @@ class FET(torch.nn.Module):
 
         # self.text_transform = Linear(args.plm_hidden_dim, args.g_dim)
 
-        self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
+        # self.criterion = LabelSmoothingCrossEntropy(reduction='sum')
         self.dropout = args.dropout
 
         # self.loss = torch.nn.CrossEntropyLoss()
@@ -246,18 +246,18 @@ class FET(torch.nn.Module):
             ent1_mask_embeds = torch.stack(ent1_mask_embeds, dim=0)  # [n_e, d]
             final_vec.append(ent1_mask_embeds)
 
-        "=========Cross Modal=========="
+        "=========Multi-Modal=========="
 
         if "d" in self.model_type:
             hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state
-            if "g" not in self.model_type:
+            if "m" not in self.model_type :
                 final_vec.append(hid_ent1_d[:, 0, :])
 
-        if "g" in self.model_type and "d" not in self.model_type:
+        if "g" in self.model_type and "m" not in self.model_type:
             hid_ent1_g = self.gnn(batch_ent1_g, args.g_global_pooling)  # * batch_ent1_g_mask
             final_vec.append(hid_ent1_g)
 
-        if "g" in self.model_type and "d" in self.model_type:
+        if "m" in self.model_type:
             cm_out = self.cm_attn(batch_ent1_g, hid_ent1_d, batch_ent1_d_mask, batch_ent1_g_mask)
             final_vec.append(cm_out)
         "=========Classification=========="

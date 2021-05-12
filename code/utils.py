@@ -82,6 +82,8 @@ def join(str1, str2):
 
 def get_ext(filename):
     return os.path.splitext(filename)[1]
+def get_path_name(filename):
+    return os.path.splitext(filename)[0]
 
 
 def dump_file(obj, filename):
@@ -101,11 +103,29 @@ def load_file(filename):
     if get_ext(filename) == ".json":
         with open(filename, "r", encoding="utf-8") as r:
             res = json.load(r)
+            # try:
+            #     res = json.load(r)
+            # except:
+            #     print("here")
+            #     res = [json.loads(line.strip()) for i, line in enumerate(r)]
+            #     return res
+            #     print(r)
+
+
     elif get_ext(filename) == ".pkl":
         with open(filename, "rb") as r:
             res = pkl.load(r)
     return res
 
+
+def load_file_lines(filename):
+    if get_ext(filename) == ".json":
+        with open(filename, mode="r", encoding="utf-8") as fin:
+            res = [json.loads(line.strip()) for i, line in enumerate(fin)]
+    elif get_ext(filename) == ".pkl":
+        with open(filename, "rb") as r:
+            res = pkl.load(r)
+    return res
 
 def mkdir(dir):
     if not os.path.isdir(dir):

@@ -81,14 +81,12 @@ def setup_common(args):
     else:
         args.plm_hidden_dim = 768
 
-    print(args.model_name)
     model = get_model(args)
     # view_model_param(args, model)
 
-    downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder",
-                         "query_encoder", "map2smaller", "cm_attn", 'l_filter', 'gnn', 'the_zero','the_one']
+    # downstream_layers = ["combiner", "gnn", "cm_attn", 'gnn', 'the_zero','the_one']
 
-    optimizer = get_optimizer(args, model, downstream_layers)
+    optimizer = get_optimizer(args, model, args.downstream_layers)
     # print(model.named_parameters())
     # print("model", model)
     print("optimizer built")
@@ -100,34 +98,10 @@ def setup_common(args):
     args.logger.debug("=====begin of args=====")
 
     arg_dict = vars(args)
-    # args.important_hparams = {}
-    for key in sorted(arg_dict.keys()):
-
-        if key in ["use_cache",
-                   "batch_size",
-                   "plm_lr",
-                   "lr","plm",
-                   "max_grad_norm",
-                   "num_epochs",
-                   "grad_accumulation_steps",
-                   "dropout",
-                   "g_dim",
-                   "num_gnn_layers",
-                   "plm_hidden_dim",
-                   "model_type",
-                   "mult_mask",
-                   "g_mult_mask",
-                   "g_global_pooling",
-                   "debug","add_concept" ,"add_label_text"]:
-            args.logger.debug(f"{key}: {arg_dict[key]}")
+    for key in args.useful_params:
+        args.logger.debug(f"{key}: {arg_dict[key]}")
     args.logger.debug("=====end of args=====")
 
-    # print(sys.argv)
-    # args.logger(args)
-    # print(vars(args))
-    # max_chr_len=max([len(s) for s in arg_dict])
-    # print("arg_dict", arg_dict)
-    # embed()
     return args, model, optimizer
 
 

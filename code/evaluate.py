@@ -10,6 +10,12 @@ from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_square
 import numpy as np
 from data import collate_wrapper, collate_fn
 from pprint import pprint as pp
+from sklearn.metrics import accuracy_score
+
+a=np.array([[1,1],[0,1]])
+b=np.array([[1,1],[1,0]])
+
+accuracy_score(a,b)
 
 def get_prf(targets, preds, average="micro", verbose=False):
     precision = precision_score(targets, preds, average=average)
@@ -19,6 +25,13 @@ def get_prf(targets, preds, average="micro", verbose=False):
     if verbose: print(f"{average}: precision {precision} recall {recall} f1 {f1}")
     return precision, recall, f1
 
+def get_acc(targets, preds, average="micro", verbose=False):
+    precision = precision_score(targets, preds, average=average)
+    recall = recall_score(targets, preds, average=average)
+    f1 = f1_score(targets, preds, average=average)
+    # print(precision, recall, f1)
+    if verbose: print(f"{average}: precision {precision} recall {recall} f1 {f1}")
+    return precision, recall, f1
 
 def evaluate(args, model, data):
     # print("Evaluate")
@@ -50,13 +63,13 @@ def evaluate(args, model, data):
 
         with torch.no_grad():
             pred = model(inputs, args)
-            pred = list(pred.cpu().numpy())
+            pred = pred.cpu().tolist()
             preds.extend(pred)
             ids.extend(batch.ids)
             if args.exp == "mol_pred":
                 targets.extend(list(inputs.batch_graph_data.y.cpu().numpy()))
             else:
-                targets.extend(list(inputs.labels.cpu().numpy()))
+                targets.extend(inputs.labels.cpu().tolist())
 
             # print(preds, targets)
 
@@ -78,9 +91,14 @@ def evaluate(args, model, data):
     else:
 
         # print("targets, preds",targets, preds)
+        # preds=preds.tolist()
+        precision, recall, score = get_prf(targets, preds, average="micro", verbose=True)
+        acc=accuracy_score(targets,preds)
+        # print("targets",targets)
+        # print("targets", len(targets), len(targets[0]))
+        # print("preds",len(preds), len(preds[0]))
 
-        precision, recall, score = get_prf(targets, preds.tolist(), average="micro")
-        # args.logger.debug(f"score {score}", )
+        args.logger.debug(f"acc {acc}", )
         # precision, recall, score = get_prf(targets, preds, average="samples")
 
     # output = None
