@@ -1,7 +1,7 @@
 import numpy as np
 from rdkit import Chem
 from pprint import pprint as pp
-from features import *
+# from features import *
 from torch_geometric.data import Data, Batch
 from IPython import embed
 import os
@@ -612,303 +612,303 @@ class ChemetDataset(Dataset):
         self.prot_mentions = prot_mentions
 
 
-class ChemProtDataset(Dataset):
-    """Face Landmarks dataset."""
-
-    def __init__(self, args, filename, tokenizer, modal_retriever, labels):
-        args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
-        if args.use_cache and os.path.exists(args.cache_filename):
-            print("Loading Cached Data...", args.cache_filename)
-            data = load_file(args.cache_filename)
-            args.out_dim = len(data['rel2id'])
-            print("args.in_dim", args.in_dim)
-            print("args.out_dim", args.out_dim)
-            print(data['rel2id'])
-            self.instances = data['instances']
-            # embed()
-            return
-
-        self.mention2cid, self.cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
-                                           load_file("data_online/ChemProt_Corpus/cmpd_info.json")
-        self.mention2protid, self.prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
-                                              load_file("data_online/ChemProt_Corpus/prot_info.json")
-        self.mention2concepts = load_file("data_online/ChemProt_Corpus/mention2concepts.json")
-
-        # self.chem_mentions = load_file("data_online/ChemProt_Corpus/chem_mentions.json")
-        self.get_mentions()
-
-        self.modal_retriever = modal_retriever
-
-        self.rels = ['AGONIST-ACTIVATOR',
-                     'DOWNREGULATOR',
-                     'SUBSTRATE_PRODUCT-OF',
-                     'AGONIST',
-                     'INHIBITOR',
-                     'PRODUCT-OF',
-                     'ANTAGONIST',
-                     'ACTIVATOR',
-                     'INDIRECT-UPREGULATOR',
-                     'SUBSTRATE',
-                     'INDIRECT-DOWNREGULATOR',
-                     'AGONIST-INHIBITOR',
-                     'UPREGULATOR', ]
-
-        self.label_desc = {'AGONIST-ACTIVATOR': "Agonists bind to a receptor and increase its biological response.",
-                           'DOWNREGULATOR': "Chemical down-regulates Gene/Protein",
-                           'SUBSTRATE_PRODUCT-OF': "Chemicals that are both, substrate and products of enzymatic reactions.",
-                           'AGONIST': "A Chemical binds to a receptor and alters the receptor state resulting in a biological response.",
-                           'INHIBITOR': "Chemical binds to a Gene/Protein (typically a protein) and decreases its activity",
-                           'PRODUCT-OF': "Chemical as the product of an enzymatic reaction or a transporter",
-                           'ANTAGONIST': "Chemical reduces the action of another Chemical, generally an agonist.",
-                           'ACTIVATOR': "Chemical binds to a Gene/Protein (typically a protein) and decreases its activity",
-                           'INDIRECT-UPREGULATOR': "Chemicals that induce/stimulate/enhance the frequency, "
-                                                   "rate or extent of gene expression or transcription, protein expression, "
-                                                   "protein release/uptake or protein functions.",
-                           'SUBSTRATE': "Chemical upon which a Gene/Protein (typically protein) acts.",
-                           'INDIRECT-DOWNREGULATOR': "Chemicals that decrease gene expression or transcription, "
-                                                     "protein expression, protein release /uptake or indirectly, "
-                                                     "protein functions.",
-                           'AGONIST-INHIBITOR': "Agonists bind to a receptor and decrease its biological response.",
-                           'UPREGULATOR': "Chemical up-regulates Gene/Protein"}
-
-        self.rel2id = {rel: i for i, rel in enumerate(self.rels)}
-        print("self.rel2id", self.rel2id)
-
-        args.out_dim = len(self.rel2id)
-
-        with open(filename, mode="r", encoding="utf-8") as fin:
-            self.original_data = [line.strip() for i, line in enumerate(fin)]
-
-        self.tokenizer = tokenizer
-
-        """loading"""
-        self.instances = []
-        label_text = [self.label_desc[lb] for lb in self.rels]
-        # print('label_text', label_text)
-
-        """get sentence segments and mention positions"""
-        orig_data = {}
-        for idx in range(len(self.original_data)):
-            sample = json.loads(self.original_data[idx])
-            tmp = text = sample["text"]
-            for bracket in ["<< ", " >>", "[[ ", " ]]"]: tmp = tmp.replace(bracket, "")
-            if tmp not in orig_data:
-                orig_data[tmp] = set()
-            orig_data[tmp].add((text.find("<< "), text.find(" >>") - 3))
-            orig_data[tmp].add((text.find("[[ ") - 6, text.find(" ]]") - 9))
-
-        for i, sent in enumerate(orig_data):
-            tmp = {"range2segpos": {}, "segs": []}
-            sorted_ranges = sorted(list(orig_data[sent]))
-
-            prev_e = 0
-
-            # context, mention1, context, mention2,...
-            for j, rg in enumerate(sorted_ranges):
-                s, e = rg
-
-                tmp["segs"].append(sent[prev_e:s])
-                tmp["segs"].append(sent[s:e])
-                tmp["range2segpos"][rg] = j * 2 + 1
-                prev_e = e
-            tmp["segs"].append(sent[prev_e:])
-            orig_data[sent] = tmp
-            # print("orig_data",orig_data[sent])
-        for idx in range(len(self.original_data)):
-            # if torch.is_tensor(idx):
-            #     idx = idx.tolist()
-
-            sample = json.loads(self.original_data[idx])
-            label = self.rel2id[sample["label"]]
-            # print(label)
-
-            assert not sample["metadata"]
-
-            """convert to tokens"""
-            text = sample["text"]
-            tokenizer = self.tokenizer
-            # print(text)
-
-            # map all mentions with "*"
-            tmp = text
-            for bracket in ["<< ", " >>", "[[ ", " ]]"]: tmp = tmp.replace(bracket, "")
-            segs = deepcopy(orig_data[tmp]["segs"])
-            range2segpos = orig_data[tmp]["range2segpos"]
-            # print(segs)
-
-            # print(orig_data[tmp])
-            # print((text.find("<< "), text.find(" >>") - 3))
-            # print((text.find("[[ ") - 6, text.find(" ]]") - 9))
-            # embed()
-
-            # index in segs
-            ind1 = range2segpos[(text.find("<< "), text.find(" >>") - 3)]
-            ind2 = range2segpos[(text.find("[[ ") - 6, text.find(" ]]") - 9)]
-            # tmp_segs[ind1] = "<< " + tmp_segs[ind1][1:-1] + " >>"
-            # tmp_segs[ind2] = "[[ " + tmp_segs[ind2][1:-1] + " ]]"
-            # text = "".join(tmp_segs)
-            # # print(tmp_segs)
-
-            # exclusive
-            ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
-            ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
-            assert ent1_spos < ent2_spos, "ent1 after ent2"
-            orig_ent1, orig_ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
-            # ent1, ent2 = orig_ent1, orig_ent2
-            # print(orig_ent1, orig_ent2)
-            # print(segs[ind1], segs[ind2])
-            if args.add_concept:
-                ent1_c, ent2_c = list(self.mention2concepts[orig_ent1].keys())[:5], \
-                                 list(self.mention2concepts[orig_ent2].keys())[:5]
-                ent1_c = " (e.g., " + ", ".join(ent1_c) + ")" if ent1_c else ""
-                ent2_c = " (e.g., " + ", ".join(ent2_c) + ")" if ent2_c else ""
-                segs[ind1] = segs[ind1] + ent1_c
-                segs[ind2] = segs[ind2] + ent2_c
-                # print(segs)
-
-                # range1, range2, range3 = text[:ent1_epos], text[ent1_epos:ent2_epos], text[ent2_epos:]
-                # ent1_c, ent2_c = list(self.mention2concepts[orig_ent1].keys())[:5], \
-                #                  list(self.mention2concepts[orig_ent2].keys())[:5]
-                # ent1_c = " (e.g., " + ", ".join(ent1_c) + ")" if ent1_c else ""
-                # ent2_c = " (e.g., " + ", ".join(ent2_c) + ")" if ent2_c else ""
-                # text = range1 + ent1_c + range2 + ent2_c + range3
-                # print(text)
-                #
-                # ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
-                # ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
-                # ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
-            # lower case
-
-            tokens = []
-            cur_len = 0
-            new_ent1_pos, new_ent2_pos = None, None
-            for j, seg in enumerate(segs):
-                seg_tks = tokenizer.tokenize(seg)
-
-                # mention
-                if j in range2segpos.values():
-                    seg_tks = ["*"] + seg_tks + ["*"]
-                if j == ind1:
-                    new_ent1_pos = (1 + cur_len, 1 + cur_len + len(seg_tks))
-                elif j == ind2:
-                    new_ent2_pos = (1 + cur_len, 1 + cur_len + len(seg_tks))
-                tokens += seg_tks
-                cur_len += len(seg_tks)
-            # print("tokens",tokens)
-            # print("new_ent1_pos",new_ent1_pos)
-            # print("new_ent2_pos",new_ent2_pos)
-            # prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:(ent1_spos - 3)]), \
-            #                                         tokenizer.tokenize(text[(ent1_epos + 3):(ent2_spos - 3)]), \
-            #                                         tokenizer.tokenize(text[(ent2_epos + 3):])
-            # ent1_tokens, ent2_tokens = ["*"] + tokenizer.tokenize(ent1) + ["*"], \
-            #                            ["*"] + tokenizer.tokenize(ent2) + ["*"]
-            #
-            # # print("ent1_tokens", ent1_tokens)
-            # # print("ent2_tokens", ent2_tokens)
-            # # print("prior_tokens", prior_tokens)
-            # # print("mid_tokens", mid_tokens)
-            # # print("post_tokens", post_tokens)
-            # tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
-            #
-            # # +1 for CLS
-            # s_pos = len(prior_tokens) + 1
-            # new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
-            # s_pos += len(ent1_tokens) + len(mid_tokens)
-            # new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
-
-            # print(tokens)
-            # print(new_ent1_pos)
-            # print(new_ent2_pos)
-            # embed()
-            input_ids = tokenizer.convert_tokens_to_ids(tokens)
-            token_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
-
-            if orig_ent2 in self.chem_mentions:  # or ent1 in self.mention2protid
-                # print("swapped")
-                orig_ent1, orig_ent2 = orig_ent2, orig_ent1
-                new_ent1_pos, new_ent2_pos = new_ent2_pos, new_ent1_pos
-            # print(ent1)
-            # print(ent2)
-            # ent_pos = [new_ent1_pos, new_ent2_pos]
-
-            ent_template = {
-                "g": None,
-                "g_mask": None,
-                "t": None,
-                "t_mask": None,
-                "pos": None,
-            }
-
-            ent1_dict = deepcopy(ent_template)
-            ent2_dict = deepcopy(ent_template)
-            # print("empty1", ent1_dict)
-            # print("empty2", ent2_dict)
-
-            ent1_dict["pos"] = new_ent1_pos
-            ent2_dict["pos"] = new_ent2_pos
-
-            ent1_dict['g'], ent1_dict['g_mask'], ent1_dict['t'], ent1_dict['t_mask'] = self.modal_retriever.get_mol(
-                orig_ent1)
-            ent2_dict['t'], ent2_dict['t_mask'] = self.modal_retriever.get_prot(orig_ent2)
-            # print(ent1_dict)
-
-            # print(ent2_dict)
-            # ent1_dict['t']=tokenizer.build_inputs_with_special_tokens(tokenizer.convert_tokens_to_ids( ent1_dict['t']))
-            # ent2_dict['t'] = tokenizer.build_inputs_with_special_tokens(tokenizer.convert_tokens_to_ids(ent2_dict['t']))
-
-            self.instances.append({"text": token_ids,
-                                   "id": idx,
-                                   "label": label,
-                                   "ent": [ent1_dict, ent2_dict],
-                                   "label_text": label_text,
-                                   "tokenizer": tokenizer
-                                   })
-
-        if args.cache_filename:
-            dump_file({"instances": self.instances, "rel2id": self.rel2id}, args.cache_filename)
-
-    def __len__(self):
-        return len(self.instances)
-
-    def __getitem__(self, idx):
-        return self.instances[idx]
-
-    @classmethod
-    def c(cls):
-        print("cls")
-
-    def get_mentions(self):
-        data_dir = 'data_online/ChemProt_Corpus/'
-        tr = join(data_dir, "chemprot_training/chemprot_training_entities.tsv")
-        dev = join(data_dir, "chemprot_development/chemprot_development_entities.tsv")
-        test = join(data_dir, "chemprot_test_gs/chemprot_test_entities_gs.tsv")
-
-        chem_mentions = {}
-        prot_mentions = {}
-
-        if os.path.exists(join(data_dir, "chem_mentions.json")):
-            chem_mentions = load_file(join(data_dir, "chem_mentions.json"))
-            prot_mentions = load_file(join(data_dir, "prot_mentions.json"))
-        else:
-            for file in [tr, dev, test]:
-                with open(file, encoding='utf-8') as fd:
-                    rd = list(csv.reader(fd, delimiter="\t", quotechar='"'))
-
-                    for i, row in enumerate(rd):
-
-                        if not row: continue
-                        if row[2] == "CHEMICAL":
-                            if row[-1] not in chem_mentions:
-                                chem_mentions[row[-1]] = 0
-                            chem_mentions[row[-1]] += 1
-                        else:
-                            if row[-1] not in prot_mentions:
-                                prot_mentions[row[-1]] = 0
-                            prot_mentions[row[-1]] += 1
-            dump_file(chem_mentions, join(data_dir, "chem_mentions.json"))
-            dump_file(prot_mentions, join(data_dir, "prot_mentions.json"))
-        self.chem_mentions = chem_mentions
-        self.prot_mentions = prot_mentions
+# class ChemProtDataset(Dataset):
+#     """Face Landmarks dataset."""
+#
+#     def __init__(self, args, filename, tokenizer, modal_retriever, labels):
+#         args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
+#         if args.use_cache and os.path.exists(args.cache_filename):
+#             print("Loading Cached Data...", args.cache_filename)
+#             data = load_file(args.cache_filename)
+#             args.out_dim = len(data['rel2id'])
+#             print("args.in_dim", args.in_dim)
+#             print("args.out_dim", args.out_dim)
+#             print(data['rel2id'])
+#             self.instances = data['instances']
+#             # embed()
+#             return
+#
+#         self.mention2cid, self.cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
+#                                            load_file("data_online/ChemProt_Corpus/cmpd_info.json")
+#         self.mention2protid, self.prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
+#                                               load_file("data_online/ChemProt_Corpus/prot_info.json")
+#         self.mention2concepts = load_file("data_online/ChemProt_Corpus/mention2concepts.json")
+#
+#         # self.chem_mentions = load_file("data_online/ChemProt_Corpus/chem_mentions.json")
+#         self.get_mentions()
+#
+#         self.modal_retriever = modal_retriever
+#
+#         self.rels = ['AGONIST-ACTIVATOR',
+#                      'DOWNREGULATOR',
+#                      'SUBSTRATE_PRODUCT-OF',
+#                      'AGONIST',
+#                      'INHIBITOR',
+#                      'PRODUCT-OF',
+#                      'ANTAGONIST',
+#                      'ACTIVATOR',
+#                      'INDIRECT-UPREGULATOR',
+#                      'SUBSTRATE',
+#                      'INDIRECT-DOWNREGULATOR',
+#                      'AGONIST-INHIBITOR',
+#                      'UPREGULATOR', ]
+#
+#         self.label_desc = {'AGONIST-ACTIVATOR': "Agonists bind to a receptor and increase its biological response.",
+#                            'DOWNREGULATOR': "Chemical down-regulates Gene/Protein",
+#                            'SUBSTRATE_PRODUCT-OF': "Chemicals that are both, substrate and products of enzymatic reactions.",
+#                            'AGONIST': "A Chemical binds to a receptor and alters the receptor state resulting in a biological response.",
+#                            'INHIBITOR': "Chemical binds to a Gene/Protein (typically a protein) and decreases its activity",
+#                            'PRODUCT-OF': "Chemical as the product of an enzymatic reaction or a transporter",
+#                            'ANTAGONIST': "Chemical reduces the action of another Chemical, generally an agonist.",
+#                            'ACTIVATOR': "Chemical binds to a Gene/Protein (typically a protein) and decreases its activity",
+#                            'INDIRECT-UPREGULATOR': "Chemicals that induce/stimulate/enhance the frequency, "
+#                                                    "rate or extent of gene expression or transcription, protein expression, "
+#                                                    "protein release/uptake or protein functions.",
+#                            'SUBSTRATE': "Chemical upon which a Gene/Protein (typically protein) acts.",
+#                            'INDIRECT-DOWNREGULATOR': "Chemicals that decrease gene expression or transcription, "
+#                                                      "protein expression, protein release /uptake or indirectly, "
+#                                                      "protein functions.",
+#                            'AGONIST-INHIBITOR': "Agonists bind to a receptor and decrease its biological response.",
+#                            'UPREGULATOR': "Chemical up-regulates Gene/Protein"}
+#
+#         self.rel2id = {rel: i for i, rel in enumerate(self.rels)}
+#         print("self.rel2id", self.rel2id)
+#
+#         args.out_dim = len(self.rel2id)
+#
+#         with open(filename, mode="r", encoding="utf-8") as fin:
+#             self.original_data = [line.strip() for i, line in enumerate(fin)]
+#
+#         self.tokenizer = tokenizer
+#
+#         """loading"""
+#         self.instances = []
+#         label_text = [self.label_desc[lb] for lb in self.rels]
+#         # print('label_text', label_text)
+#
+#         """get sentence segments and mention positions"""
+#         orig_data = {}
+#         for idx in range(len(self.original_data)):
+#             sample = json.loads(self.original_data[idx])
+#             tmp = text = sample["text"]
+#             for bracket in ["<< ", " >>", "[[ ", " ]]"]: tmp = tmp.replace(bracket, "")
+#             if tmp not in orig_data:
+#                 orig_data[tmp] = set()
+#             orig_data[tmp].add((text.find("<< "), text.find(" >>") - 3))
+#             orig_data[tmp].add((text.find("[[ ") - 6, text.find(" ]]") - 9))
+#
+#         for i, sent in enumerate(orig_data):
+#             tmp = {"range2segpos": {}, "segs": []}
+#             sorted_ranges = sorted(list(orig_data[sent]))
+#
+#             prev_e = 0
+#
+#             # context, mention1, context, mention2,...
+#             for j, rg in enumerate(sorted_ranges):
+#                 s, e = rg
+#
+#                 tmp["segs"].append(sent[prev_e:s])
+#                 tmp["segs"].append(sent[s:e])
+#                 tmp["range2segpos"][rg] = j * 2 + 1
+#                 prev_e = e
+#             tmp["segs"].append(sent[prev_e:])
+#             orig_data[sent] = tmp
+#             # print("orig_data",orig_data[sent])
+#         for idx in range(len(self.original_data)):
+#             # if torch.is_tensor(idx):
+#             #     idx = idx.tolist()
+#
+#             sample = json.loads(self.original_data[idx])
+#             label = self.rel2id[sample["label"]]
+#             # print(label)
+#
+#             assert not sample["metadata"]
+#
+#             """convert to tokens"""
+#             text = sample["text"]
+#             tokenizer = self.tokenizer
+#             # print(text)
+#
+#             # map all mentions with "*"
+#             tmp = text
+#             for bracket in ["<< ", " >>", "[[ ", " ]]"]: tmp = tmp.replace(bracket, "")
+#             segs = deepcopy(orig_data[tmp]["segs"])
+#             range2segpos = orig_data[tmp]["range2segpos"]
+#             # print(segs)
+#
+#             # print(orig_data[tmp])
+#             # print((text.find("<< "), text.find(" >>") - 3))
+#             # print((text.find("[[ ") - 6, text.find(" ]]") - 9))
+#             # embed()
+#
+#             # index in segs
+#             ind1 = range2segpos[(text.find("<< "), text.find(" >>") - 3)]
+#             ind2 = range2segpos[(text.find("[[ ") - 6, text.find(" ]]") - 9)]
+#             # tmp_segs[ind1] = "<< " + tmp_segs[ind1][1:-1] + " >>"
+#             # tmp_segs[ind2] = "[[ " + tmp_segs[ind2][1:-1] + " ]]"
+#             # text = "".join(tmp_segs)
+#             # # print(tmp_segs)
+#
+#             # exclusive
+#             ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
+#             ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
+#             assert ent1_spos < ent2_spos, "ent1 after ent2"
+#             orig_ent1, orig_ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
+#             # ent1, ent2 = orig_ent1, orig_ent2
+#             # print(orig_ent1, orig_ent2)
+#             # print(segs[ind1], segs[ind2])
+#             if args.add_concept:
+#                 ent1_c, ent2_c = list(self.mention2concepts[orig_ent1].keys())[:5], \
+#                                  list(self.mention2concepts[orig_ent2].keys())[:5]
+#                 ent1_c = " (e.g., " + ", ".join(ent1_c) + ")" if ent1_c else ""
+#                 ent2_c = " (e.g., " + ", ".join(ent2_c) + ")" if ent2_c else ""
+#                 segs[ind1] = segs[ind1] + ent1_c
+#                 segs[ind2] = segs[ind2] + ent2_c
+#                 # print(segs)
+#
+#                 # range1, range2, range3 = text[:ent1_epos], text[ent1_epos:ent2_epos], text[ent2_epos:]
+#                 # ent1_c, ent2_c = list(self.mention2concepts[orig_ent1].keys())[:5], \
+#                 #                  list(self.mention2concepts[orig_ent2].keys())[:5]
+#                 # ent1_c = " (e.g., " + ", ".join(ent1_c) + ")" if ent1_c else ""
+#                 # ent2_c = " (e.g., " + ", ".join(ent2_c) + ")" if ent2_c else ""
+#                 # text = range1 + ent1_c + range2 + ent2_c + range3
+#                 # print(text)
+#                 #
+#                 # ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
+#                 # ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
+#                 # ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
+#             # lower case
+#
+#             tokens = []
+#             cur_len = 0
+#             new_ent1_pos, new_ent2_pos = None, None
+#             for j, seg in enumerate(segs):
+#                 seg_tks = tokenizer.tokenize(seg)
+#
+#                 # mention
+#                 if j in range2segpos.values():
+#                     seg_tks = ["*"] + seg_tks + ["*"]
+#                 if j == ind1:
+#                     new_ent1_pos = (1 + cur_len, 1 + cur_len + len(seg_tks))
+#                 elif j == ind2:
+#                     new_ent2_pos = (1 + cur_len, 1 + cur_len + len(seg_tks))
+#                 tokens += seg_tks
+#                 cur_len += len(seg_tks)
+#             # print("tokens",tokens)
+#             # print("new_ent1_pos",new_ent1_pos)
+#             # print("new_ent2_pos",new_ent2_pos)
+#             # prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:(ent1_spos - 3)]), \
+#             #                                         tokenizer.tokenize(text[(ent1_epos + 3):(ent2_spos - 3)]), \
+#             #                                         tokenizer.tokenize(text[(ent2_epos + 3):])
+#             # ent1_tokens, ent2_tokens = ["*"] + tokenizer.tokenize(ent1) + ["*"], \
+#             #                            ["*"] + tokenizer.tokenize(ent2) + ["*"]
+#             #
+#             # # print("ent1_tokens", ent1_tokens)
+#             # # print("ent2_tokens", ent2_tokens)
+#             # # print("prior_tokens", prior_tokens)
+#             # # print("mid_tokens", mid_tokens)
+#             # # print("post_tokens", post_tokens)
+#             # tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
+#             #
+#             # # +1 for CLS
+#             # s_pos = len(prior_tokens) + 1
+#             # new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
+#             # s_pos += len(ent1_tokens) + len(mid_tokens)
+#             # new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
+#
+#             # print(tokens)
+#             # print(new_ent1_pos)
+#             # print(new_ent2_pos)
+#             # embed()
+#             input_ids = tokenizer.convert_tokens_to_ids(tokens)
+#             token_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
+#
+#             if orig_ent2 in self.chem_mentions:  # or ent1 in self.mention2protid
+#                 # print("swapped")
+#                 orig_ent1, orig_ent2 = orig_ent2, orig_ent1
+#                 new_ent1_pos, new_ent2_pos = new_ent2_pos, new_ent1_pos
+#             # print(ent1)
+#             # print(ent2)
+#             # ent_pos = [new_ent1_pos, new_ent2_pos]
+#
+#             ent_template = {
+#                 "g": None,
+#                 "g_mask": None,
+#                 "t": None,
+#                 "t_mask": None,
+#                 "pos": None,
+#             }
+#
+#             ent1_dict = deepcopy(ent_template)
+#             ent2_dict = deepcopy(ent_template)
+#             # print("empty1", ent1_dict)
+#             # print("empty2", ent2_dict)
+#
+#             ent1_dict["pos"] = new_ent1_pos
+#             ent2_dict["pos"] = new_ent2_pos
+#
+#             ent1_dict['g'], ent1_dict['g_mask'], ent1_dict['t'], ent1_dict['t_mask'] = self.modal_retriever.get_mol(
+#                 orig_ent1)
+#             ent2_dict['t'], ent2_dict['t_mask'] = self.modal_retriever.get_prot(orig_ent2)
+#             # print(ent1_dict)
+#
+#             # print(ent2_dict)
+#             # ent1_dict['t']=tokenizer.build_inputs_with_special_tokens(tokenizer.convert_tokens_to_ids( ent1_dict['t']))
+#             # ent2_dict['t'] = tokenizer.build_inputs_with_special_tokens(tokenizer.convert_tokens_to_ids(ent2_dict['t']))
+#
+#             self.instances.append({"text": token_ids,
+#                                    "id": idx,
+#                                    "label": label,
+#                                    "ent": [ent1_dict, ent2_dict],
+#                                    "label_text": label_text,
+#                                    "tokenizer": tokenizer
+#                                    })
+#
+#         if args.cache_filename:
+#             dump_file({"instances": self.instances, "rel2id": self.rel2id}, args.cache_filename)
+#
+#     def __len__(self):
+#         return len(self.instances)
+#
+#     def __getitem__(self, idx):
+#         return self.instances[idx]
+#
+#     @classmethod
+#     def c(cls):
+#         print("cls")
+#
+#     def get_mentions(self):
+#         data_dir = 'data_online/ChemProt_Corpus/'
+#         tr = join(data_dir, "chemprot_training/chemprot_training_entities.tsv")
+#         dev = join(data_dir, "chemprot_development/chemprot_development_entities.tsv")
+#         test = join(data_dir, "chemprot_test_gs/chemprot_test_entities_gs.tsv")
+#
+#         chem_mentions = {}
+#         prot_mentions = {}
+#
+#         if os.path.exists(join(data_dir, "chem_mentions.json")):
+#             chem_mentions = load_file(join(data_dir, "chem_mentions.json"))
+#             prot_mentions = load_file(join(data_dir, "prot_mentions.json"))
+#         else:
+#             for file in [tr, dev, test]:
+#                 with open(file, encoding='utf-8') as fd:
+#                     rd = list(csv.reader(fd, delimiter="\t", quotechar='"'))
+#
+#                     for i, row in enumerate(rd):
+#
+#                         if not row: continue
+#                         if row[2] == "CHEMICAL":
+#                             if row[-1] not in chem_mentions:
+#                                 chem_mentions[row[-1]] = 0
+#                             chem_mentions[row[-1]] += 1
+#                         else:
+#                             if row[-1] not in prot_mentions:
+#                                 prot_mentions[row[-1]] = 0
+#                             prot_mentions[row[-1]] += 1
+#             dump_file(chem_mentions, join(data_dir, "chem_mentions.json"))
+#             dump_file(prot_mentions, join(data_dir, "prot_mentions.json"))
+#         self.chem_mentions = chem_mentions
+#         self.prot_mentions = prot_mentions
 
 
 def collate_fn(batch):
