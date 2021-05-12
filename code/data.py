@@ -387,8 +387,19 @@ class ModalRetriever:
 # def txt_and_entity_to_token(text, ent_pos_list, tokenizer):
 #     pass
 
-
 def sent_with_entities_to_token_ids(sent, ent_pos_list, max_seq_length, tokenizer, shift_right=True, add_marker=True):
+
+    """
+    @param sent: list of tokens
+    @param ent_pos_list: list of s e index pairs for each mention, like [[0,1],[5,7]]
+    @param max_seq_length: max bert seqlen
+    @param tokenizer: tokenizer
+    @param shift_right: always set true, shift new mention position in tokens +1 because we have CLS
+    @param add_marker: add * to before and after mention
+    @return: list of tokens, and updated ent_pos_list
+
+    """
+
     new_map = {}
     sents = []
 
@@ -412,8 +423,6 @@ def sent_with_entities_to_token_ids(sent, ent_pos_list, max_seq_length, tokenize
         entity_pos = np.array(entity_pos) + 1
 
     sents = sents[:max_seq_length - 2]
-    # print("sents", sents)
-    # print("entity_pos", entity_pos)
 
     input_ids = tokenizer.convert_tokens_to_ids(sents)
     input_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
@@ -945,7 +954,7 @@ class CustomBatch:
 
         self.texts = torch.tensor(input_ids, dtype=torch.long)
         self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)
-        # [:,:512]
+
         self.masked_texts = torch.tensor([f["masked_text"] + [0] * (max_len - len(f["masked_text"])) for f in batch],
                                          dtype=torch.long)
         self.masked_texts_attn_mask = torch.tensor(

@@ -221,7 +221,7 @@ class FET(torch.nn.Module):
         final_vec = []
 
         "=========Original Text Encoder=========="
-        hid_texts = self.plm(input_ids=texts, attention_mask=texts_attn_mask, return_dict=True).last_hidden_state
+        hid_texts = self.plm(input_ids=texts, attention_mask=texts_attn_mask, return_dict=True).last_hidden_statehid_texts = self.plm(input_ids=texts, attention_mask=texts_attn_mask, return_dict=True).last_hidden_state
 
         hid_mask_texts = None
         if "t" in self.model_type:
