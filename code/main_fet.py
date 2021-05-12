@@ -99,7 +99,7 @@ if __name__ == '__main__':
     modal_retriever = ModalRetriever(data_dir + "mention2ent.json", data_dir + "cmpd_info.json")
 
     labels_path = data_dir + fname+"_labels.json"
-    if not os.path.exists(labels_path):
+    if not args.use_cache or not os.path.exists(labels_path):
         labels = ChemetDataset.collect_labels([train_file, val_file, test_file], labels_path)
     else:
         labels = load_file(labels_path)
