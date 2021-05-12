@@ -140,7 +140,7 @@ class FET(torch.nn.Module):
         self.model_type = args.model_type
         self.plm = AutoModel.from_pretrained(args.plm)
 
-        if "g" in self.model_type and "d" not in self.model_type:
+        if "g" in self.model_type and "m" not in self.model_type:
             self.gnn = MoleGNN2(args)
         if "m" in self.model_type:
             self.cm_attn = CrossModal(args)
