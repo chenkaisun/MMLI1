@@ -1,5 +1,5 @@
 from train import train
-from data import ChemProtDataset, ModalRetriever
+from data import ModalRetriever
 # import torch
 import os
 # from train_utils import setup_common
