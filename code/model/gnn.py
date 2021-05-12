@@ -56,6 +56,60 @@ class BondEncoder(torch.nn.Module):
         return out
 
 
+class MoleGraphConv(torch.nn.Module):
+    def __init__(self, args, is_first_layer=False):
+        super().__init__()
+        args.g_dim = args.plm_hidden_dim
+
+        self.is_first_layer = is_first_layer
+
+        hidden_channels, num_layers, dropout = args.g_dim, args.num_gnn_layers, args.dropout
+
+        self.num_layers = args.num_gnn_layers
+        self.dropout = args.dropout
+
+        if is_first_layer:
+            self.atom_encoder = AtomEncoder(args.g_dim)
+
+        self.bond_encoders = ModuleList()
+        self.atom_convs = ModuleList()
+        # self.atom_batch_norms = ModuleList()
+
+        self.bond_encoders.append(BondEncoder(hidden_channels))
+        nn = Sequential(
+            Linear(hidden_channels, 2 * hidden_channels),
+            # BatchNorm1d(2 * hidden_channels),
+            # ReLU(),
+            # Tanh(),
+            Tanh(),
+            Linear(2 * hidden_channels, hidden_channels),
+        )
+        self.atom_convs.append(GINEConv(nn, train_eps=True))
+
+        # self.atom_lin = Linear(hidden_channels, hidden_channels)
+
+    def forward(self, x, data, global_pooling=False):
+        if self.is_first_layer:
+            x = self.atom_encoder(data.x.squeeze())
+
+        edge_attr = self.bond_encoders[0](data.edge_attr)
+        x = self.atom_convs[0](x, data.edge_index, edge_attr)
+        x = torch.tanh(x)
+        x = F.dropout(x, self.dropout, training=self.training)
+
+        return x
+        if not global_pooling:
+        #     x = self.atom_lin(x)
+        #     x = torch.tanh(x)
+            return x
+
+        x = scatter(x, data.batch, dim=0, reduce='mean')
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = self.atom_lin(x)
+        x = F.gelu(x)
+        return x
+
+
 class MoleGNN2(torch.nn.Module):
     def __init__(self, args):
         super(MoleGNN2, self).__init__()

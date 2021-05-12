@@ -16,14 +16,18 @@ import gc
 import numpy as np
 from torch.nn.functional import one_hot
 import random
-import numpy
-from torch.utils.tensorboard import SummaryWriter
+# import numpy
+# from torch.utils.tensorboard import SummaryWriter
 from utils import dump_file, mkdir
 from IPython import embed
+import os
+from utils import load_file, dump_file, visualize_plot
+
+
+# from torch.optim.lr_scheduler import _LRScheduler
 
 def train(args, model, optimizer, data):
     train_data, val_data, test_data = data
-
 
     if args.debug:
         torch.autograd.set_detect_anomaly(True)
@@ -54,11 +58,13 @@ def train(args, model, optimizer, data):
     total_steps = int(len(train_loader) * args.num_epochs)
     warmup_steps = int(total_steps * args.warmup_ratio)
 
-    scheduler=None
+    scheduler = None
     if args.scheduler:
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
                                                     num_training_steps=total_steps)
 
+        # scheduler = STLR(optimizer, num_warmup_steps=warmup_steps,
+        #                                             num_training_steps=total_steps)
 
     # scheduler = CosineAnnealingLR(optimizer, T_max=(int(args.num_epochs) // 4) + 1, eta_min=0)
 
@@ -96,40 +102,7 @@ def train(args, model, optimizer, data):
                           }
 
             else:
-                # texts = batch[0]
-                # batch_ent1_d = batch[1]
-                # batch_ent2_d = batch[3]
-                #
-                # # lb = batch[10].int().numpy()
-                # # tmp=np.zeros((len(lb), 13))
-                # #
-                # # tmp[np.arange(len(lb)), lb] = 1
-                # # tmp=torch.tensor(tmp)
-                # # print("encoded_input", encoded_input)
-                # inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
-                #           "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
-                #           "batch_ent1_d_mask": batch[2].to(args.device),
-                #           "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
-                #           "batch_ent2_d_mask": batch[4].to(args.device),
-                #           "batch_ent1_g": batch[5].to(args.device),
-                #           "batch_ent1_g_mask": batch[6].to(args.device),
-                #           "batch_ent2_g": batch[7].to(args.device),
-                #           "batch_ent2_g_mask": batch[8].to(args.device),
-                #           "ids": batch[9],
-                #           # "labels": tmp.to(args.device),
-                #           "labels": batch[10].to(args.device),
-                #           'in_train': True,
-                #           }
                 inputs = batch.to(args.device)
-            # inputs = {'input_ids': {key:encoded_input[key].to(args.device) for key in encoded_input},
-            #           'edge_indices': batch[1].to(args.device),
-            #           'node_attrs': batch[2].to(args.device),
-            #           'edge_attrs': batch[3].to(args.device),
-            #           'Ys': batch[4].to(args.device),
-            #           'ids': batch[5],
-            #           'in_train': True,
-            #           }
-
             # model learning
             model.train()
 
@@ -157,31 +130,8 @@ def train(args, model, optimizer, data):
                         scheduler.step()
                     optimizer.zero_grad()
             total_loss += loss.item()
-            # else:
-            #     loss = model(inputs)
-            #     loss.backward()
-            #     if step % args.grad_accumulation_steps == 0 or step == len(train_loader) - 1:
-            #         optimizer.step()
-            #         scheduler.step()
-            #         optimizer.zero_grad()
-
-            # if args.n_gpu > 1:
-            #     loss = loss.mean()
-
-            # if args.max_grad_norm > 0:
-            #     if args.amp:
-            #         scaler.unscale_(optimizer)
-            #         torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-            #     torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
-            # else:
-            #     torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-
-            # wandb.log({"loss": loss.item()}, step=num_steps)
 
         val_score, output = evaluate(args, model, val_data)
-
-        # mkdir("analyze")
-        # dump_file(output, "analyze/output.json")
 
         if epoch > args.burn_in:
             if val_score >= best_val_score:
@@ -221,11 +171,75 @@ def train(args, model, optimizer, data):
     # dump_file(output, "analyze/output.json")
 
     logger.debug(f"Test Score {test_score}")
-    writer.add_scalar('test', test_score, 0)
-    writer.add_hparams(
-        {'batch_size': args.batch_size, 'num_epochs': args.num_epochs,
-         'plm_lr': args.plm_lr, 'lr': args.lr, 'g_dim': args.g_dim, 'max_grad_norm': args.max_grad_norm,
-         'mult_mask': args.mult_mask, 'g_mult_mask': args.g_mult_mask, 'dropout': args.dropout, 'model_type': args.model_type,
-          'g_global_pooling': args.g_global_pooling},
-        {'hparam/test': test_score, 'hparam/val': best_val_score})
-    writer.close()
+    # writer.add_scalar('test', test_score, 0)
+    # writer.add_hparams(
+    #     {'batch_size': args.batch_size, 'num_epochs': args.num_epochs,
+    #      'plm_lr': args.plm_lr, 'lr': args.lr, 'g_dim': args.g_dim, 'max_grad_norm': args.max_grad_norm,
+    #      'mult_mask': args.mult_mask, 'g_mult_mask': args.g_mult_mask, 'dropout': args.dropout, 'model_type': args.model_type,
+    #       'g_global_pooling': args.g_global_pooling},
+    #     {'hparam/test': test_score, 'hparam/val': best_val_score})
+    # writer.close()
+
+    sr_file = args.experiment_path + args.exp + "_result.json"
+    sr = load_file(sr_file) if os.path.exists(sr_file) else []
+    hparam = vars(args)
+
+    # print("e2")
+    # serialize params
+    for key in hparam:
+        item=hparam[key]
+        if not isinstance(item, (float, str, int, complex, list, dict, set, frozenset, bool)):
+            hparam[key]=str(item)
+    hparam["val_score"] = best_val_score
+    hparam["test_score"] = test_score
+    sr.append(hparam)
+
+    # print("e0")
+
+    # Plot lines
+    visualize_plot(y=[[hparam["val_score"] for hparam in sr],
+                      [hparam["test_score"] for hparam in sr]],
+                   name=["val", "test"],
+                    path=args.experiment_path + args.exp + "_result.png")
+
+    # print("e1")
+    dump_file(sr, sr_file)
+
+# class STLR(torch.optim.lr_scheduler._LRScheduler):
+#     def __init__(self, optimizer, max_mul, ratio, steps_per_cycle, decay=1, last_epoch=-1):
+#         self.max_mul = max_mul - 1
+#         self.turning_point = steps_per_cycle // (ratio + 1)
+#         self.steps_per_cycle = steps_per_cycle
+#         self.decay = decay
+#         super().__init__(optimizer, last_epoch)
+#
+#     def get_lr(self):
+#         residual = self.last_epoch % self.steps_per_cycle
+#         multiplier = self.decay ** (self.last_epoch // self.steps_per_cycle)
+#         if residual <= self.turning_point:
+#             multiplier *= self.max_mul * (residual / self.turning_point)
+#         else:
+#             multiplier *= self.max_mul * (
+#                 (self.steps_per_cycle - residual) /
+#                 (self.steps_per_cycle - self.turning_point))
+#         return [lr * (1 + multiplier) for lr in self.base_lrs]
+#
+# class NoamLR(_LRScheduler):
+#     """
+#     Implements the Noam Learning rate schedule. This corresponds to increasing the learning rate
+#     linearly for the first ``warmup_steps`` training steps, and decreasing it thereafter proportionally
+#     to the inverse square root of the step number, scaled by the inverse square root of the
+#     dimensionality of the model. Time will tell if this is just madness or it's actually important.
+#     Parameters
+#     ----------
+#     warmup_steps: ``int``, required.
+#         The number of steps to linearly increase the learning rate.
+#     """
+#     def __init__(self, optimizer, warmup_steps):
+#         self.warmup_steps = warmup_steps
+#         super().__init__(optimizer)
+#
+#     def get_lr(self):
+#         last_epoch = max(1, self.last_epoch)
+#         scale = self.warmup_steps ** 0.5 * min(last_epoch ** (-0.5), last_epoch * self.warmup_steps ** (-1.5))
+#         return [base_lr * scale for base_lr in self.base_lrs]

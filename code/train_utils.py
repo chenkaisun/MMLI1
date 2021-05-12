@@ -9,11 +9,17 @@ from torch import optim
 from transformers import AutoTokenizer
 
 from model.load_model import get_model, load_model_from_path
-from options import read_args
+# from options import read_args
 from utils import mkdir, dump_file, load_file
 from torch.utils.tensorboard import SummaryWriter
 import numpy
 
+from IPython import embed
+class ScoreRecorder:
+    def __init__(self, path):
+        pass
+    def get_highest(self):
+        pass
 
 def seed_worker(worker_id):
     worker_seed = torch.initial_seed() % 2 ** 32
@@ -42,6 +48,15 @@ def get_logger(args):
     return logger
 
 
+def get_plm_fullname(abbr):
+    plm_dict = {
+        "base": "bert-base-cased",
+        "sap": "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR",
+        "sci": "allenai/scibert_scivocab_uncased",
+        "tiny":"prajjwal1/bert-tiny"
+    }
+    return plm_dict[abbr]
+
 def setup_common(args):
     # args = read_args()
     # wandb.config.update(args)
@@ -54,15 +69,6 @@ def setup_common(args):
     if "cpu" in str(args.device): args.use_amp = 0
 
     # # wandb.init(config=args, project=args.experiment)
-    # if args.debug:
-    #     # args.plm="bert-ba"
-    #     # args.use_amp=False
-    #     args.num_epoch = 100
-    #     args.batch_size = 1
-    #     args.burn_in = 1
-    #     args.lr=1e-4
-    #     args.grad_accumulation_steps = 1
-    #     args.plm="prajjwal1/bert-tiny"
 
     if "-tiny" in args.plm:
         args.plm_hidden_dim = 128
@@ -75,12 +81,13 @@ def setup_common(args):
     else:
         args.plm_hidden_dim = 768
 
+    print(args.model_name)
     model = get_model(args)
     # view_model_param(args, model)
 
     downstream_layers = ["extractor", "bilinear", "combiner", "gnn", "msg_encoder",
-                         "query_encoder", "map2smaller", "cm_attn", 'l_filter', 'l_1', 'l_2', 'l_3', 'l_4', 'l_final',
-                         'l_5']
+                         "query_encoder", "map2smaller", "cm_attn", 'l_filter', 'gnn', 'the_zero','the_one']
+
     optimizer = get_optimizer(args, model, downstream_layers)
     # print(model.named_parameters())
     # print("model", model)
@@ -93,7 +100,7 @@ def setup_common(args):
     args.logger.debug("=====begin of args=====")
 
     arg_dict = vars(args)
-    args.important_hparams = {}
+    # args.important_hparams = {}
     for key in sorted(arg_dict.keys()):
 
         if key in ["use_cache",
@@ -120,6 +127,7 @@ def setup_common(args):
     # print(vars(args))
     # max_chr_len=max([len(s) for s in arg_dict])
     # print("arg_dict", arg_dict)
+    # embed()
     return args, model, optimizer
 
 
@@ -146,6 +154,7 @@ def gpu_setup(use_gpu=True, gpu_id=0, use_random_available=True):
 def view_model_param(args, model):
     # model = get_model(args)
     total_param = 0
+    print(model)
     print("MODEL DETAILS:\n")
     # print(model)
     for param in model.parameters():

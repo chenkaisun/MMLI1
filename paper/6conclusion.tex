@@ -1,0 +1,91 @@
+
+
+\section{Conclusions and Future Work}
+
+
+In this work, we take the first step to  explore the task of fine-grained entity typing in chemistry domain and introduced a dataset, CHEMET, to facilitate the study of the task. Meanwhile, we also developed a  deep-learning based model that effectively incorporates external multimodal information of chemical mentions to improve the model's understanding on chemistry text, and showed through experiments that our model achieved state-of-the-art on the dataset. We would like to point out that the multimodal entity representation can be applied to other ChemIE tasks.
+
+One big challenge from our findings is that many chemicals cannot be linked to external database, either due to its varying mention form or the database simply does not contain that particular entity (which is relatively more obvious for newer chemistry articles). In the future, we will develop entity linking algorithm to not only match mention to database better but also do cross-document linking (i.e., retrieve context for a mention from other documents).
+
+\begin{table}[ht]
+	\caption{Multi-column table}
+	\begin{center}
+		\begin{tabular}{cc}
+			\hline
+			\multicolumn{2}{c}{Multi-column}\\
+			\multicolumn{2}{c}{Multi-column}\\
+			X&X\\
+			\hline
+		\end{tabular}
+	\end{center}
+	\label{tab:multicol}
+\end{table}
+
+%\begin{tabular}{ |p{3cm}|p{3cm}|p{3cm}|p{3cm}|  }
+%	\hline
+%	wef&\multicolumn{3}{|c|}{Country List} \\
+%	\hline
+%	Country Name     or Area Name& ISO ALPHA 2 Code &ISO ALPHA 3 \\
+%	\hline
+%	Afghanistan & AF &AFG \\
+%	\hline
+%\end{tabular}
+
+%\usepackage{multirow}% http://ctan.org/pkg/multirow
+\begin{table}[ht]
+	\caption{Multi-column table}
+	\begin{center}
+%		\begin{tabular}{cc}
+%			\hline
+%			\multicolumn{2}{c}{Multi-column}\\
+%			\multicolumn{2}{c}{Multi-column}\\
+%			X&X\\
+%			\hline
+%		\end{tabular}
+	
+	\begin{tabular}{|c||l|l|l||l|l|l|}
+		\hline
+		\multirow{2}{*}{Title} 
+		& \multicolumn{3}{c||}{Category~A} 
+		& \multicolumn{3}{|c|}{Category~B} \\             \cline{2-7}
+		& Item~1 & Item~2 & Item~3 & Item~1 & Item~2 & Item~3 \\  \hline
+		$X$ & 1 & 2 & 3 & 1 & 2 & 3 \\      \hline
+		$Y$ & 1 & 2 & 3 & 1 & 2 & 3 \\      \hline
+	\end{tabular}
+	\end{center}
+	\label{tab:multicol}
+\end{table}
+
+
+\begin{tabular}{|c||l|l|l||l|l|l|}
+	\hline
+	\multirow{2}{*}{Title} 
+	& \multicolumn{3}{c||}{Category~A} 
+	& \multicolumn{3}{|c|}{Category~B} \\             \cline{2-7}
+	& Item~1 & Item~2 & Item~3 & Item~1 & Item~2 & Item~3 \\  \hline
+	$X$ & 1 & 2 & 3 & 1 & 2 & 3 \\      \hline
+	$Y$ & 1 & 2 & 3 & 1 & 2 & 3 \\      \hline
+\end{tabular}
+
+
+\begin{table*}[t]
+	\caption{Transductive Imputation AUC with 10\% missing data}
+	\centering
+	\label{10perc}
+	\begin{small}
+			\begin{tabular}{cllllll}
+				\toprule
+				\multirow{2}{*}{\textbf{Model}} 
+				& \multicolumn{3}{c}{\textbf{Dev}} 
+				& \multicolumn{3}{c}{\textbf{Test}} \\             
+				& \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Micro F1} & \textbf{Accuracy}&  \textbf{Macro F1} & \textbf{Micro F1} \\  
+				\midrule
+				BioBERT & 1 & 2 & 3 & 1 & 2 & 3 \\      
+				SciBERT & 1 & 2 & 3 & 1 & 2 & 3 \\ 
+				$Y$ & 1 & 2 & 3 & 1 & 2 & 3 \\ 
+				Our Model & 1 & 2 & 3 & 1 & 2 & 3 \\ 
+				\bottomrule    
+			\end{tabular}
+		
+	\end{small}
+\end{table*}

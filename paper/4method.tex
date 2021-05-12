@@ -1,0 +1,124 @@
+
+
+\section{Method}
+\label{sec:method}
+\cheng{Before describing the method, it's better to briefly motivate the method. Perhaps remind the readers what are the key (new) challenges we need to address, and then briefly describe the proposed ideas for addressing those challenges informally. This would help readers see the big picture (in terms of novelty and justification) before going over the detail of the model.}
+
+\bluetext{Chemistry literature is unique in that the mentions are often expressed in complex, unnatural forms, as shown in Figure~\ref{fig:screenshot}. At the same time, external databases provide multimedia data about chemical entity, such as chemical structure and natural language description. It is thus a natural idea to incorporate these different forms of representation of an entity to enhance the system's understanding on a chemicals. In our methodology, we develop an effective deep learning based model to implement such idea.}
+
+
+The overall model architecture is presented in Figure~\ref{fig:framework}.  Given a sentence or document $S$ marked with mentions, we first extract external information (molecular structure and description text) by linking to PubChem, one of the mostly used chemical database; we use its search API to fetch molecule information given a molecule mention name. We also used a modified version of $S$ that masked the entire mention name, to combat the issue of complex compound name (\ref{sec:context}). <ModelName> proceeds to extract features from different modalities by their corresponding encoders. The external information embeddings are then passed through multimodal alignment stage (\ref{sec:cmsa}) to learn a unified representation, 
+
+%for instance, graph neural network for structure input and Pretrained Language Model for 
+
+
+
+\subsection{Original Text Embedding}
+\label{sec:context}
+The model first encodes the original sentence with SciBERT~\cite{scibert}, a Transformer~\cite{transformer} based language model pre-trained on biomedical text. Let $\mathbf{T}=[\mathbf{t}_1, \mathbf{t}_2, ..., \mathbf{t}_z]$, where $z$ is the number of tokens in the sentence, after tokenization. Then we follow \cite{e2ecoref} and compute the representation for mention $m$ by $$\mathbf{m}=\text{FFNN}_t([\mathbf{t}_{\text{START}(m)}, \mathbf{t}_{\text{END}(m)}, \hat t, \phi{(m)}])$$, where $\text{FFNN}_t$ is a feed forward neural network. $\text{END}(m)$ and $\text{START}(m)$ denote start and end indices for $m$. $\hat t$ is the representation based on attention to each token in $m$. 
+
+%The $\text{FFNN}$ below will be the same.
+
+\subsubsection{Context-focused Embedding}
+Since Chemical entity are often involved with complex synonyms that are hard to be understood, we need to also produce a representation that rely less on the word structure of the mention, since the mention often not follows morphology (e.g., [3H]MK-801, NSC-406186, 8-azido-[alpha-32P]ATP). We replace the entire span of mention by [MASK]. The modified sentence is then embedded by SciBERT and the embedding for the [MASK] token is used as the corresponding context-focused representation for the mention, denoted $\mathbf{m}_\text{MASK}$
+
+
+\subsection{Multimodal Encoder for Structure and Description Text}
+\label{sec:cmsa}
+
+\chenkai{please ignore, whole thing will be changed}
+
+As one of our core contributions, we propose to incorporate different modalities of external features to expand chemical representation, and to combat the difficulty of understanding complex chemical mention name (e.g., (E)-3-(3,4-dihydroxyphenyl)prop-2-enoic acid) purely based on context and morphological structure. 
+
+Specifically We use API provided PubChem as the entity linker to retrieval chemical structure and description text for each chemical mention. Chemical structure refers a graph where bonds are edges and atoms are nodes, and dscription text discusses subset of chemical's experimental properties(e.g., Aspirin is an orally administered non-steroidal antiinflammatory agent). 
+
+
+To learn concepts from multiple modalities that better correlate with target label and to build more accurate representation of a molecule, we made use of the recently successful attention mechanism to align concepts (or molecule property) in text and substructure in molecule graph. One another benefit is that system can implicitly learn to better cluster molecules even if a chemical entity is missing some modalities (e.g., only have structure available), since we map both modalities into the same embedding space.
+
+
+Formally, let $G=(V,E)$ denote the chemical graph with $a$ nodes, and $D=[d_{[CLS]}, d_1,d_2,...,d_b]$ denote the sequence of$b$  tokens after tokenizing description sentences. Similar to original sentence, we embed with SciBERT so that text embedding becomes $\mathbf{D}=[\mathbf{d}_1,\mathbf{d}_2,...,\mathbf{d}_b]$. We then embed the nodes in chemical graph using Graph Isomorphism Network\cite{gin}, which atom features randomly initialized. We denote node representation $\mathbf{N}=[\mathbf{n}_1,\mathbf{n}_2,...,\mathbf{n}_a]$
+
+We leverage self-attention mechanism of \cite{transformer} to learn interaction between different modalities. To achieve this, we first stack the node and token embeddings as $$\mathbf{X}=\begin{pmatrix}
+\mathbf{N} \\
+\mathbf{D}
+\end{pmatrix}$$
+
+Then we compute key values of the matrix by $\mathbf{Q}=\mathbf{X}\mathbf{W}^Q$,$\mathbf{K}=\mathbf{X}\mathbf{W}^K$, and $\mathbf{V}=\mathbf{X}\mathbf{W}^V$
+
+
+Then the attented representation is given by 
+
+$$\text{Attention}(\mathbf{Q},\mathbf{K},\mathbf{V})=\text{softmax}(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{p_k}})\mathbf{V}$$
+
+where $\frac{1}{\sqrt{p_k}}$ is a scaling factor in \cite{transformer}. We used an average pooling to get multimodal representation $\mathbf{E}_{CM}$
+
+In addition, we preserve the unimodal graph representation by max pooling over the node representation, to get $\mathbf{E}_{G}$. We also use the CLS embeddin  $d_{[CLS]}$ to represent unimodal text features.
+
+
+We can predict the final entity type prowith the enriched multimodal features by
+$$\mathbf{p}=\text{Softmax}([\mathbf{E}_{C}, \mathbf{E}_{M}, \mathbf{E}_{CM}, \mathbf{E}_{D}, \mathbf{E}_{G}])\mathbf{W}^F$$ where $\mathbf{W}^F$ is a learnable weight matrix and $\mathbf{p}$ is the final probability distribution of classes.
+
+
+\subsection{Training}
+We use cross entropy for training 
+
+
+
+% as pointed out by~\cite{mmdl}, simple concatenate features from different modalities result in a shallow representation since the correlation, or interaction, between the modalities is highly non-linear.
+
+%  it is important to
+% learn joint embeddings to leverage the complementarity of
+% multimodal data to represent such concepts more accurately
+
+% to learn a more complete representation of the molucule, we need to ground the structure on textual propreties
+
+% better
+% features for one modality (e.g., video) can be
+% learned if multiple modalities (e.g., audio and
+% video) are present at feature learning time
+
+
+% The flow of
+% knowledge from one data modality to another is a challenging
+% task.
+
+
+% This allows for fast selection
+% of a new trajectory by projecting a new environment/instruction pair and
+% choosing its nearest-neighbor trajectory in this space.
+
+% noise cancel
+% so even only one part unreliable, can st infer , two similar compound similar label
+
+% pick out important concepts that distinguish
+
+% o perform reasoning with a variety of sensing modalities.
+
+% unified repr
+
+% Mapping to common space, so cancel noise
+%  a shared embedding spac
+% has the following advantages
+
+% Although deep learning architectures do
+% a good job of learning these vector representations in isolation, learning a single common representation across multiple
+% modalities is a challenging task
+% \begin{itemize}
+%     \item It attends to important features in each modality, thus cancelling noise
+%     \item Attention has proved its effectiveness in many visual and
+% language tasks [23, 1, 7, 52, 50], it is designed to capture a
+% better representation of image-sentence pairs based on their
+% interactions.
+% \end{itemize}
+
+
+
+
+%After the above 
+%Following~\cite{cmsa}, we also use self attention for encoding
+
+
+
+% \subsection{Final Prediction}
+
+% Concatenation, FFNN, Loss Function 

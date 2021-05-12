@@ -148,13 +148,13 @@ missMDA/
 latex*.txt
 testing*.py
 note*.txt
-experiment*/
 data/*
 model/states/
 other_repo*/
 wandb/
 hello/
 analyze/
+tokenizer/
 tmp*.txt
 nohup*.out
 nohup.out

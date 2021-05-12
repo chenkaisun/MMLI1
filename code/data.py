@@ -1,24 +1,12 @@
-# import torch
-# from rdkit import Chem
-# import pandas as pd
-# import numpy as np
-# from rdkit import Chem
-# from rdkit.Chem import rdmolops
-# import igraph
+import numpy as np
+from rdkit import Chem
 from pprint import pprint as pp
 from features import *
-from utils import dump_file, load_file
-# from transformers import BartTokenizer
 from torch_geometric.data import Data, Batch
-from sklearn import model_selection
 from IPython import embed
 import os
 from torch_geometric import utils
-import spacy
 import json
-# from collections import defaultdict
-# import re
-import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from copy import deepcopy
@@ -26,395 +14,25 @@ import csv
 from utils import *
 import scipy
 
-# def mol2graph( mol ):
-#     admatrix = rdmolops.GetAdjacencyMatrix( mol )
-#     bondidxs = [ ( b.GetBeginAtomIdx(),b.GetEndAtomIdx() ) for b in mol.GetBonds() ]
-#     adlist = np.ndarray.tolist( admatrix )
-#     graph = igraph.Graph()
-#     g = graph.Adjacency( adlist ).as_undirected()
-#     for idx in g.vs.indices:
-#         g.vs[ idx ][ "AtomicNum" ] = mol.GetAtomWithIdx( idx ).GetAtomicNum()
-#         g.vs[ idx ][ "AtomicSymbole" ] = mol.GetAtomWithIdx( idx ).GetSymbol()
-#     for bd in bondidxs:
-#         btype = mol.GetBondBetweenAtoms( bd[0], bd[1] ).GetBondTypeAsDouble()
-#         g.es[ g.get_eid(bd[0], bd[1]) ][ "BondType" ] = btype
-#         print( bd, mol.GetBondBetweenAtoms( bd[0], bd[1] ).GetBondTypeAsDouble() )
-#     return g
-#     s = 'CN(C)[C@H]1[C@@H]2C[C@H]3C(=C(O)c4c(O)cccc4[C@@]3(C)O)C(=O)[C@]2(O)C(=O)\C(=C(/O)NCN5CCCC5)C1=O'
-#     mol = Chem.MolFromSmiles(s)
-#     am = Chem.GetAdjacencyMatrix(mol)
-#     am
-#     list(mol.GetBondBetweenAtoms())
-#     mol.GetBondBetweenAtoms(0,1).GetBondTypeAsDouble()
-#     [ ( b.GetBeginAtomIdx(),b.GetEndAtomIdx() ) for b in mol.GetBonds() ]
-#
-#     Chem.FragmentOnBonds(mol)
-#     print(am)
-#
 
-# def retrieve_atom_info(atoms):
-#     res = []
-#     dex = []
-#
-#     """new"""
-#
-#     # atom symbol to id mapping
-#     atom_dict = {}
-#     cur_atoms = [atom.GetSymbol() for atom in atoms]
-#     tmp = []
-#     # print("cur_atoms", cur_atoms)
-#     for atom in cur_atoms:
-#         if atom not in atom_dict:
-#             atom_dict[atom] = len(atom_dict)
-#         tmp.append([atom_dict[atom]])
-#     res.append(tmp)
-#     return res
-#
-#
-# def retreive_graph_info(input_smile, args):
-#     c = None
-#     is_valid = False
-#     if len(input_smile):
-#         try:
-#             c = Chem.MolFromSmiles(input_smile)
-#         except Exception as e:
-#             print(e)
-#
-#
-# def get_graph_info(input_smiles, args):
-#     smiles = []
-#     suppl, targets = [], []
-#     dex = []
-#     for i, s in enumerate(list(input_smiles)):
-#         if s == "[[NULL]]":
-#             # print("isnull")
-#             continue
-#         try:
-#             c = Chem.MolFromSmiles(s)
-#         except Exception as e:
-#             print(e)
-#             continue
-#         if c:
-#             dex.append(i)
-#             smiles.append(s)
-#             suppl.append(c)
-#
-#     # res, exclude
-#     all_atom_properties, tmp_dex = get_atom_properties(get_atom_symbols(suppl))
-#
-#     # updated valid dex
-#     # dex is valid index in original input
-#     dex = [dex[d] for d in tmp_dex]
-#     assert len(tmp_dex) == len(dex), embed()
-#
-#     # args.in_dim = all_atom_properties[0].shape[1]
-#     # print("args.in_dim")
-#
-#     suppl = [suppl[d] for d in tmp_dex]
-#     # targets = [targets[d] for d in dex]
-#     # smiles = [smiles[d] for d in dex]
-#
-#     # suppl = [Chem.MolFromSmiles(s) for s in smiles]
-#
-#     # embed()
-#     # smiles = open("10_rndm_zinc_drugs_clean.smi").read().splitlines()
-#     # print("adj_matrix")
-#     adj = list(get_adj_matrix_coo(suppl))
-#     # number_of_bonds = list(get_num_bonds(suppl))
-#
-#     # print("bond_types")
-#     # bond_types = list(get_bonds_info(suppl))
-#     bond_types = []
-#
-#     for k, mol in enumerate(suppl):
-#         # tmp=[]
-#         # for i, j in adj[k].t().numpy():
-#         #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
-#
-#         tmp = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in adj[k].t().numpy()]
-#         bond_types.append(tmp)
-#
-#     # targets = list(get_targets(get_atom_symbols(suppl)))
-#
-#     # num_classes = max(targets) + 1
-#     # print("num_classes", num_classes)
-#     print("edge_index")
-#     edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
-#     print(len(edge_index))
-#     print(edge_index[0].shape)
-#
-#     print("node_attr")
-#     node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
-#     print(len(node_attr))
-#     print(node_attr[0].shape)
-#
-#     print("edge_attr")
-#     edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]  # list(seperator(bond_types))
-#     print(len(edge_attr))
-#     print(edge_attr[0].shape)
-#
-#     # print("Y_data")
-#     args.in_dim = args.g_dim
-#     # Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
-#     in_dim = args.g_dim  # node_attr[0].shape[-1]
-#
-#     # dummy data
-#     res = [Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
-#                 edge_attr=torch.tensor([1, 1], dtype=torch.long)) for _ in
-#            range(len(input_smiles))]
-#     res_mask = [0 for _ in range(len(input_smiles))]
-#
-#     # d is the actualy index in inputsmile
-#     for i, d in enumerate(dex):
-#         res_mask[d] = 1
-#         res[d] = Data(x=node_attr[i], edge_index=edge_index[i], edge_attr=edge_attr[i])
-#
-#     return res_mask, res
-#
-#     return dex, node_attr, edge_index
-#
-#
-# def load_mole_data2(args, filename, tokenizer):
-#     args.cache_filename = os.path.splitext(args.train_file)[0] + ".pkl"
-#     if args.use_cache and os.path.exists(args.cache_filename):
-#         print("Loading Cached Data...")
-#         data = load_file(args.cache_filename)
-#         train, val, test = data['train'], data['val'], data['test']
-#         # for f in [train, val, test]:
-#         #     for d in f:
-#         #         # d["graph_data"].x=torch.cat([d["graph_data"].x[:, :-13], d["graph_data"].x[:, 8:]])
-#         #         d["graph_data"].x[:, 6] = torch.rand_like(d["graph_data"].x[:, 6])
-#
-#         # d["graph_data"].x = torch.rand_like(d["graph_data"].x)
-#         # args.in_dim = train[0]["graph_data"].x.shape[1]
-#         args.in_dim = args.g_dim
-#
-#         print("args.in_dim", args.in_dim)
-#         return train, val, test
-#
-#     if os.path.exists(args.cache_filename):
-#         os.remove(args.cache_filename)
-#
-#     df = pd.read_csv(filename)
-#     # samples=df.to_dict(orient='records')
-#
-#     smiles = []
-#     suppl, targets = [], []
-#
-#     for s, t in zip(list(df['smiles']), list(df[args.tgt_name])):
-#         try:
-#             c = Chem.MolFromSmiles(s)
-#         except Exception as e:
-#             print(e)
-#             continue
-#         if c:
-#             smiles.append(s)
-#             suppl.append(c)
-#             targets.append(t)
-#
-#     # res, exclude
-#     all_atom_properties, dex = get_atom_properties(get_atom_symbols(suppl))
-#     args.in_dim = all_atom_properties[0].shape[1]
-#
-#     args.in_dim = args.g_dim
-#     # all_atom_properties[0].shape[1]
-#
-#     suppl = [suppl[d] for d in dex]
-#     targets = [targets[d] for d in dex]
-#     smiles = [smiles[d] for d in dex]
-#
-#     adj = list(get_adj_matrix_coo(suppl))
-#     number_of_bonds = list(get_num_bonds(suppl))
-#     bond_types = []
-#     # print("adj", adj)
-#     # exit()
-#     # for k, mol in enumerate(suppl):
-#     #     # tmp=[]
-#     #     # for i, j in adj[k].t().numpy():
-#     #     #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
-#     #
-#     #     tmp = [int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()) for i,j in adj[k].t().numpy()]
-#     #     bond_types.append(tmp)
-#     #
-#     # print(adj[0].shape)
-#     # print(len(bond_types[0]))
-#
-#     # embed()
-#     # targets = list(get_targets(get_atom_symbols(suppl)))
-#
-#     num_classes = max(targets) + 1
-#     print("num_classes", num_classes)
-#     print("edge_index")
-#     edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
-#     print("node_attr")
-#     node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
-#     # list(seperator(all_atom_properties))
-#     print("node_attr.shape", node_attr[0].shape)
-#
-#     print("edge_attr")
-#     edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]
-#     print("edge_attr.shape", edge_attr[0].shape)
-#
-#     print("Y_data")
-#     Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
-#     print("Y_data", Y_data)
-#
-#     instances = []
-#     print("start adding")
-#     for i, (s, node_a, edge_i, edge_a, tgt) in enumerate(zip(smiles, node_attr, edge_index, edge_attr, Y_data)):
-#         # print("print")
-#         # print(tgt)
-#         # print(node_a, edge_i, edge_a, tgt)
-#         # print(i)
-#         # print(s, tgt)
-#         # print(Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt))
-#         # exit()
-#         instances.append({"smiles": s,
-#                           "id": i,
-#                           "graph_data": Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt),
-#                           "tokenizer": tokenizer
-#                           })
-#
-#     # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
-#     # instances=[{"smiles":smiles[instance_id],
-#     #             "edge_index":edge_index[instance_id],
-#     #             "node_attr":node_attr[instance_id],
-#     #             "edge_attr":edge_attr[instance_id],
-#     #             "Y_data":Y_data[instance_id],
-#     #             "instance_id":instance_id,
-#     #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
-#     train, tmp = model_selection.train_test_split(instances, train_size=0.4, shuffle=False)
-#     val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
-#
-#     if args.cache_filename:
-#         dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
-#
-#     return train, val, test
-#
-#
-# def load_mole_data(args, filename, tokenizer):
-#     args.cache_filename = os.path.splitext(args.train_file)[0] + ".pkl"
-#     if args.use_cache and os.path.exists(args.cache_filename):
-#         print("Loading Cached Data...")
-#         data = load_file(args.cache_filename)
-#         train, val, test = data['train'], data['val'], data['test']
-#         # for f in [train, val, test]:
-#         #     for d in f:
-#         #         # d["graph_data"].x=torch.cat([d["graph_data"].x[:, :-13], d["graph_data"].x[:, 8:]])
-#         #         d["graph_data"].x[:, 6] = torch.rand_like(d["graph_data"].x[:, 6])
-#
-#         # d["graph_data"].x = torch.rand_like(d["graph_data"].x)
-#         # args.in_dim = train[0]["graph_data"].x.shape[1]
-#         args.in_dim = args.g_dim
-#
-#         print("args.in_dim", args.in_dim)
-#         return train, val, test
-#
-#     if os.path.exists(args.cache_filename):
-#         os.remove(args.cache_filename)
-#
-#     df = pd.read_csv(filename)
-#     # samples=df.to_dict(orient='records')
-#
-#     smiles = []
-#     suppl, targets = [], []
-#
-#     for s, t in zip(list(df['smiles']), list(df[args.tgt_name])):
-#         try:
-#             c = Chem.MolFromSmiles(s)
-#         except Exception as e:
-#             print(e)
-#             continue
-#         if c:
-#             smiles.append(s)
-#             suppl.append(c)
-#             targets.append(t)
-#
-#     # res, exclude
-#     all_atom_properties, dex = get_atom_properties(get_atom_symbols(suppl))
-#     args.in_dim = args.g_dim
-#     # all_atom_properties[0].shape[1]
-#
-#     suppl = [suppl[d] for d in dex]
-#     targets = [targets[d] for d in dex]
-#     smiles = [smiles[d] for d in dex]
-#
-#     adj = list(get_adj_matrix_coo(suppl))
-#     number_of_bonds = list(get_num_bonds(suppl))
-#     bond_types = []
-#     # print("adj", adj)
-#     # exit()
-#     for k, mol in enumerate(suppl):
-#         # tmp=[]
-#         # for i, j in adj[k].t().numpy():
-#         #     tmp.append(int(mol.GetBondBetweenAtoms(int(i),int(j)).GetBondTypeAsDouble()))
-#
-#         tmp = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in adj[k].t().numpy()]
-#         bond_types.append(tmp)
-#
-#     print(adj[0].shape)
-#     print(len(bond_types[0]))
-#
-#     # embed()
-#     # targets = list(get_targets(get_atom_symbols(suppl)))
-#
-#     num_classes = max(targets) + 1
-#     print("num_classes", num_classes)
-#     print("edge_index")
-#     edge_index = [torch.as_tensor(target, dtype=torch.long) for target in adj]
-#     print("node_attr")
-#     node_attr = [torch.tensor(target, dtype=torch.long) for target in all_atom_properties]
-#     # list(seperator(all_atom_properties))
-#     print("node_attr.shape", node_attr[0].shape)
-#
-#     print("edge_attr")
-#     edge_attr = [torch.tensor(target, dtype=torch.long) for target in bond_types]
-#     print("edge_attr.shape", edge_attr[0].shape)
-#
-#     print("Y_data")
-#     Y_data = [torch.tensor(target, dtype=torch.float) for target in targets]  # targets
-#     print("Y_data", Y_data)
-#
-#     instances = []
-#     print("start adding")
-#     for i, (s, node_a, edge_i, edge_a, tgt) in enumerate(zip(smiles, node_attr, edge_index, edge_attr, Y_data)):
-#         # print("print")
-#         # print(tgt)
-#         # print(node_a, edge_i, edge_a, tgt)
-#         # print(i)
-#         # print(s, tgt)
-#         # print(Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt))
-#         # exit()
-#         instances.append({"smiles": s,
-#                           "id": i,
-#                           "graph_data": Data(x=node_a, edge_index=edge_i, edge_attr=edge_a, y=tgt),
-#                           "tokenizer": tokenizer
-#                           })
-#
-#     # data_instance = list(map(list, zip(node_attr, edge_index, edge_attr, Y_data)))
-#     # instances=[{"smiles":smiles[instance_id],
-#     #             "edge_index":edge_index[instance_id],
-#     #             "node_attr":node_attr[instance_id],
-#     #             "edge_attr":edge_attr[instance_id],
-#     #             "Y_data":Y_data[instance_id],
-#     #             "instance_id":instance_id,
-#     #             "tokenizer":tokenizer} for instance_id in range(len(edge_index))]
-#     train, tmp = model_selection.train_test_split(instances, train_size=0.6, shuffle=False)
-#     val, test = model_selection.train_test_split(tmp, train_size=0.5, shuffle=False)  # This splits the tmp value
-#
-#     if args.cache_filename:
-#         dump_file({"train": train, "val": val, "test": test}, args.cache_filename)
-#
-#     return train, val, test
+# from train_utils import
+# def load_data(args, name="chemet"):
+#     train_file, val_file, test_file, data_dir=args.train_file, args.val_file, args.test_file, args.data_dir
+#
+#
+#     if name=="":
+#         train_data, val_data, test_data = ChemetDataset(args, train_file, tokenizer, modal_retriever, labels), \
+#                                           ChemetDataset(args, val_file, tokenizer, modal_retriever, labels), \
+#                                           ChemetDataset(args, test_file, tokenizer, modal_retriever, labels)
 
 
 class ModalRetriever:
-    def __init__(self):
+    def __init__(self, id_file, info_file):
         self.atom_dict = {}
-        self.mention2cid, self.cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
-                                           load_file("data_online/ChemProt_Corpus/cmpd_info.json")
-        self.mention2protid, self.prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
-                                              load_file("data_online/ChemProt_Corpus/prot_info.json")
+        self.mention2cid, self.cmpd_info = load_file(id_file), load_file(info_file)
+        # self.mention2protid, self.prot_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
+        #                                       load_file("data_online/ChemProt_Corpus/prot_info.json")
+        self.mention2protid, self.prot_info = None, None
 
     def get_prot(self, ent):
         # print("get_prot", ent)
@@ -431,7 +49,7 @@ class ModalRetriever:
         # print("get_mol", ent)
 
         g_modal, g_modal_mask = "", 0
-        d_modal, d_modal_mask = ".", 0
+        d_modal, d_modal_mask = " ", 0
         if ent in self.mention2cid:
             cid = self.mention2cid[ent]
             # print("cid",cid)
@@ -440,10 +58,10 @@ class ModalRetriever:
                 if "canonical_smiles" in self.cmpd_info[cid]:
                     g_modal, g_modal_mask = self.cmpd_info[cid]["canonical_smiles"], 1
                 if "pubchem_description" in self.cmpd_info[cid] and 'descriptions' in self.cmpd_info[cid][
-                    'pubchem_description'] and \
-                        len(self.cmpd_info[cid]['pubchem_description']['descriptions']):
-                    d_modal, d_modal_mask = self.cmpd_info[cid]['pubchem_description']['descriptions'][0][
-                                                "description"], 1
+                    'pubchem_description'] and len(self.cmpd_info[cid]['pubchem_description']['descriptions']):
+                    d_arr = self.cmpd_info[cid]['pubchem_description']['descriptions']
+                    id_chosen = np.argmax([len(d["description"].split()) for d in d_arr])
+                    d_modal, d_modal_mask = d_arr[id_chosen]["description"], 1
 
         g_modal, g_modal_mask = self.get_graph(g_modal)
         return g_modal, g_modal_mask, d_modal, d_modal_mask
@@ -476,7 +94,8 @@ class ModalRetriever:
         res = (Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
                     edge_attr=torch.tensor([1, 1])), 0)
 
-        if not len(input_smile): return res
+        if not len(input_smile):
+            return res
         try:
             mol = Chem.MolFromSmiles(input_smile)
         except Exception as e:
@@ -495,290 +114,495 @@ class ModalRetriever:
         return Data(x=node_attr, edge_index=edge_index, edge_attr=edge_attr), 1
 
 
-def load_data_chemprot_re(args, filename, tokenizer=None):
-    args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
+# def load_data_chemprot_re(args, filename, tokenizer=None):
+#     args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
+#
+#     if args.use_cache and os.path.exists(args.cache_filename):
+#         print("Loading Cached Data...", args.cache_filename)
+#         data = load_file(args.cache_filename)
+#
+#         # print(sum([instance["ent1_g_mask"] for instance in data['instances']]) // len(data['instances']))
+#         # print(sum([instance["ent2_g_mask"] for instance in data['instances']]) // len(data['instances']))
+#         # print(sum([instance["ent1_d_mask"] for instance in data['instances']]) // len(data['instances']))
+#         # print(sum([instance["ent2_d_mask"] for instance in data['instances']]) // len(data['instances']))
+#         args.out_dim = len(data['rel2id'])
+#         # args.in_dim = data['instances'][0]["ent1_g"].x.shape[-1]
+#         args.in_dim = args.g_dim
+#         print("args.in_dim", args.in_dim)
+#         print("args.out_dim", args.out_dim)
+#         print(data['rel2id'])
+#         #
+#         # print(data['instances'][0]["modal_data"][0][0].x.dtype)
+#         # import torch
+#
+#         return data['instances']
+#
+#     instances = []
+#     # smiless1 = []
+#     # smiless2 = []
+#     # descriptions1 = []
+#     # descriptions2 = []
+#
+#     mention2cid, cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
+#                              load_file("data_online/ChemProt_Corpus/cmpd_info.json")
+#     mention2protid, prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
+#                                 load_file("data_online/ChemProt_Corpus/prot_info.json")
+#
+#     rels = ['AGONIST-ACTIVATOR',
+#             'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
+#             'AGONIST', 'INHIBITOR',
+#             'PRODUCT-OF', 'ANTAGONIST',
+#             'ACTIVATOR', 'INDIRECT-UPREGULATOR',
+#             'SUBSTRATE', 'INDIRECT-DOWNREGULATOR',
+#             'AGONIST-INHIBITOR', 'UPREGULATOR', ]
+#     rel2id = {rel: i for i, rel in enumerate(rels)}
+#
+#     def fill_modal_data(ent, modal_feats, modal_feat_mask, is_prot=False):
+#
+#         if not is_prot and ent in mention2cid:
+#             cid = mention2cid[ent]
+#             if cid is not None and str(cid) in cmpd_info:
+#                 cid = str(cid)
+#                 if "canonical_smiles" in cmpd_info[cid]:
+#                     # print("found canonical_smiles")
+#                     modal_feats[0].append(cmpd_info[cid]["canonical_smiles"])
+#                     modal_feat_mask[0].append(1)
+#                 else:
+#                     modal_feats[0].append("[[NULL]]")  # @
+#                     modal_feat_mask[0].append(0)
+#
+#                 if "pubchem_description" in cmpd_info[cid] and 'descriptions' in cmpd_info[cid][
+#                     'pubchem_description'] and \
+#                         len(cmpd_info[cid]['pubchem_description']['descriptions']):
+#                     # print("dfound pubchem_description")
+#                     modal_feats[1].append(cmpd_info[cid]['pubchem_description']['descriptions'][0]["description"])
+#                     modal_feat_mask[1].append(1)
+#                 else:
+#                     modal_feats[1].append("")  # [[NULL]]
+#                     modal_feat_mask[1].append(0)
+#                 return
+#         else:
+#             if ent in mention2protid:
+#                 pid = mention2protid[ent]
+#                 if pid is not None and pid in prot_info:
+#                     modal_feats[0].append("")
+#                     modal_feat_mask[0].append(0)
+#                     if "definition" in prot_info[pid]:
+#                         # print("found1")
+#                         modal_feats[1].append(prot_info[pid]["definition"]['text'])
+#                         modal_feat_mask[1].append(1)
+#                     else:
+#                         modal_feats[1].append("")
+#                         modal_feat_mask[1].append(0)
+#                     return
+#         modal_feats[0].append("[[NULL]]")
+#         modal_feat_mask[0].append(0)
+#         modal_feats[1].append("")
+#         modal_feat_mask[1].append(0)
+#
+#     texts, labels = [], []
+#     ent_pos = []
+#
+#     with open(filename, mode="r", encoding="utf-8") as fin:
+#         modal_feats1 = [[], []]  # n row, each row is all for one modalities
+#         modal_feat_mask1 = [[], []]
+#         modal_feats2 = [[], []]  # n row, each row is all for one modalities
+#         modal_feat_mask2 = [[], []]
+#         # modal_feats={"smiles":[], "smiles":[], "smiles":[], "smiles":[]}
+#         for i, line in enumerate(fin):
+#             # if args.debug:
+#             #     # if i<100: continue
+#             #     if i>1000: break
+#
+#             # print("\n", i, line)
+#             sample = json.loads(line.strip())
+#
+#             # text label metadata
+#             assert not sample["metadata"]
+#
+#             text = sample["text"]
+#
+#             # exclusive
+#             ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
+#             ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
+#
+#             ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
+#             # lower case
+#
+#             prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:ent1_spos]), \
+#                                                     tokenizer.tokenize(text[ent1_epos + 3:ent2_spos]), \
+#                                                     tokenizer.tokenize(text[ent2_epos + 3:])
+#             ent1_tokens, ent2_tokens = ["*"] + tokenizer.tokenize(ent1) + \
+#                                        ["*"], ["*"] + tokenizer.tokenize(ent2) + ["*"]
+#
+#             tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
+#             s_pos = len(prior_tokens) + 1
+#             new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
+#             s_pos += len(ent1_tokens) + len(mid_tokens)
+#             new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
+#
+#             input_ids = tokenizer.convert_tokens_to_ids(tokens)
+#             input_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
+#
+#             texts.append(input_ids)
+#             # texts.append(text.lower())
+#             labels.append(rel2id[sample["label"]])
+#
+#             # print("ent1, ent2", ent1,"|",  ent2)
+#             # print("looking for ent1")
+#
+#             if ent2 in mention2cid:
+#                 ent1, ent2 = ent2, ent1
+#                 new_ent1_pos, new_ent2_pos = new_ent2_pos, new_ent1_pos
+#             ent_pos.append([new_ent1_pos, new_ent2_pos])
+#
+#             fill_modal_data(ent2, modal_feats2, modal_feat_mask2, is_prot=True)
+#             fill_modal_data(ent1, modal_feats1, modal_feat_mask1, is_prot=False)
+#
+#             #
+#             # fill_modal_data(ent1, mention2cid, cmpd_info, modal_feats1, modal_feat_mask1)
+#             # # print("looking for ent2")
+#             # fill_modal_data(ent2, mention2cid, cmpd_info, modal_feats2, modal_feat_mask2)
+#             # print(modal_feats1)
+#             # print(modal_feats2)
+#             # print(len(modal_feats1[0]))
+#             # print(len(modal_feats1[1]))
+#             # print(len(modal_feat_mask1[0]))
+#             # print(len(modal_feat_mask1[1]))
+#             # print(len(modal_feats2[0]))
+#             # print(len(modal_feats2[1]))
+#             # print(len(modal_feat_mask2[0]))
+#             # print(len(modal_feat_mask2[1]))
+#
+#     modal_feat_mask1[0], modal_feats1[0] = get_graph_info(modal_feats1[0], args)
+#     # modal_feat_mask2[0], modal_feats2[0] = get_graph_info(modal_feats2[0],args)
+#     # print(len(modal_feats1[0]))
+#     # print(len(modal_feats1[1]))
+#     # print(len(modal_feat_mask1[0]))
+#     # print(len(modal_feat_mask1[1]))
+#     # print(len(modal_feats2[0]))
+#     # print(len(modal_feats2[1]))
+#     # print(len(modal_feat_mask2[0]))
+#     # print(len(modal_feat_mask2[1]))
+#
+#     # exit()
+#
+#     # print(len(modal_feats1[0]))
+#     # print(len(modal_feat_mask1[0]))
+#     # print(len(modal_feats1[1]))
+#     # print(len(modal_feat_mask1[1]))
+#     # print(len(modal_feats2[0]))
+#     # print(len(modal_feat_mask2[0]))
+#     # print(len(modal_feats2[1]))
+#     # print(len(modal_feat_mask2[1]))
+#     #
+#     # print(modal_feats1[0][:5])
+#     # print(modal_feats1[1][:5])
+#     # print(modal_feats2[0][:5])
+#     # print(modal_feats2[1][:5])
+#     # print(modal_feat_mask1[0][:5])
+#     # print(modal_feat_mask1[1][:5])
+#     # print(modal_feat_mask2[0][:5])
+#     # print(modal_feat_mask2[1][:5])
+#     #
+#     # exit()
+#     assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
+#         modal_feats2[1])
+#
+#     valid_num = np.zeros((4))
+#     total_num = 0
+#
+#     for i in range(len(texts)):
+#         total_num += 1
+#         valid_num += [modal_feat_mask1[0][i] == 1, modal_feat_mask1[1][i] == 1, modal_feat_mask2[1][i] == 1,
+#                       modal_feat_mask1[1][i] == 1 and modal_feat_mask2[1][i] == 1]
+#
+#         # also add in original text for analyze purpose
+#         instances.append({"text": texts[i],
+#                           "ent_pos": ent_pos[i],
+#                           "id": i,
+#                           "label": labels[i],
+#                           "modal_data": [
+#                               [modal_feats1[0][i], modal_feats1[1][i], modal_feat_mask1[0][i],
+#                                modal_feat_mask1[1][i], ],
+#                               [modal_feats2[1][i], modal_feat_mask2[1][i]]
+#                           ],
+#                           "tokenizer": tokenizer
+#                           })
+#     print("instances", instances[0])
+#
+#     # for i, (
+#     #         text, label, ent1_g, ent1_g_mask, ent1_d, ent1_d_mask, ent2_g, ent2_g_mask, ent2_d,
+#     #         ent2_d_mask) in enumerate(
+#     #     zip(texts, labels, modal_feats1[0], modal_feat_mask1[0], modal_feats1[1], modal_feat_mask1[1],
+#     #         modal_feats2[0], modal_feat_mask2[0], modal_feats2[1], modal_feat_mask2[1])):
+#     #
+#     #     total_num += 1
+#     #     if ent1_g_mask == 1: valid_num1g += 1
+#     #     if ent1_d_mask == 1: valid_num1d += 1
+#     #     if ent2_d_mask == 1: valid_num2d += 1
+#     #     # print("ent1_g_mask", ent1_g_mask)
+#     #     # print("ent1_d_mask", ent1_d_mask)
+#     #     # print("ent2_g_mask", ent2_g_mask)
+#     #     # print("ent2_g_mask", ent2_g_mask)
+#     #     instances.append({"text": text,
+#     #                       "id": i,
+#     #                       "label": label,
+#     #                       "ent1_g": ent1_g,
+#     #                       "ent1_g_mask": ent1_g_mask,
+#     #                       "ent1_d": ent1_d,
+#     #                       "ent1_d_mask": ent1_d_mask,
+#     #                       "ent2_g": ent2_g,
+#     #                       "ent2_g_mask": ent2_g_mask,
+#     #                       "ent2_d": ent2_d,
+#     #                       "ent2_d_mask": ent2_d_mask,
+#     #                       "tokenizer": tokenizer
+#     #                       })
+#     #
+#     # print("valid_num", valid_num)
+#     # print("total_num", total_num)
+#     # # print(instances)
+#     # # exit()
+#     print(total_num)
+#     print(valid_num)
+#     embed()
+#     args.out_dim = len(rel2id)
+#     # args.in_dim = instances[0]["ent1_g"].x.shape[-1]
+#
+#     if args.cache_filename:
+#         dump_file({"instances": instances, "rel2id": rel2id}, args.cache_filename)
+#
+#     # print(sum([instance["ent1_g_mask"] for instance in instances])//len(instances))
+#     # print(sum([instance["ent2_g_mask"] for instance in instances])//len(instances))
+#     # print(sum([instance["ent1_d_mask"] for instance in instances])//len(instances))
+#     # print(sum([instance["ent2_d_mask"] for instance in instances])//len(instances))
+#     return instances
+#
+#     # for each sent
+#
+#     if os.path.exists(args.cache_filename):
+#         os.remove(args.cache_filename)
 
-    if args.use_cache and os.path.exists(args.cache_filename):
-        print("Loading Cached Data...", args.cache_filename)
-        data = load_file(args.cache_filename)
+#
+# def txt_and_entity_to_token(text, ent_pos_list, tokenizer):
+#     pass
 
-        # print(sum([instance["ent1_g_mask"] for instance in data['instances']]) // len(data['instances']))
-        # print(sum([instance["ent2_g_mask"] for instance in data['instances']]) // len(data['instances']))
-        # print(sum([instance["ent1_d_mask"] for instance in data['instances']]) // len(data['instances']))
-        # print(sum([instance["ent2_d_mask"] for instance in data['instances']]) // len(data['instances']))
-        args.out_dim = len(data['rel2id'])
-        # args.in_dim = data['instances'][0]["ent1_g"].x.shape[-1]
-        args.in_dim = args.g_dim
-        print("args.in_dim", args.in_dim)
-        print("args.out_dim", args.out_dim)
-        print(data['rel2id'])
+
+def sent_with_entities_to_token_ids(sent, ent_pos_list, max_seq_length, tokenizer, shift_right=True, add_marker=True):
+    new_map = {}
+    sents = []
+
+    ent_pos_list = np.array(ent_pos_list)
+    entity_start, entity_end = ent_pos_list[:, 0], ent_pos_list[:, 1] - 1
+    # print('entity_start, entity_end', entity_start, entity_end)
+    for i_t, token in enumerate(sent):
+        tokens_wordpiece = tokenizer.tokenize(token)
+        if add_marker:
+            if i_t in entity_start:
+                tokens_wordpiece = ["*"] + tokens_wordpiece
+            if i_t in entity_end:
+                tokens_wordpiece = tokens_wordpiece + ["*"]
+        new_map[i_t] = len(sents)
+        sents.extend(tokens_wordpiece)
+    new_map[i_t + 1] = len(sents)
+
+    entity_pos = [[new_map[s], new_map[e]] for s, e in ent_pos_list]
+
+    if shift_right:
+        entity_pos = np.array(entity_pos) + 1
+
+    sents = sents[:max_seq_length - 2]
+    # print("sents", sents)
+    # print("entity_pos", entity_pos)
+
+    input_ids = tokenizer.convert_tokens_to_ids(sents)
+    input_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
+    return input_ids, entity_pos
+
+
+class ChemetDataset(Dataset):
+
+    def __init__(self, args, filename, tokenizer=None, modal_retriever=None, labels=None):
+
+        args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
+        if args.use_cache and os.path.exists(args.cache_filename):
+            print("Loading Cached Data...", args.cache_filename)
+            data = load_file(args.cache_filename)
+            args.out_dim = len(data['label2id'])
+            print(data['label2id'])
+            self.instances = data['instances']
+            # embed()
+            return
+
+        # self.mention2cid, self.cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
+        #                                    load_file("data_online/ChemProt_Corpus/cmpd_info.json")
+        # self.mention2concepts = load_file("data_online/ChemProt_Corpus/mention2concepts.json")
+        # self.chem_mentions = load_file("data_online/ChemProt_Corpus/chem_mentions.json")
+        # self.get_mentions()
+        self.modal_retriever = modal_retriever
+        self.labels = labels
+        # print(labels)
+
+        self.label_desc = {}
+        self.label2id = {label: i for i, label in enumerate(self.labels)}
+        # label_text = [self.label_desc[lb] for lb in self.labels]
+        args.out_dim = len(self.label2id)
+        print("\nself.label2id", self.label2id)
+
+        with open(filename, mode="r", encoding="utf-8") as fin:
+            self.original_data = [line.strip() for i, line in enumerate(fin)]
+
+        # """get sentence segments and mention positions"""
+        # # Type 1 multiple mention in each sent
+        # # Type 2 one mention in each sent
+        # orig_data = {}
+        # for idx in range(len(self.original_data)):
+        #     sample = json.loads(self.original_data[idx])
+        #     tmp = text = sample["text"]
+        #     for bracket in ["<< ", " >>", "[[ ", " ]]"]: tmp = tmp.replace(bracket, "")
+        #     if tmp not in orig_data:
+        #         orig_data[tmp] = set()
+        #     orig_data[tmp].add((text.find("<< "), text.find(" >>") - 3))
+        #     orig_data[tmp].add((text.find("[[ ") - 6, text.find(" ]]") - 9))
         #
-        # print(data['instances'][0]["modal_data"][0][0].x.dtype)
-        # import torch
+        # for i, sent in enumerate(orig_data):
+        #     tmp = {"range2segpos": {}, "segs": []}
+        #     sorted_ranges = sorted(list(orig_data[sent]))
+        #
+        #     prev_e = 0
+        #
+        #     # context, mention1, context, mention2,...
+        #     for j, rg in enumerate(sorted_ranges):
+        #         s, e = rg
+        #
+        #         tmp["segs"].append(sent[prev_e:s])
+        #         tmp["segs"].append(sent[s:e])
+        #         tmp["range2segpos"][rg] = j * 2 + 1
+        #         prev_e = e
+        #     tmp["segs"].append(sent[prev_e:])
+        #     orig_data[sent] = tmp
+        #     # print("orig_data",orig_data[sent])
 
-        return data['instances']
+        chem_mentions = []
 
-    instances = []
-    # smiless1 = []
-    # smiless2 = []
-    # descriptions1 = []
-    # descriptions2 = []
+        """Loading"""
+        self.instances = []
+        sample_id = 0
+        for idx in range(len(self.original_data)):
+            sample = json.loads(self.original_data[idx])
+            text = sample["tokens"]
+            ent_pos_list = []
 
-    mention2cid, cmpd_info = load_file("data_online/ChemProt_Corpus/mention2ent.json"), \
-                             load_file("data_online/ChemProt_Corpus/cmpd_info.json")
-    mention2protid, prot_info = load_file("data_online/ChemProt_Corpus/mention2protid.json"), \
-                                load_file("data_online/ChemProt_Corpus/prot_info.json")
+            for mention in sample["annotations"]:
+                m_s, m_e = mention["start"], mention["end"]
+                m = "".join(text[m_s:m_e])
+                chem_mentions.append(m)
+                # print("\n\nmention", m)
 
-    rels = ['AGONIST-ACTIVATOR',
-            'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',
-            'AGONIST', 'INHIBITOR',
-            'PRODUCT-OF', 'ANTAGONIST',
-            'ACTIVATOR', 'INDIRECT-UPREGULATOR',
-            'SUBSTRATE', 'INDIRECT-DOWNREGULATOR',
-            'AGONIST-INHIBITOR', 'UPREGULATOR', ]
-    rel2id = {rel: i for i, rel in enumerate(rels)}
+                label = np.zeros((len(self.label2id)))
+                label[[self.label2id[l] for l in mention["labels"]]] = 1
+                # print(mention["labels"])
+                # print("label", label)
 
-    def fill_modal_data(ent, modal_feats, modal_feat_mask, is_prot=False):
+                assert m_s != m_e
 
-        if not is_prot and ent in mention2cid:
-            cid = mention2cid[ent]
-            if cid is not None and str(cid) in cmpd_info:
-                cid = str(cid)
-                if "canonical_smiles" in cmpd_info[cid]:
-                    # print("found canonical_smiles")
-                    modal_feats[0].append(cmpd_info[cid]["canonical_smiles"])
-                    modal_feat_mask[0].append(1)
-                else:
-                    modal_feats[0].append("[[NULL]]")  # @
-                    modal_feat_mask[0].append(0)
+                token_ids, new_ent_pos_list = sent_with_entities_to_token_ids(text, [[m_s, m_e]],
+                                                                              max_seq_length=args.max_seq_len,
+                                                                              tokenizer=tokenizer, shift_right=True)
+                masked_token_ids, new_masked_ent_pos_list = sent_with_entities_to_token_ids(
+                    text[:m_s] + ["[MASK]"] + text[m_e:], [[m_s, m_s + 1]],
+                    max_seq_length=args.max_seq_len,
+                    tokenizer=tokenizer, shift_right=True, add_marker=False)
 
-                if "pubchem_description" in cmpd_info[cid] and 'descriptions' in cmpd_info[cid][
-                    'pubchem_description'] and \
-                        len(cmpd_info[cid]['pubchem_description']['descriptions']):
-                    # print("dfound pubchem_description")
-                    modal_feats[1].append(cmpd_info[cid]['pubchem_description']['descriptions'][0]["description"])
-                    modal_feat_mask[1].append(1)
-                else:
-                    modal_feats[1].append("")  # [[NULL]]
-                    modal_feat_mask[1].append(0)
-                return
+                ent_template = {
+                    "g": None,
+                    "g_mask": 0,
+                    "t": "",
+                    "t_mask": 0,
+                    "pos": [],
+                    "masked_pos": [],
+                }
+                ent1_dict = deepcopy(ent_template)
+                ent1_dict["pos"] = list(new_ent_pos_list[0])
+                ent1_dict["masked_pos"] = list(new_masked_ent_pos_list[0])
+                ent1_dict['g'], ent1_dict['g_mask'], ent1_dict['t'], ent1_dict['t_mask'] = self.modal_retriever.get_mol(
+                    m)
+                # print('ent1_dict',ent1_dict)
+
+                self.instances.append({"text": token_ids,
+                                       "masked_text": masked_token_ids,
+                                       "id": sample_id,
+                                       "label": label,
+                                       "ent": ent1_dict,
+                                       # "label_text": label_text,
+                                       "tokenizer": tokenizer
+                                       })
+                sample_id += 1
+        if args.cache_filename:
+            dump_file(chem_mentions, args.data_dir + "chem_mentions.json")
+            dump_file({"instances": self.instances, "label2id": self.label2id}, args.cache_filename)
+
+    def __len__(self):
+        return len(self.instances)
+
+    def __getitem__(self, idx):
+        return self.instances[idx]
+
+    @classmethod
+    def collect_labels(cls, files, path):
+        labels = set()
+        for filename in files:
+            with open(filename, mode="r", encoding="utf-8") as fin:
+                data = [line.strip() for i, line in enumerate(fin)]
+                for idx in range(len(data)):
+
+                    sample = json.loads(data[idx])
+
+                    for m in sample["annotations"]:
+                        labels = labels.union(m["labels"])
+        labels = list(labels)
+        dump_file(labels, path)
+
+        return labels
+
+    def get_mentions(self):
+        data_dir = 'data_online/ChemProt_Corpus/'
+        tr = join(data_dir, "chemprot_training/chemprot_training_entities.tsv")
+        dev = join(data_dir, "chemprot_development/chemprot_development_entities.tsv")
+        test = join(data_dir, "chemprot_test_gs/chemprot_test_entities_gs.tsv")
+
+        chem_mentions = {}
+        prot_mentions = {}
+
+        if os.path.exists(join(data_dir, "chem_mentions.json")):
+            chem_mentions = load_file(join(data_dir, "chem_mentions.json"))
+            prot_mentions = load_file(join(data_dir, "prot_mentions.json"))
         else:
-            if ent in mention2protid:
-                pid = mention2protid[ent]
-                if pid is not None and pid in prot_info:
-                    modal_feats[0].append("")
-                    modal_feat_mask[0].append(0)
-                    if "definition" in prot_info[pid]:
-                        # print("found1")
-                        modal_feats[1].append(prot_info[pid]["definition"]['text'])
-                        modal_feat_mask[1].append(1)
-                    else:
-                        modal_feats[1].append("")
-                        modal_feat_mask[1].append(0)
-                    return
-        modal_feats[0].append("[[NULL]]")
-        modal_feat_mask[0].append(0)
-        modal_feats[1].append("")
-        modal_feat_mask[1].append(0)
+            for file in [tr, dev, test]:
+                with open(file, encoding='utf-8') as fd:
+                    rd = list(csv.reader(fd, delimiter="\t", quotechar='"'))
 
-    texts, labels = [], []
-    ent_pos = []
+                    for i, row in enumerate(rd):
 
-    with open(filename, mode="r", encoding="utf-8") as fin:
-        modal_feats1 = [[], []]  # n row, each row is all for one modalities
-        modal_feat_mask1 = [[], []]
-        modal_feats2 = [[], []]  # n row, each row is all for one modalities
-        modal_feat_mask2 = [[], []]
-        # modal_feats={"smiles":[], "smiles":[], "smiles":[], "smiles":[]}
-        for i, line in enumerate(fin):
-            # if args.debug:
-            #     # if i<100: continue
-            #     if i>1000: break
-
-            # print("\n", i, line)
-            sample = json.loads(line.strip())
-
-            # text label metadata
-            assert not sample["metadata"]
-
-            text = sample["text"]
-
-            # exclusive
-            ent1_spos, ent1_epos = text.find("<< ") + 3, text.find(" >>")
-            ent2_spos, ent2_epos = text.find("[[ ") + 3, text.find(" ]]")
-
-            ent1, ent2 = text[ent1_spos:ent1_epos], text[ent2_spos:ent2_epos]
-            # lower case
-
-            prior_tokens, mid_tokens, post_tokens = tokenizer.tokenize(text[:ent1_spos]), \
-                                                    tokenizer.tokenize(text[ent1_epos + 3:ent2_spos]), \
-                                                    tokenizer.tokenize(text[ent2_epos + 3:])
-            ent1_tokens, ent2_tokens = ["*"] + tokenizer.tokenize(ent1) + \
-                                       ["*"], ["*"] + tokenizer.tokenize(ent2) + ["*"]
-
-            tokens = prior_tokens + ent1_tokens + mid_tokens + ent2_tokens + post_tokens
-            s_pos = len(prior_tokens) + 1
-            new_ent1_pos = (s_pos, s_pos + len(ent1_tokens))
-            s_pos += len(ent1_tokens) + len(mid_tokens)
-            new_ent2_pos = (s_pos, s_pos + len(ent2_tokens))
-
-            input_ids = tokenizer.convert_tokens_to_ids(tokens)
-            input_ids = tokenizer.build_inputs_with_special_tokens(input_ids)
-
-            texts.append(input_ids)
-            # texts.append(text.lower())
-            labels.append(rel2id[sample["label"]])
-
-            # print("ent1, ent2", ent1,"|",  ent2)
-            # print("looking for ent1")
-
-            if ent2 in mention2cid:
-                ent1, ent2 = ent2, ent1
-                new_ent1_pos, new_ent2_pos = new_ent2_pos, new_ent1_pos
-            ent_pos.append([new_ent1_pos, new_ent2_pos])
-
-            fill_modal_data(ent2, modal_feats2, modal_feat_mask2, is_prot=True)
-            fill_modal_data(ent1, modal_feats1, modal_feat_mask1, is_prot=False)
-
-            #
-            # fill_modal_data(ent1, mention2cid, cmpd_info, modal_feats1, modal_feat_mask1)
-            # # print("looking for ent2")
-            # fill_modal_data(ent2, mention2cid, cmpd_info, modal_feats2, modal_feat_mask2)
-            # print(modal_feats1)
-            # print(modal_feats2)
-            # print(len(modal_feats1[0]))
-            # print(len(modal_feats1[1]))
-            # print(len(modal_feat_mask1[0]))
-            # print(len(modal_feat_mask1[1]))
-            # print(len(modal_feats2[0]))
-            # print(len(modal_feats2[1]))
-            # print(len(modal_feat_mask2[0]))
-            # print(len(modal_feat_mask2[1]))
-
-    modal_feat_mask1[0], modal_feats1[0] = get_graph_info(modal_feats1[0], args)
-    # modal_feat_mask2[0], modal_feats2[0] = get_graph_info(modal_feats2[0],args)
-    # print(len(modal_feats1[0]))
-    # print(len(modal_feats1[1]))
-    # print(len(modal_feat_mask1[0]))
-    # print(len(modal_feat_mask1[1]))
-    # print(len(modal_feats2[0]))
-    # print(len(modal_feats2[1]))
-    # print(len(modal_feat_mask2[0]))
-    # print(len(modal_feat_mask2[1]))
-
-    # exit()
-
-    # print(len(modal_feats1[0]))
-    # print(len(modal_feat_mask1[0]))
-    # print(len(modal_feats1[1]))
-    # print(len(modal_feat_mask1[1]))
-    # print(len(modal_feats2[0]))
-    # print(len(modal_feat_mask2[0]))
-    # print(len(modal_feats2[1]))
-    # print(len(modal_feat_mask2[1]))
-    #
-    # print(modal_feats1[0][:5])
-    # print(modal_feats1[1][:5])
-    # print(modal_feats2[0][:5])
-    # print(modal_feats2[1][:5])
-    # print(modal_feat_mask1[0][:5])
-    # print(modal_feat_mask1[1][:5])
-    # print(modal_feat_mask2[0][:5])
-    # print(modal_feat_mask2[1][:5])
-    #
-    # exit()
-    assert len(modal_feat_mask1[0]) == len(modal_feats1[0]) == len(modal_feats2[0]) == len(modal_feats2[0]) == len(
-        modal_feats2[1])
-
-    valid_num = np.zeros((4))
-    total_num = 0
-
-    for i in range(len(texts)):
-        total_num += 1
-        valid_num += [modal_feat_mask1[0][i] == 1, modal_feat_mask1[1][i] == 1, modal_feat_mask2[1][i] == 1,
-                      modal_feat_mask1[1][i] == 1 and modal_feat_mask2[1][i] == 1]
-
-        # also add in original text for analyze purpose
-        instances.append({"text": texts[i],
-                          "ent_pos": ent_pos[i],
-                          "id": i,
-                          "label": labels[i],
-                          "modal_data": [
-                              [modal_feats1[0][i], modal_feats1[1][i], modal_feat_mask1[0][i],
-                               modal_feat_mask1[1][i], ],
-                              [modal_feats2[1][i], modal_feat_mask2[1][i]]
-                          ],
-                          "tokenizer": tokenizer
-                          })
-    print("instances", instances[0])
-
-    # for i, (
-    #         text, label, ent1_g, ent1_g_mask, ent1_d, ent1_d_mask, ent2_g, ent2_g_mask, ent2_d,
-    #         ent2_d_mask) in enumerate(
-    #     zip(texts, labels, modal_feats1[0], modal_feat_mask1[0], modal_feats1[1], modal_feat_mask1[1],
-    #         modal_feats2[0], modal_feat_mask2[0], modal_feats2[1], modal_feat_mask2[1])):
-    #
-    #     total_num += 1
-    #     if ent1_g_mask == 1: valid_num1g += 1
-    #     if ent1_d_mask == 1: valid_num1d += 1
-    #     if ent2_d_mask == 1: valid_num2d += 1
-    #     # print("ent1_g_mask", ent1_g_mask)
-    #     # print("ent1_d_mask", ent1_d_mask)
-    #     # print("ent2_g_mask", ent2_g_mask)
-    #     # print("ent2_g_mask", ent2_g_mask)
-    #     instances.append({"text": text,
-    #                       "id": i,
-    #                       "label": label,
-    #                       "ent1_g": ent1_g,
-    #                       "ent1_g_mask": ent1_g_mask,
-    #                       "ent1_d": ent1_d,
-    #                       "ent1_d_mask": ent1_d_mask,
-    #                       "ent2_g": ent2_g,
-    #                       "ent2_g_mask": ent2_g_mask,
-    #                       "ent2_d": ent2_d,
-    #                       "ent2_d_mask": ent2_d_mask,
-    #                       "tokenizer": tokenizer
-    #                       })
-    #
-    # print("valid_num", valid_num)
-    # print("total_num", total_num)
-    # # print(instances)
-    # # exit()
-    print(total_num)
-    print(valid_num)
-    embed()
-    args.out_dim = len(rel2id)
-    # args.in_dim = instances[0]["ent1_g"].x.shape[-1]
-
-    if args.cache_filename:
-        dump_file({"instances": instances, "rel2id": rel2id}, args.cache_filename)
-
-    # print(sum([instance["ent1_g_mask"] for instance in instances])//len(instances))
-    # print(sum([instance["ent2_g_mask"] for instance in instances])//len(instances))
-    # print(sum([instance["ent1_d_mask"] for instance in instances])//len(instances))
-    # print(sum([instance["ent2_d_mask"] for instance in instances])//len(instances))
-    return instances
-
-    # for each sent
-
-    if os.path.exists(args.cache_filename):
-        os.remove(args.cache_filename)
-
-
-def txt_and_entity_to_token(text, ent_pos_list, tokenizer):
-    pass
-
-
-def sent_with_entity_to_token_ids(sent, ent_pos_list):
-    ent1, ent2 = ent_pos_list
-    ent1_spos, ent1_epos = ent1
-    ent2_spos, ent2_epos = ent2
+                        if not row: continue
+                        if row[2] == "CHEMICAL":
+                            if row[-1] not in chem_mentions:
+                                chem_mentions[row[-1]] = 0
+                            chem_mentions[row[-1]] += 1
+                        else:
+                            if row[-1] not in prot_mentions:
+                                prot_mentions[row[-1]] = 0
+                            prot_mentions[row[-1]] += 1
+            dump_file(chem_mentions, join(data_dir, "chem_mentions.json"))
+            dump_file(prot_mentions, join(data_dir, "prot_mentions.json"))
+        self.chem_mentions = chem_mentions
+        self.prot_mentions = prot_mentions
 
 
 class ChemProtDataset(Dataset):
     """Face Landmarks dataset."""
 
-    def __init__(self, args, filename, tokenizer=None, modal_retriever=None):
+    def __init__(self, args, filename, tokenizer, modal_retriever, labels):
         args.cache_filename = os.path.splitext(filename)[0] + ".pkl"
         if args.use_cache and os.path.exists(args.cache_filename):
             print("Loading Cached Data...", args.cache_filename)
@@ -1036,6 +860,10 @@ class ChemProtDataset(Dataset):
     def __getitem__(self, idx):
         return self.instances[idx]
 
+    @classmethod
+    def c(cls):
+        print("cls")
+
     def get_mentions(self):
         data_dir = 'data_online/ChemProt_Corpus/'
         tr = join(data_dir, "chemprot_training/chemprot_training_entities.tsv")
@@ -1102,6 +930,73 @@ class CustomBatch:
         input_ids = [f["text"] + [0] * (max_len - len(f["text"])) for f in batch]
         input_mask = [[1.0] * len(f["text"]) + [0.0] * (max_len - len(f["text"])) for f in batch]
 
+        self.texts = torch.tensor(input_ids, dtype=torch.long)
+        self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)
+        # [:,:512]
+        self.masked_texts = torch.tensor([f["masked_text"] + [0] * (max_len - len(f["masked_text"])) for f in batch],
+                                         dtype=torch.long)
+        self.masked_texts_attn_mask = torch.tensor(
+                [[1.0] * len(f["masked_text"]) + [0.0] * (max_len - len(f["masked_text"])) for f in batch],
+                dtype=torch.float)
+
+        # print("self.texts ",self.texts )
+        # print("self.texts_attn_mask ",self.texts_attn_mask )
+
+        # self.texts = batch[0]["tokenizer"]([f["text"] for f in batch], return_tensors='pt', padding=True)
+        self.ids = [f["id"] for f in batch]
+        self.labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
+
+        tokenizer = batch[0]["tokenizer"]
+        # self.label_text = tokenizer(batch[0]["label_text"], truncation=True,
+        #                             max_length=512, return_tensors='pt', padding=True)
+
+        g_data = Batch.from_data_list([f["ent"]['g'] for f in batch])
+        g_data.x = torch.as_tensor(g_data.x, dtype=torch.long)
+        self.ent1_g = g_data
+        self.ent1_g_mask = torch.tensor([f["ent"]['g_mask'] for f in batch]).unsqueeze(-1)
+
+        self.ent1_d = tokenizer([f["ent"]['t'] for f in batch], truncation=True,
+                                max_length=512, return_tensors='pt', padding=True)
+        self.ent1_d_mask = torch.tensor([f["ent"]['t_mask'] for f in batch]).unsqueeze(-1)
+
+        self.ent1_pos = torch.tensor([f["ent"]['pos'] for f in batch], dtype=torch.long)
+        self.ent1_masked_pos = torch.tensor([f["ent"]['masked_pos'] for f in batch], dtype=torch.long)
+
+        self.in_train = True
+        # embed()
+
+    def to(self, device):
+        self.texts = self.texts.to(device)
+        self.texts_attn_mask = self.texts_attn_mask.to(device)
+
+        self.masked_texts = self.masked_texts.to(device)
+        self.masked_texts_attn_mask = self.masked_texts_attn_mask.to(device)
+
+        self.labels = self.labels.to(device)
+
+        self.ent1_g = self.ent1_g.to(device)
+        self.ent1_g_mask = self.ent1_g_mask.to(device)
+        self.ent1_d = {key: self.ent1_d[key].to(device) for key in self.ent1_d}
+        self.ent1_d_mask = self.ent1_d_mask.to(device)
+
+        self.ent1_pos = self.ent1_pos.to(device)
+        self.ent1_masked_pos = self.ent1_masked_pos.to(device)
+
+        return self
+
+    # custom memory pinning method on custom type
+    def pin_memory(self):
+        self.inp = self.inp.pin_memory()
+        self.tgt = self.tgt.pin_memory()
+        return self
+
+
+class CustomBatchRE:
+    def __init__(self, batch):
+        max_len = max([len(f["text"]) for f in batch])
+        input_ids = [f["text"] + [0] * (max_len - len(f["text"])) for f in batch]
+        input_mask = [[1.0] * len(f["text"]) + [0.0] * (max_len - len(f["text"])) for f in batch]
+
         self.texts = torch.tensor(input_ids, dtype=torch.long)[:, :512]
         self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)[:, :512]
 
@@ -1113,18 +1008,21 @@ class CustomBatch:
         self.labels = torch.tensor([f["label"] for f in batch], dtype=torch.long)
 
         tokenizer = batch[0]["tokenizer"]
-        self.label_text = tokenizer(batch[0]["label_text"], return_tensors='pt', padding=True)
+        self.label_text = tokenizer(batch[0]["label_text"], truncation=True,
+                                    max_length=512, return_tensors='pt', padding=True)
 
         g_data = Batch.from_data_list([f["ent"][0]['g'] for f in batch])
         g_data.x = torch.as_tensor(g_data.x, dtype=torch.long)
         self.ent1_g = g_data
         self.ent1_g_mask = torch.tensor([f["ent"][0]['g_mask'] for f in batch]).unsqueeze(-1)
 
-        self.ent1_d = tokenizer([f["ent"][0]['t'] for f in batch], return_tensors='pt', padding=True)
+        self.ent1_d = tokenizer([f["ent"][0]['t'] for f in batch], truncation=True,
+                                max_length=512, return_tensors='pt', padding=True)
         self.ent1_d_mask = torch.tensor([f["ent"][0]['t_mask'] for f in batch]).unsqueeze(-1)
         # print("self.ent1_d_mask ",self.ent1_d_mask )
 
-        self.ent2_d = tokenizer([f["ent"][1]['t'] for f in batch], return_tensors='pt', padding=True)
+        self.ent2_d = tokenizer([f["ent"][1]['t'] for f in batch], truncation=True,
+                                max_length=512, return_tensors='pt', padding=True)
         self.ent2_d_mask = torch.tensor([f["ent"][1]['t_mask'] for f in batch]).unsqueeze(-1)
         self.concepts = tokenizer(["chemical compound", "gene/protein"], return_tensors='pt', padding=True)
 

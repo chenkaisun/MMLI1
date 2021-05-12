@@ -15,46 +15,60 @@ from bs4 import BeautifulSoup
 # from pynvml import *
 import requests
 # from numba import jit
+from matplotlib.pyplot import plot
+import logging
+logging.getLogger('matplotlib.font_manager').disabled = True
+
+import matplotlib.pyplot as plt
 
 
-def request_get(url, headers):
-    try:
-        r = requests.get(url, headers=headers)
-        if r.ok:
-            # print(r)
-            return r
-        else:
+def visualize_plot(x=None, y=None, name=None, path=""):
+    for i, sub_y in enumerate(y):
+        plt.plot(range(len(sub_y)) if not x else x[i], sub_y, 'o-', label=name[i])
+    plt.legend()
+    plt.savefig(path)
+    # plt.show()
 
-            print(r)
-            return None
-    except Exception as e:
-        print(e)
-        return None
+
+# def request_get(url, headers):
+#     try:
+#         r = requests.get(url, headers=headers)
+#         if r.ok:
+#             # print(r)
+#             return r
+#         else:
+#
+#             print(r)
+#             return None
+#     except Exception as e:
+#         print(e)
+#         return None
 # from data import *
 # import wandb
-def get_mole_desciption(r):
-    result = r.content
-    soup = BeautifulSoup(result, 'lxml')
-    sinple_item={}
-    for information in soup.find_all("information"):
-        CID = int(information.find('cid').get_text())
-        sinple_item["cid"]=CID
-        if information.find("title"):
-            sinple_item["title"]=information.find("title").get_text()
+# def get_mole_desciption(r):
+#     result = r.content
+#     soup = BeautifulSoup(result, 'lxml')
+#     sinple_item={}
+#     for information in soup.find_all("information"):
+#         CID = int(information.find('cid').get_text())
+#         sinple_item["cid"]=CID
+#         if information.find("title"):
+#             sinple_item["title"]=information.find("title").get_text()
+#
+#         if information.find("description"):
+#             if "descriptions" not in sinple_item:
+#                 sinple_item["descriptions"] = []
+#             description=information.find("description").get_text()
+#             descriptionsourcename=information.find("descriptionsourcename").get_text()
+#             descriptionurl=information.find("descriptionurl").get_text()
+#             sinple_item["descriptions"].append({"description":description,
+#                                                 "descriptionsourcename":descriptionsourcename,
+#                                                 "descriptionurl":descriptionurl,})
+#     return sinple_item
 
-        if information.find("description"):
-            if "descriptions" not in sinple_item:
-                sinple_item["descriptions"] = []
-            description=information.find("description").get_text()
-            descriptionsourcename=information.find("descriptionsourcename").get_text()
-            descriptionurl=information.find("descriptionurl").get_text()
-            sinple_item["descriptions"].append({"description":description,
-                                                "descriptionsourcename":descriptionsourcename,
-                                                "descriptionurl":descriptionurl,})
-    return sinple_item
-
-
-
+#
+# r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{1}/description/XML')
+# get_mole_desciption(r)
 
 
 # @jit(nopython=True)
@@ -96,4 +110,3 @@ def load_file(filename):
 def mkdir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
-

@@ -9,7 +9,7 @@ from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, mean_square
     precision_score, recall_score
 import numpy as np
 from data import collate_wrapper, collate_fn
-
+from pprint import pprint as pp
 
 def get_prf(targets, preds, average="micro", verbose=False):
     precision = precision_score(targets, preds, average=average)
@@ -45,49 +45,20 @@ def evaluate(args, model, data):
                       'in_train': False,
                       }
         else:
-            # texts = batch[0]
-            # batch_ent1_d = batch[1]
-            # batch_ent2_d = batch[3]
-            #
-            # # print("encoded_input", encoded_input)
-            # inputs = {'texts': {key: texts[key].to(args.device) for key in texts},
-            #           "batch_ent1_d": {key: batch_ent1_d[key].to(args.device) for key in batch_ent1_d},
-            #           "batch_ent1_d_mask": batch[2].to(args.device),
-            #           "batch_ent2_d": {key: batch_ent2_d[key].to(args.device) for key in batch_ent2_d},
-            #           "batch_ent2_d_mask": batch[4].to(args.device),
-            #           "batch_ent1_g": batch[5].to(args.device),
-            #           "batch_ent1_g_mask": batch[6].to(args.device),
-            #           "batch_ent2_g": batch[7].to(args.device),
-            #           "batch_ent2_g_mask": batch[8].to(args.device),
-            #           "ids": batch[9],
-            #           "labels": batch[10].to(args.device),
-            #           'in_train': False,
-            #           }
-            #
             batch.in_train = False
             inputs = batch.to(args.device)
 
         with torch.no_grad():
             pred = model(inputs, args)
-            # print(pred.shape)
-            # print(pred.cpu())
-            # print(pred.cpu().numpy())
-            # print(pred.cpu().numpy().squeeze(-1))
             pred = list(pred.cpu().numpy())
             preds.extend(pred)
             ids.extend(batch.ids)
-            # print(inputs["ids"], inputs["batch_graph_data"].y, inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1), list(inputs["batch_graph_data"].y.cpu().numpy().squeeze(-1)))
-            # print("ergf", list(inputs["batch_graph_data"].y.cpu().numpy().squeeze()))
-
             if args.exp == "mol_pred":
                 targets.extend(list(inputs.batch_graph_data.y.cpu().numpy()))
             else:
                 targets.extend(list(inputs.labels.cpu().numpy()))
-            # print("new targets", targets)
 
-    # print("preds  ", preds)
-    # print("targets", targets)
-    # score = roc_auc_score(targets, preds)
+            # print(preds, targets)
 
     preds = np.array(preds)
     if args.exp == "mol_pred":
@@ -106,7 +77,11 @@ def evaluate(args, model, data):
         # # f1 = f1_score(targets, preds, average='macro')
     else:
 
+        # print("targets, preds",targets, preds)
+
         precision, recall, score = get_prf(targets, preds.tolist(), average="micro")
+        # args.logger.debug(f"score {score}", )
+        # precision, recall, score = get_prf(targets, preds, average="samples")
 
     # output = None
-    return score, [list(item) for item in zip(ids, preds.tolist(), targets)]
+    return score, [list(item) for item in zip(ids, preds, targets)]

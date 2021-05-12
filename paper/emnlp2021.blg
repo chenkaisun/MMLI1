@@ -1,0 +1,58 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: emnlp2021.aux
+Reallocating 'name_of_file' (item size: 1) to 10 items.
+Reallocating 'name_of_file' (item size: 1) to 7 items.
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+The style file: acl_natbib.bst
+Reallocating 'glb_str_end' (item size: 4) to 20 items.
+Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
+Reallocating 'global_strs' (item size: 1) to 4000000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Database file #1: anthology.bib
+Database file #2: custom.bib
+Reallocating 'wiz_functions' (item size: 4) to 6000 items.
+Warning--can't use both volume and number fields in kg4ner
+Warning--can't use both volume and number fields in kbert
+You've used 40 entries,
+            3571 wiz_defined-function locations,
+            887 strings with 14145 characters,
+and the built_in function-call counts, 33467 in all, are:
+= -- 2649
+> -- 2213
+< -- 19
++ -- 708
+- -- 663
+* -- 2379
+:= -- 5038
+add.period$ -- 161
+call.type$ -- 40
+change.case$ -- 441
+chr.to.int$ -- 41
+cite$ -- 42
+duplicate$ -- 2218
+empty$ -- 2100
+format.name$ -- 791
+if$ -- 7124
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 473
+newline$ -- 204
+num.names$ -- 160
+pop$ -- 1076
+preamble$ -- 1
+purify$ -- 377
+quote$ -- 0
+skip$ -- 1417
+stack$ -- 0
+substring$ -- 990
+swap$ -- 1095
+text.length$ -- 13
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 360
+warning$ -- 2
+while$ -- 165
+width$ -- 0
+write$ -- 504
+(There were 2 warnings)

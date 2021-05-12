@@ -4,6 +4,30 @@ from mediawiki import MediaWiki
 from bs4 import BeautifulSoup
 from IPython import embed
 import json
+from data_collectors.crawler_config import headers
+from utils import load_file, dump_file, join
+import urllib.request
+
+def download(urls, save_dir):
+    for url in urls:
+        with urllib.request.urlopen(url) as f:
+            item = f.read().decode('utf-8')
+            dump_file(item, join(save_dir, url.split("/")[-1]))
+
+
+def request_get(url, headers):
+    try:
+        r = requests.get(url, headers=headers)
+        if r.ok:
+            # print(r)
+            return r
+        else:
+
+            print(r)
+            return None
+    except Exception as e:
+        print(e)
+        return None
 
 def te_fn(a):
     print(a)
@@ -41,6 +65,12 @@ def get_mole_desciption(r):
                                                 "descriptionsourcename":descriptionsourcename,
                                                 "descriptionurl":descriptionurl,})
     return sinple_item
+
+
+
+# r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{1983}/description/XML', headers)
+# get_mole_desciption(r)
+
 
 def get_concepts(r):
     result = r.content

@@ -5,6 +5,7 @@ from torch import nn
 from model.joint_gt import JNet
 
 from model.re_model import RE
+from model.fet import FET
 from model.gnn import *
 
 
@@ -12,9 +13,11 @@ def get_model(args):
     if args.model_name == "joint_gt":
         # return MoleGNN2(args)
         return JNet(args)
-    if args.model_name == "re_model":
+    elif args.model_name == "re_model":
         return RE(args)
 
+    elif args.model_name == "fet_model":
+        return FET(args)
 
 def load_model_from_path(model, optimizer, args):
     model_epoch, best_dev_score = 0, -float("inf")
