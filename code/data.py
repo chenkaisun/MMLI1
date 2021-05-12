@@ -952,8 +952,13 @@ class CustomBatch:
         input_ids = [f["text"] + [0] * (max_len - len(f["text"])) for f in batch]
         input_mask = [[1.0] * len(f["text"]) + [0.0] * (max_len - len(f["text"])) for f in batch]
 
+
+
         self.texts = torch.tensor(input_ids, dtype=torch.long)
         self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)
+
+        self.texts=self.texts[:,:512]
+        self.texts_attn_mask=self.texts_attn_mask[:,:512]
 
         self.masked_texts = torch.tensor([f["masked_text"] + [0] * (max_len - len(f["masked_text"])) for f in batch],
                                          dtype=torch.long)
@@ -982,6 +987,8 @@ class CustomBatch:
         self.ent1_d_mask = torch.tensor([f["ent"]['t_mask'] for f in batch]).unsqueeze(-1)
 
         self.ent1_pos = torch.tensor([f["ent"]['pos'] for f in batch], dtype=torch.long)
+        self.ent1_pos[self.ent1_pos>torch.tensor(510)]=0
+
         self.ent1_masked_pos = torch.tensor([f["ent"]['masked_pos'] for f in batch], dtype=torch.long)
 
         self.in_train = True
