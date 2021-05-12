@@ -28,7 +28,7 @@ if __name__ == '__main__':
     args.data_dir = "../data_online/chemet/"
     fname="test_jinfeng_b1"
     args.train_file = args.data_dir + "test_jinfeng_b1_train.json"
-    args.val_file = args.data_dir + "test_jinfeng_b1_val.json"
+    args.val_file = args.data_dir + "test_chem_anno.json"
     args.test_file = args.data_dir + "test_jinfeng_b1_test.json"
 
     data_dir = args.data_dir

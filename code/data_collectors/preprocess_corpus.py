@@ -26,6 +26,11 @@ fname="../data_online/chemet/test_jinfeng_b1.json"
 
 split_to_tr_val_test("../data_online/chemet/test_jinfeng_b1.json", ratio="811")
 
+# change
+fname="../data_online/chemet/test_chem_anno.json"
+ofname="../data_online/chemet/test_chem_anno.json"
+
+dump_file(load_file_lines(fname), fname)
 
 "=========================="
 #choose assigned
