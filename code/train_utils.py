@@ -65,7 +65,7 @@ def setup_common(args):
     mkdir("model/states")
 
     # set_seeds(args)
-    args.device = gpu_setup(use_gpu=args.use_gpu)
+    args.device = gpu_setup(use_gpu=args.use_gpu, gpu_id=args.gpu_id)
     if "cpu" in str(args.device): args.use_amp = 0
 
     # # wandb.init(config=args, project=args.experiment)
@@ -105,7 +105,7 @@ def setup_common(args):
     return args, model, optimizer
 
 
-def gpu_setup(use_gpu=True, gpu_id=0, use_random_available=True):
+def gpu_setup(use_gpu=True, gpu_id=2, use_random_available=True):
     print("Setting up GPU")
     if not use_random_available:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -122,6 +122,7 @@ def gpu_setup(use_gpu=True, gpu_id=0, use_random_available=True):
         if not torch.cuda.is_available():
             print('cuda not available')
         device = torch.device("cpu")
+    print("device", device)
     return device
 
 

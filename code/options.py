@@ -46,6 +46,9 @@ def read_args():
     parser.add_argument('--burn_in', type=int, default=0)
     parser.add_argument('--print_epoch_interval', type=int, default=10)
     parser.add_argument("--scheduler", default=1)
+    parser.add_argument('-l', '--list', nargs='+', help='<Required> Set flag', required=True)
+
+    parser.add_argument("--gpu_id", default=2, type=int, help="gpu_id", )
     parser.add_argument("--n_gpu", default=1, type=int, help="Number of gpu", )
     parser.add_argument("--use_gpu", default=1, type=int, help="Using gpu or cpu", )
     parser.add_argument("--use_amp", default=1, type=int, help="Using mixed precision")
