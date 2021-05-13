@@ -52,4 +52,17 @@ greek_alphabet = {
     u'\u03C7': 'chi',
     u'\u03C8': 'psi',
     u'\u03C9': 'omega',
+
+    u'\u2013': '-',
+    u'\u2212': '-',
+    # u'\u25b3': 'change of ',
+    u'\u2018': '\'',
+    u'\u2019': '\'',
+    u'\u201c': '\"',
+    u'\u201d': '\"',
+    u'\u2032': '\'', # prime
+    u'\u00b0C': " degrees Celsius",
+    u'\u00b0F': " degrees Fahrenheit"
+
 }
+

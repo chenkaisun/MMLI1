@@ -17,6 +17,7 @@ import requests
 # from numba import jit
 from matplotlib.pyplot import plot
 import logging
+
 logging.getLogger('matplotlib.font_manager').disabled = True
 
 import matplotlib.pyplot as plt
@@ -82,6 +83,8 @@ def join(str1, str2):
 
 def get_ext(filename):
     return os.path.splitext(filename)[1]
+
+
 def get_path_name(filename):
     return os.path.splitext(filename)[0]
 
@@ -99,7 +102,16 @@ def dump_file(obj, filename):
             w.write(obj)
 
 
-def load_file(filename):
+def path_exists(path):
+    return os.path.exists(path)
+
+
+def load_file(filename, init=None):
+
+    if not path_exists(filename) :
+        if init is not None:
+            return init
+
     if get_ext(filename) == ".json":
         with open(filename, "r", encoding="utf-8") as r:
             res = json.load(r)
@@ -118,6 +130,29 @@ def load_file(filename):
     return res
 
 
+def load_file_default(filename, init=None):
+    if not path_exists(filename):
+        if init == "{}": return {}
+        if init == "[]": return []
+        if init == 0: return 0
+        if init == "": return ""
+        return None
+    if get_ext(filename) == ".json":
+        with open(filename, "r", encoding="utf-8") as r:
+            res = json.load(r)
+            # try:
+            #     res = json.load(r)
+            # except:
+            #     print("here")
+            #     res = [json.loads(line.strip()) for i, line in enumerate(r)]
+            #     return res
+            #     print(r)
+    elif get_ext(filename) == ".pkl":
+        with open(filename, "rb") as r:
+            res = pkl.load(r)
+    return res
+
+
 def load_file_lines(filename):
     if get_ext(filename) == ".json":
         with open(filename, mode="r", encoding="utf-8") as fin:
@@ -127,9 +162,12 @@ def load_file_lines(filename):
             res = pkl.load(r)
     return res
 
+
 def mkdir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
+
+
 def module_exists(module_name):
     try:
         __import__(module_name)
