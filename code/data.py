@@ -1,5 +1,4 @@
 import numpy as np
-from rdkit import Chem
 from pprint import pprint as pp
 # from features import *
 from torch_geometric.data import Data, Batch
@@ -13,6 +12,10 @@ from copy import deepcopy
 import csv
 from utils import *
 import scipy
+
+
+if module_exists("rdkit"):
+    from rdkit import Chem
 
 
 # from train_utils import

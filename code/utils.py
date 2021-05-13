@@ -130,3 +130,10 @@ def load_file_lines(filename):
 def mkdir(dir):
     if not os.path.isdir(dir):
         os.mkdir(dir)
+def module_exists(module_name):
+    try:
+        __import__(module_name)
+    except ImportError:
+        return False
+    else:
+        return True
