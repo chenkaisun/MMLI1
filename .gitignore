@@ -135,7 +135,7 @@ experimental/*
 .idea/
 
 *-*Copy*.json
-*.pkl
+#*.pkl
 .vector_cache/
 out/
 final/
