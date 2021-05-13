@@ -1,3 +1,9 @@
+import os, sys
+
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
 # from pprint import pprint as pp
 # import pickle as pkl
 # from collections import deque, defaultdict, Counter
