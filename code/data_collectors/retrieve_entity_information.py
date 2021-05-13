@@ -130,9 +130,10 @@ def get_entity_info_chemprot():
 data_dir = '../data_online/chemet/'
 
 # mention2ent_path = data_dir + "mention2ent.json"
-#
-# a=load_file(mention2ent_path)
-# a["araayl"] is None
+# mention2ent = load_file(mention2ent_path, init={})
+cmpd_info_path = data_dir + "cmpd_info.json"
+cmpd_info = load_file(cmpd_info_path, init={})
+
 
 def get_entity_info_fet(files=None):
     # tr = "data_online/chemet/chemprot_training_entities.tsv"

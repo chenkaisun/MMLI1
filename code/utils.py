@@ -109,7 +109,9 @@ def path_exists(path):
 def load_file(filename, init=None):
 
     if not path_exists(filename) :
+
         if init is not None:
+            print("file doesn't  exist, initializing")
             return init
 
     if get_ext(filename) == ".json":
