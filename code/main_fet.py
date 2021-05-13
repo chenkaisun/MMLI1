@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     # Specializing args for the experiment
     args.data_dir = "../data_online/chemet/"
-    fname="test_jinfeng_b1"
+    fname = "test_jinfeng_b1"
     args.train_file = args.data_dir + "test_jinfeng_b1_train.json"
     args.val_file = args.data_dir + "test_chem_anno.json"
     args.test_file = args.data_dir + "test_jinfeng_b1_test.json"
@@ -74,6 +74,8 @@ if __name__ == '__main__':
     args.exp = "fet"
     args.plm = "sci"
     args.plm = get_plm_fullname(args.plm)
+    if torch.cuda.device_count() > 1:
+        args.gpu_id = 2
     # args.num_epoch = 50
     # args.batch_size = 8
     # args.g_dim = 128
@@ -101,7 +103,7 @@ if __name__ == '__main__':
 
     modal_retriever = ModalRetriever(data_dir + "mention2ent.json", data_dir + "cmpd_info.json")
 
-    labels_path = data_dir + fname+"_labels.json"
+    labels_path = data_dir + fname + "_labels.json"
     if not args.use_cache or not os.path.exists(labels_path):
         labels = ChemetDataset.collect_labels([train_file, val_file, test_file], labels_path)
     else:
