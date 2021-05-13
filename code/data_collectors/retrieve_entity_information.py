@@ -129,6 +129,10 @@ def get_entity_info_chemprot():
 
 data_dir = '../data_online/chemet/'
 
+# mention2ent_path = data_dir + "mention2ent.json"
+#
+# a=load_file(mention2ent_path)
+# a["araayl"] is None
 
 def get_entity_info_fet(files=None):
     # tr = "data_online/chemet/chemprot_training_entities.tsv"
@@ -153,6 +157,8 @@ def get_entity_info_fet(files=None):
         for i, sample in enumerate(file):
             tokens = sample["tokens"]
             for j, m in enumerate(sample["annotations"]):
+                print("sent", i, "m", j)
+
                 s, e = m["start"], m["end"]
                 mole_name = " ".join(tokens[s:e])
                 mole_name = mole_name.replace("  ", " ")
