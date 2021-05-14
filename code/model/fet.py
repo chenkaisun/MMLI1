@@ -12,9 +12,9 @@ import numpy as np
 from IPython import embed
 from torch.nn import TransformerEncoderLayer
 
+from utils import get_gpu_mem_info
 from pprint import pprint as pp
 # from torchtext.vocab import GloVe
-
 class CrossModal(nn.Module):
     def __init__(self, args):
         super().__init__()
@@ -283,14 +283,19 @@ class FET(torch.nn.Module):
             if "m" not in self.model_type:
                 final_vec.append(
                     hid_ent1_d[:, 0, :] * batch_ent1_d_mask + (1 - batch_ent1_d_mask) * self.rand_emb(self.the_zero))
-
+        # print("0")
+        # get_gpu_mem_info()
         if "g" in self.model_type and "m" not in self.model_type:
             hid_ent1_g = self.gnn(batch_ent1_g, args.g_global_pooling)  # * batch_ent1_g_mask
             final_vec.append(hid_ent1_g * batch_ent1_g_mask + (1 - batch_ent1_g_mask) * self.rand_emb(self.the_one))
-
+        # print("1")
+        # get_gpu_mem_info()
         if "m" in self.model_type:
             cm_out = self.cm_attn(batch_ent1_g, hid_ent1_d, batch_ent1_d_mask, batch_ent1_g_mask)
             final_vec.append(cm_out)
+        # print("2")
+        #
+        # get_gpu_mem_info()
         "=========Classification=========="
 
         # final_vec = torch.cat(final_vec, dim=-1)

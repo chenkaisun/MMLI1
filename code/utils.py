@@ -17,6 +17,7 @@ import requests
 # from numba import jit
 from matplotlib.pyplot import plot
 import logging
+from pynvml import *
 
 logging.getLogger('matplotlib.font_manager').disabled = True
 
@@ -177,3 +178,11 @@ def module_exists(module_name):
         return False
     else:
         return True
+
+def get_gpu_mem_info():
+    nvmlInit()
+    h = nvmlDeviceGetHandleByIndex(0)
+    info = nvmlDeviceGetMemoryInfo(h)
+    print(f'total    : {info.total}')
+    print(f'free     : {info.free}')
+    print(f'used     : {info.used}')

@@ -13,6 +13,8 @@ from model.load_model import get_model, load_model_from_path
 from utils import mkdir, dump_file, load_file
 from torch.utils.tensorboard import SummaryWriter
 import numpy
+from pynvml import *
+
 
 from IPython import embed
 class ScoreRecorder:
@@ -183,3 +185,11 @@ def get_tokenizer(plm, save_dir="tokenizer/"):
         tokenizer = AutoTokenizer.from_pretrained(plm)
         dump_file(tokenizer, tk_name)
     return load_file(tk_name)
+
+def get_gpu_mem_info():
+    nvmlInit()
+    h = nvmlDeviceGetHandleByIndex(0)
+    info = nvmlDeviceGetMemoryInfo(h)
+    print(f'total    : {info.total}')
+    print(f'free     : {info.free}')
+    print(f'used     : {info.used}')
