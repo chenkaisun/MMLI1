@@ -460,6 +460,7 @@ class ChemetDataset(Dataset):
         # label_text = [self.label_desc[lb] for lb in self.labels]
         args.out_dim = len(self.label2id)
         print("\nself.label2id", self.label2id)
+        print("\nlen self.label2id", len(self.label2id))
         self.original_data = load_file(filename)
         # with open(filename, mode="r", encoding="utf-8") as fin:
         #     self.original_data = [line.strip() for i, line in enumerate(fin)]
@@ -501,6 +502,10 @@ class ChemetDataset(Dataset):
         """Loading"""
         self.instances = []
         sample_id = 0
+
+        total_t_linked = 0
+        total_g_linked = 0
+        total_num_mentions = 0
         for idx in range(len(self.original_data)):
             # sample = json.loads(self.original_data[idx])
             sample = self.original_data[idx]
@@ -509,8 +514,10 @@ class ChemetDataset(Dataset):
             ent_pos_list = []
 
             for mention in sample["annotations"]:
+
                 m_s, m_e = mention["start"], mention["end"]
-                m = "".join(text[m_s:m_e])
+                m = " ".join(text[m_s:m_e])
+                m = m.replace("  ", " ")
                 chem_mentions.append(m)
                 # print("\n\nmention", m)
 
@@ -524,8 +531,8 @@ class ChemetDataset(Dataset):
                 token_ids, new_ent_pos_list = sent_with_entities_to_token_ids(text, [[m_s, m_e]],
                                                                               max_seq_length=args.max_seq_len,
                                                                               tokenizer=tokenizer, shift_right=True)
-                if len(token_ids) >= 400:
-                    print("idx", idx, text)
+                # if len(token_ids) >= 400:
+                #     print("idx", idx, text)
 
                 masked_token_ids, new_masked_ent_pos_list = sent_with_entities_to_token_ids(
                     text[:m_s] + ["[MASK]"] + text[m_e:], [[m_s, m_s + 1]],
@@ -545,7 +552,11 @@ class ChemetDataset(Dataset):
                 ent1_dict["masked_pos"] = list(new_masked_ent_pos_list[0])
                 ent1_dict['g'], ent1_dict['g_mask'], ent1_dict['t'], ent1_dict['t_mask'] = self.modal_retriever.get_mol(
                     m)
-                # print('ent1_dict',ent1_dict)
+                # print("\nm", m)
+                # print('ent1_dict', ent1_dict)
+                total_t_linked += ent1_dict['t_mask']
+                total_g_linked += ent1_dict['g_mask']
+                total_num_mentions += 1
 
                 self.instances.append({"text": token_ids,
                                        "masked_text": masked_token_ids,

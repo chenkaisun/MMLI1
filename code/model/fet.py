@@ -85,7 +85,7 @@ class CrossModal(nn.Module):
                 # print("batch_id", batch_id)
 
                 g_indices = [i for i, bl in enumerate(graph.batch == batch_id) if bl]
-                print("graph.batch", get_tensor_info(graph.batch))
+                # print("graph.batch", get_tensor_info(graph.batch))
                 # print("g_indices", g_indices)
 
                 x_i = torch.index_select(tmp_x, 0, torch.tensor(g_indices, dtype=torch.long, device=x.device))
@@ -123,7 +123,7 @@ class CrossModal(nn.Module):
         x = scatter(x, graph.batch, dim=0, reduce='mean')
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.atom_lin(x)
-        out_g = F.tanh(x)
+        out_g = torch.tanh(x)
         # print("out_g.shape", get_tensor_info(out_t))
 
         if self.pool_type in [1, 2]:
@@ -165,6 +165,9 @@ class FET(torch.nn.Module):
         if 'tdgm' in args.model_type:
             print("args.tdgm")
             self.combiner = Linear(args.plm_hidden_dim * 5, args.out_dim)
+        elif 'dgm' in args.model_type:
+            print("args.dgm")
+            self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
         elif 'tdg' in args.model_type:
             print("args.tdg")
             self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)

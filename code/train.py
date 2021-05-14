@@ -31,9 +31,10 @@ def train(args, model, optimizer, data):
 
     if args.debug:
         torch.autograd.set_detect_anomaly(True)
-        train_data.instances = train_data.instances[:50]
-        val_data.instances = val_data.instances[:50]
-        test_data.instances = test_data.instances[:50]
+        num_samples_test=20
+        train_data.instances = train_data.instances[:num_samples_test]
+        val_data.instances = val_data.instances[:num_samples_test]
+        test_data.instances = test_data.instances[:num_samples_test]
 
     if args.exp == "mol_pred":
         train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,

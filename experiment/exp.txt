@@ -2247,3 +2247,385 @@ Total time elapsed: 26.5516s
 Loading 1th epoch
 acc 0.04
 Test Score 0.46473029045643155
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 0
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 0
+lr: 0.001
+model_type: tdg
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 0
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 0
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 0
+lr: 0.001
+model_type: tdg
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 0
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 0
+lr: 0.001
+model_type: tdg
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.0
+Epoch 0 | Train Loss 4.70355040 | Val Score 0.0444 | Time Passed 6.2901s
+acc 0.0
+Epoch 1 | Train Loss 2.25355083 | Val Score 0.0482 | Time Passed 5.2193s
+Optimization Finished!
+Total time elapsed: 11.5114s
+Loading 1th epoch
+acc 0.0
+Test Score 0.048192771084337345
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 0
+debug: True
+dropout: 0.2
+gnn_type: gine
+g_dim: 256
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 0
+lr: 0.001
+model_type: s
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.0
+Epoch 0 | Train Loss 6.26142108 | Val Score 0.1261 | Time Passed 1.7259s
+acc 0.0
+Epoch 1 | Train Loss 4.82786688 | Val Score 0.1951 | Time Passed 1.5892s
+Optimization Finished!
+Total time elapsed: 3.3162s
+Loading 1th epoch
+acc 0.0
+Test Score 0.1951219512195122
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 0
+debug: True
+dropout: 0.2
+gnn_type: gine
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 0
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.25
+Epoch 0 | Train Loss 4.34370419 | Val Score 0.2456 | Time Passed 7.3613s
+acc 0.25
+Epoch 1 | Train Loss 1.93784128 | Val Score 0.2500 | Time Passed 6.6787s
+Optimization Finished!
+Total time elapsed: 14.0410s
+Loading 1th epoch
+acc 0.25
+Test Score 0.25
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 1
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 1
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 1
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 1
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 1
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 1
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.1
+Epoch 0 | Train Loss 4.74119034 | Val Score 0.2500 | Time Passed 5.9631s
+acc 0.1
+Epoch 1 | Train Loss 2.01160847 | Val Score 0.2581 | Time Passed 5.0993s
+Optimization Finished!
+Total time elapsed: 11.0633s
+Loading 1th epoch
+acc 0.1
+Test Score 0.25806451612903225
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 1
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 1
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.1
+Epoch 0 | Train Loss 4.74098083 | Val Score 0.2500 | Time Passed 6.0122s
+acc 0.1
+Epoch 1 | Train Loss 2.01141621 | Val Score 0.2581 | Time Passed 5.8774s
+Optimization Finished!
+Total time elapsed: 11.8916s
+Loading 1th epoch
+acc 0.1
+Test Score 0.25806451612903225
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 1
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 2
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.05
+Epoch 0 | Train Loss 4.89201689 | Val Score 0.2353 | Time Passed 5.9375s
+acc 0.05
+Epoch 1 | Train Loss 2.13210717 | Val Score 0.2319 | Time Passed 5.4892s
+Optimization Finished!
+Total time elapsed: 11.4287s
+Loading 1th epoch
+acc 0.05
+Test Score 0.23188405797101447
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 2
+cm_type: 1
+debug: True
+dropout: 0.2
+gnn_type: gat
+g_dim: 128
+patience: 3
+plm: prajjwal1/bert-tiny
+plm_hidden_dim: 128
+plm_lr: 2e-05
+pool_type: 3
+lr: 0.001
+model_type: tdgm
+num_epochs: 2
+num_gnn_layers: 2
+use_cache: 1
+=====end of args=====
+Total steps: 20
+Warmup steps: 1
+10 steps for each epoch
+acc 0.1
+Epoch 0 | Train Loss 4.67146122 | Val Score 0.2540 | Time Passed 6.0452s
+acc 0.15
+Epoch 1 | Train Loss 1.98339829 | Val Score 0.2623 | Time Passed 5.1356s
+Optimization Finished!
+Total time elapsed: 11.1818s
+Loading 1th epoch
+acc 0.15
+Test Score 0.26229508196721313

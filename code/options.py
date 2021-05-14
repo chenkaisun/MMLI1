@@ -77,11 +77,11 @@ def read_args():
     # parser.add_argument('--tg', default=0, type=int)
     # parser.add_argument('--tdg', default=0, type=int)
     # parser.add_argument('--tdg_x', default=0, type=int)
-    parser.add_argument('--model_type', default="tdg")
+    parser.add_argument('--model_type', default="tdgm")
     parser.add_argument('--mult_mask', default=0, type=int)
     parser.add_argument('--g_mult_mask', default=0, type=int)
     parser.add_argument('--g_global_pooling', default=1, type=int)
-    parser.add_argument('--gnn_type', default="gat")
+    parser.add_argument('--gnn_type', default="gine")
     parser.add_argument('--cm_type', default=0, type=int)  # 0 original, 1 no tformer, 2 3D
     parser.add_argument('--pool_type', default=0, type=int)  # for cm, 0 mean max, 1 max mean, 2 mean, 3 max
     parser.add_argument('--type_embed', default=0, type=int)

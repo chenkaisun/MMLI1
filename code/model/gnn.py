@@ -8,6 +8,7 @@ from torch_scatter import scatter
 from torch_geometric.nn import GINConv, GINEConv
 from IPython import embed
 import numpy as np
+from model.model_utils import get_tensor_info
 
 
 class AtomEncoder(torch.nn.Module):
@@ -60,7 +61,7 @@ class MoleGraphConv(torch.nn.Module):
     def __init__(self, args, is_first_layer=False):
         super().__init__()
         args.g_dim = args.plm_hidden_dim
-
+        self.gnn_type =args.gnn_type
         self.is_first_layer = is_first_layer
 
         hidden_channels, num_layers, dropout = args.g_dim, args.num_gnn_layers, args.dropout
@@ -98,7 +99,9 @@ class MoleGraphConv(torch.nn.Module):
             x = self.atom_encoder(data.x.squeeze())
 
         edge_attr = self.bond_encoders[0](data.edge_attr)
-        x = self.atom_convs[0](x, data.edge_index, edge_attr)
+        x = self.atom_convs[0](x, data.edge_index, edge_attr) if self.gnn_type == "gine" else self.atom_convs[0](x,
+                                                                                                                 data.edge_index)
+
         x = torch.tanh(x)
         x = F.dropout(x, self.dropout, training=self.training)
 
@@ -122,6 +125,7 @@ class MoleGNN2(torch.nn.Module):
 
         hidden_channels, num_layers, dropout = args.g_dim, args.num_gnn_layers, args.dropout
 
+        self.gnn_type = args.gnn_type
         self.num_layers = args.num_gnn_layers
         self.dropout = args.dropout
         self.atom_encoder = AtomEncoder(args.g_dim)
@@ -170,7 +174,8 @@ class MoleGNN2(torch.nn.Module):
         # print(data.x)
         # print(data.edge_index)
         x = self.atom_encoder(data.x.squeeze())
-        # print(x.shape)
+        # print(x)
+        # print("x", get_tensor_info(x))
         # print(data.edge_attr.unsqueeze(1).shape)
         # embed()
         # exit()
@@ -179,7 +184,7 @@ class MoleGNN2(torch.nn.Module):
             # print("x", x)
 
             edge_attr = self.bond_encoders[i](data.edge_attr)
-            x = self.atom_convs[i](x, data.edge_index, edge_attr)
+            x = self.atom_convs[i](x, data.edge_index, edge_attr) if self.gnn_type=="gine" else self.atom_convs[i](x, data.edge_index)
             # x = self.atom_convs[i](x, data.edge_index)
             # x = self.atom_batch_norms[i](x)
             x = torch.tanh(x)
@@ -196,7 +201,7 @@ class MoleGNN2(torch.nn.Module):
         # print(x.shape)
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.atom_lin(x)
-        x = F.tanh(x)
+        x = torch.tanh(x)
         # x = F.dropout(x, self.dropout, training=self.training)
         # x = self.lin(x)
         # print("22222")
