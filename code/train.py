@@ -83,7 +83,7 @@ def train(args, model, optimizer, data):
     logger.debug(f"{len(train_loader)} steps for each epoch")
     # print("train_iterator",train_iterator)
     for epoch in train_iterator:
-
+        gc.collect()
         # logger.debug(f"Epoch {epoch}")
         t = time.time()
 

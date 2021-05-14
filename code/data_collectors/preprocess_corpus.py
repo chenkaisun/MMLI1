@@ -108,6 +108,22 @@ for i, sample in enumerate(f):
         sample["tokens"][j] = clean_text(t)
 dump_file(f, outfname)
 
+
+# ####tmp
+# fname = "../data_online/chemet/test_chem_anno_cleaned_cleaned.json"
+# f = load_file(fname)
+# # fname = outfname
+# # fname = "../data_online/chemet/test_chem_anno.json"
+# # outfname = "../data_online/chemet/test_chem_anno_cleaned.json"
+# # f = load_file(fname)
+#
+# cnt = 0
+# for i, sample in enumerate(f):
+#     for j, t in enumerate(sample["tokens"]):
+#         sample["tokens"][j] = clean_text(t)
+# dump_file(f, outfname)
+# #####
+
 # retrieval
 
 exit()
