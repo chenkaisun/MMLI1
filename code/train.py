@@ -92,7 +92,7 @@ def train(args, model, optimizer, data):
         total_loss = 0
         for step, batch in enumerate(train_loader):
             # logger.debug(f"Step {step}")
-            gc.collect()
+            # gc.collect()
 
             num_steps += 1
 
