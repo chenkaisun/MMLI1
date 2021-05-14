@@ -22,7 +22,7 @@ from utils import dump_file, mkdir
 from IPython import embed
 import os
 from utils import load_file, dump_file, visualize_plot
-
+import gc
 
 # from torch.optim.lr_scheduler import _LRScheduler
 
@@ -82,6 +82,7 @@ def train(args, model, optimizer, data):
     logger.debug(f"{len(train_loader)} steps for each epoch")
     # print("train_iterator",train_iterator)
     for epoch in train_iterator:
+
         # logger.debug(f"Epoch {epoch}")
         t = time.time()
 
