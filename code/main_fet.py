@@ -71,7 +71,7 @@ if __name__ == '__main__':
         "num_gnn_layers",
         "use_cache",
     ]
-    args.downstream_layers = ["combiner", "gnn", "cm_attn", 'gnn', 'the_zero', 'the_one']
+    args.downstream_layers = ["combiner", "gnn", "cm_attn", 'the_zero', 'the_one', 'rand_emb']
 
     args.model_name = "fet_model"
     args.exp = "fet"
