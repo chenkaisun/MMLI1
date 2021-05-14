@@ -81,9 +81,11 @@ def read_args():
     parser.add_argument('--mult_mask', default=0, type=int)
     parser.add_argument('--g_mult_mask', default=0, type=int)
     parser.add_argument('--g_global_pooling', default=1, type=int)
+    parser.add_argument('--gnn_type', default="gat")
+    parser.add_argument('--cm_type', default=0, type=int)  # 0 original, 1 no tformer, 2 3D
+    parser.add_argument('--pool_type', default=0, type=int)  # for cm, 0 mean max, 1 max mean, 2 mean, 3 max
     parser.add_argument('--type_embed', default=0, type=int)
     parser.add_argument('--cm', default=0, type=int)
-
 
     # auxiliary
     # parser.add_argument("--debug", action="store_true")
@@ -93,7 +95,6 @@ def read_args():
     # # experiment specific
     # parser.add_argument("--g", action="store_true")
     # parser.add_argument("--tg", action="store_true")
-
 
     args = parser.parse_args()
     return args

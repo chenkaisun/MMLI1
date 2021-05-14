@@ -8,7 +8,6 @@ from sklearn.model_selection import train_test_split
 import re
 from data_collectors.crawler_config import greek_alphabet
 
-
 "=========================="
 
 
@@ -45,7 +44,7 @@ def clean_text(t):
         tmp = t.replace(a, greek_alphabet[a])
         # if tmp != t:
         #     print(t, "changed to", tmp)
-        t=tmp
+        t = tmp
     return t
 
 
@@ -55,15 +54,53 @@ def clean_text(t):
 # a
 # dump_file(a, "a.json")
 
+"""=========remove docs from tr that appeared in test data and clean test labels that contain unseen label========="""
+
+fname_tr = "../data_online/chemet/test_jinfeng_b_cleaned.json"
+fname_te = "../data_online/chemet/test_chem_anno_cleaned.json"
+out_fname_tr = "../data_online/chemet/test_jinfeng_b_cleaned_cleaned.json"
+out_fname_te = "../data_online/chemet/test_chem_anno_cleaned_cleaned.json"
+
+f_tr = load_file(fname_tr)
+f_te = load_file(fname_te)
+
+docs_te = set([sample["doc_id"] for i, sample in enumerate(f_te)])
+f_tr = [sample for sample in f_tr if sample["doc_id"] not in docs_te]
+
+labels_tr = set()
+for i, sample in enumerate(f_tr):
+    for m in sample["annotations"]:
+        labels_tr = labels_tr.union(m["labels"])
+print("labels_tr", labels_tr)
+
+for i, sample in enumerate(f_te):
+    for j, m in enumerate(sample["annotations"]):
+
+        f_te[i]["annotations"][j]["labels"] = list(set(m["labels"]).intersection(labels_tr))
+
+# for i, sample in enumerate(f):
+#     for j, t in enumerate(sample["tokens"]):
+#         sample["tokens"][j] = clean_text(t)
+dump_file(f_tr, out_fname_tr)
+dump_file(f_te, out_fname_te)
+
+
+labels_te = set()
+for i, sample in enumerate(f_te):
+    for m in sample["annotations"]:
+        labels_te = labels_te.union(m["labels"])
+print("labels_te", labels_te)
+print(labels_te.difference(labels_tr))
+print(labels_tr.difference(labels_te))
+"""=========clean files========="""
 # clean chem annos
-# fname = "../data_online/chemet/test_jinfeng_b.json"
-# outfname = "../data_online/chemet/test_jinfeng_b_cleaned.json"
-# f = load_file_lines(fname)
+fname = "../data_online/chemet/test_jinfeng_b.json"
+outfname = "../data_online/chemet/test_jinfeng_b_cleaned.json"
+f = load_file_lines(fname)
 # fname = outfname
-fname = "../data_online/chemet/test_chem_anno.json"
-outfname = "../data_online/chemet/test_chem_anno_cleaned.json"
-f = load_file(fname)
-u_set = set()
+# fname = "../data_online/chemet/test_chem_anno.json"
+# outfname = "../data_online/chemet/test_chem_anno_cleaned.json"
+# f = load_file(fname)
 
 cnt = 0
 for i, sample in enumerate(f):

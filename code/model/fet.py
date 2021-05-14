@@ -20,7 +20,8 @@ class CrossModal(nn.Module):
         super().__init__()
         self.dropout = args.dropout
         self.num_gnn_layers = args.num_gnn_layers
-
+        self.cm_type = args.cm_type
+        self.pool_type = args.pool_type
         # self.reduction = reduction
         # self.temprature = 3
         # self.aggregate = True
@@ -30,9 +31,10 @@ class CrossModal(nn.Module):
         # self.l1 = torch.nn.Linear(m1_dim, final_dim)
         # self.l2 = torch.nn.Linear(m2_dim, final_dim)
 
-        self.transformers = ModuleList()
-        for _ in range(args.num_gnn_layers):
-            self.transformers.append(TransformerEncoderLayer(d_model=args.plm_hidden_dim, nhead=8))
+        if args.cm_type == 0:
+            self.transformers = ModuleList()
+            for _ in range(args.num_gnn_layers):
+                self.transformers.append(TransformerEncoderLayer(d_model=args.plm_hidden_dim, nhead=8))
 
         self.gnns = ModuleList()
         self.gnns.append(MoleGraphConv(args, is_first_layer=True))
@@ -83,18 +85,29 @@ class CrossModal(nn.Module):
                 # print("batch_id", batch_id)
 
                 g_indices = [i for i, bl in enumerate(graph.batch == batch_id) if bl]
-                # print("graph.batch", graph.batch)
+                print("graph.batch", get_tensor_info(graph.batch))
                 # print("g_indices", g_indices)
 
                 x_i = torch.index_select(tmp_x, 0, torch.tensor(g_indices, dtype=torch.long, device=x.device))
                 t_i = text[batch_id]
 
-                stacked = torch.cat([x_i, t_i], dim=0).unsqueeze(0)
-                # print("stacked", get_tensor_info(stacked))
-                # attended = self.transformers[i](stacked).squeeze(0)
-                attended.append(self.transformers[i](stacked).squeeze(0))
-                attended[-1] = torch.mean(attended[-1], dim=0, keepdim=True)
+                if self.cm_type == 0:
 
+                    stacked = torch.cat([x_i, t_i], dim=0).unsqueeze(0)
+                    # print("stacked", get_tensor_info(stacked))
+                    # attended = self.transformers[i](stacked).squeeze(0)
+                    attended.append(self.transformers[i](stacked).squeeze(0))
+                else:
+                    g2t_sim = x_i.mm(t_i.t())
+                    t2g_sim = t_i.mm(x_i.t())
+                    g2t_sim=torch.softmax(g2t_sim, dim=-1)
+                    t2g_sim=torch.softmax(t2g_sim, dim=-1)
+                    attended.append(torch.cat([g2t_sim.mm(t_i), t2g_sim.mm(x_i)], dim=0))
+
+                if self.pool_type in [0, 2]:
+                    attended[-1] = torch.mean(attended[-1], dim=0, keepdim=True)
+                else:
+                    attended[-1] = torch.max(attended[-1], dim=0, keepdim=True)[0]
                 # print("attended[-1]", get_tensor_info(attended[-1]))
 
             attended = torch.stack(attended, dim=0)
@@ -110,10 +123,13 @@ class CrossModal(nn.Module):
         x = scatter(x, graph.batch, dim=0, reduce='mean')
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.atom_lin(x)
-        out_g = F.gelu(x)
+        out_g = F.tanh(x)
         # print("out_g.shape", get_tensor_info(out_t))
 
-        out_cms = torch.max(torch.cat(cms, dim=1), dim=1)[0]
+        if self.pool_type in [1, 2]:
+            out_cms = torch.mean(torch.cat(cms, dim=1), dim=1)
+        else:
+            out_cms = torch.max(torch.cat(cms, dim=1), dim=1)[0]
         # print("out_cms.shape", get_tensor_info(out_cms))
 
         # batch_ent1_d_mask=torch.tensor([[1],[0]])self.emb(self.the_zero)
@@ -173,6 +189,12 @@ class FET(torch.nn.Module):
         # self.loss = torch.nn.CrossEntropyLoss()
         self.loss = nn.MultiLabelSoftMarginLoss()
 
+        if ("d" in self.model_type or "g" in self.model_type) and "m" not in self.model_type:
+            self.rand_emb = nn.Embedding(2, args.plm_hidden_dim)
+
+        self.the_zero = torch.tensor(0, dtype=torch.long, device=args.device)
+        self.the_one = torch.tensor(1, dtype=torch.long, device=args.device)
+
         # self.emb = nn.Embedding(1, args.plm_hidden_dim)
         # self.rand_g_emb = nn.Embedding(1, args.plm_hidden_dim)
         # self.rand_d_emb = nn.Embedding(1, args.plm_hidden_dim)
@@ -183,8 +205,8 @@ class FET(torch.nn.Module):
         texts = input.texts
         texts_attn_mask = input.texts_attn_mask
 
-        masked_texts = input.texts
-        masked_texts_attn_mask = input.texts_attn_mask
+        masked_texts = input.masked_texts
+        masked_texts_attn_mask = input.masked_texts_attn_mask
 
         labels = input.labels
         # xi[xi != xi] = 0
@@ -194,6 +216,8 @@ class FET(torch.nn.Module):
         batch_ent1_g_mask = input.ent1_g_mask
 
         ent1_pos = input.ent1_pos
+        ent1_masked_pos = input.ent1_masked_pos
+
         # concepts = input.concepts
         in_train = input.in_train
 
@@ -240,7 +264,7 @@ class FET(torch.nn.Module):
             ent1_embeds.append(text_embed[ent1_pos[i, 0]])
             if "t" in self.model_type:
                 mask_text_embed = hid_mask_texts[i]
-                ent1_mask_embeds.append(mask_text_embed[ent1_pos[i, 0]])
+                ent1_mask_embeds.append(mask_text_embed[ent1_masked_pos[i, 0]])
             # print("text_embed[ent1_pos[i, 0]]", get_tensor_info(text_embed[ent1_pos[i, 0]]))
         ent1_embeds = torch.stack(ent1_embeds, dim=0)  # [n_e, d]
         final_vec.append(ent1_embeds)
@@ -253,12 +277,13 @@ class FET(torch.nn.Module):
 
         if "d" in self.model_type:
             hid_ent1_d = self.plm(**batch_ent1_d, return_dict=True).last_hidden_state
-            if "m" not in self.model_type :
-                final_vec.append(hid_ent1_d[:, 0, :])
+            if "m" not in self.model_type:
+                final_vec.append(
+                    hid_ent1_d[:, 0, :] * batch_ent1_d_mask + (1 - batch_ent1_d_mask) * self.rand_emb(self.the_zero))
 
         if "g" in self.model_type and "m" not in self.model_type:
             hid_ent1_g = self.gnn(batch_ent1_g, args.g_global_pooling)  # * batch_ent1_g_mask
-            final_vec.append(hid_ent1_g)
+            final_vec.append(hid_ent1_g * batch_ent1_g_mask + (1 - batch_ent1_g_mask) * self.rand_emb(self.the_one))
 
         if "m" in self.model_type:
             cm_out = self.cm_attn(batch_ent1_g, hid_ent1_d, batch_ent1_d_mask, batch_ent1_g_mask)

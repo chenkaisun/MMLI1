@@ -13,7 +13,6 @@ import csv
 from utils import *
 import scipy
 
-
 if module_exists("rdkit"):
     from rdkit import Chem
 
@@ -391,7 +390,6 @@ class ModalRetriever:
 #     pass
 
 def sent_with_entities_to_token_ids(sent, ent_pos_list, max_seq_length, tokenizer, shift_right=True, add_marker=True):
-
     """
     @param sent: list of tokens
     @param ent_pos_list: list of s e index pairs for each mention, like [[0,1],[5,7]]
@@ -467,7 +465,6 @@ class ChemetDataset(Dataset):
         #     self.original_data = [line.strip() for i, line in enumerate(fin)]
         #     self.original_data =load
 
-
         # """get sentence segments and mention positions"""
         # # Type 1 multiple mention in each sent
         # # Type 2 one mention in each sent
@@ -527,6 +524,9 @@ class ChemetDataset(Dataset):
                 token_ids, new_ent_pos_list = sent_with_entities_to_token_ids(text, [[m_s, m_e]],
                                                                               max_seq_length=args.max_seq_len,
                                                                               tokenizer=tokenizer, shift_right=True)
+                if len(token_ids) >= 400:
+                    print("idx", idx, text)
+
                 masked_token_ids, new_masked_ent_pos_list = sent_with_entities_to_token_ids(
                     text[:m_s] + ["[MASK]"] + text[m_e:], [[m_s, m_s + 1]],
                     max_seq_length=args.max_seq_len,
@@ -570,7 +570,7 @@ class ChemetDataset(Dataset):
     def collect_labels(cls, files, path):
         labels = set()
         for filename in files:
-            data=load_file(filename)
+            data = load_file(filename)
             for idx in range(len(data)):
 
                 sample = data[idx]
@@ -955,19 +955,14 @@ class CustomBatch:
         input_ids = [f["text"] + [0] * (max_len - len(f["text"])) for f in batch]
         input_mask = [[1.0] * len(f["text"]) + [0.0] * (max_len - len(f["text"])) for f in batch]
 
-
-
-        self.texts = torch.tensor(input_ids, dtype=torch.long)
-        self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)
-
-        self.texts=self.texts[:,:512]
-        self.texts_attn_mask=self.texts_attn_mask[:,:512]
+        self.texts = torch.tensor(input_ids, dtype=torch.long)[:, :512]
+        self.texts_attn_mask = torch.tensor(input_mask, dtype=torch.float)[:, :512]
 
         self.masked_texts = torch.tensor([f["masked_text"] + [0] * (max_len - len(f["masked_text"])) for f in batch],
-                                         dtype=torch.long)
+                                         dtype=torch.long)[:, :512]
         self.masked_texts_attn_mask = torch.tensor(
-                [[1.0] * len(f["masked_text"]) + [0.0] * (max_len - len(f["masked_text"])) for f in batch],
-                dtype=torch.float)
+            [[1.0] * len(f["masked_text"]) + [0.0] * (max_len - len(f["masked_text"])) for f in batch],
+            dtype=torch.float)[:, :512]
 
         # print("self.texts ",self.texts )
         # print("self.texts_attn_mask ",self.texts_attn_mask )
@@ -990,9 +985,10 @@ class CustomBatch:
         self.ent1_d_mask = torch.tensor([f["ent"]['t_mask'] for f in batch]).unsqueeze(-1)
 
         self.ent1_pos = torch.tensor([f["ent"]['pos'] for f in batch], dtype=torch.long)
-        self.ent1_pos[self.ent1_pos>torch.tensor(510)]=0
+        self.ent1_pos[self.ent1_pos > torch.tensor(510)] = 0
 
         self.ent1_masked_pos = torch.tensor([f["ent"]['masked_pos'] for f in batch], dtype=torch.long)
+        self.ent1_masked_pos[self.ent1_masked_pos > torch.tensor(510)] = 0
 
         self.in_train = True
         # embed()

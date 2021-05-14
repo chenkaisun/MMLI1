@@ -187,6 +187,8 @@ def train(args, model, optimizer, data):
     # print("e2")
     # serialize params
     for key in hparam:
+
+
         item=hparam[key]
         if not isinstance(item, (float, str, int, complex, list, dict, set, frozenset, bool)):
             hparam[key]=str(item)

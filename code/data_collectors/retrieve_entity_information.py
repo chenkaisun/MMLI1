@@ -185,7 +185,7 @@ def get_entity_info_fet(files=None):
 
                     except Exception as e:
                         print(e)
-                        time.sleep(8)
+                        time.sleep(4)
                         continue
                     # r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/cids/TXT')
                     # print(r.text)
@@ -210,7 +210,7 @@ def get_entity_info_fet(files=None):
 
                         # create compound entry
                         if cid not in cmpd_info:
-                            cmpd_info[cid] = cmpd.to_dict()
+                            cmpd_info[cid] = {'canonical_smiles': cmpd.to_dict()['canonical_smiles']}
                             # print("here")
 
                             r = request_get(
@@ -298,4 +298,6 @@ fname2 = data_dir + "test_chem_anno_cleaned.json"
 # f = load_file_lines(fname)
 f1 = load_file(fname1)
 f2 = load_file(fname2)
+f1[111]
+
 get_entity_info_fet([f1, f2])

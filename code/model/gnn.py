@@ -76,15 +76,20 @@ class MoleGraphConv(torch.nn.Module):
         # self.atom_batch_norms = ModuleList()
 
         self.bond_encoders.append(BondEncoder(hidden_channels))
-        nn = Sequential(
-            Linear(hidden_channels, 2 * hidden_channels),
-            # BatchNorm1d(2 * hidden_channels),
-            # ReLU(),
-            # Tanh(),
-            Tanh(),
-            Linear(2 * hidden_channels, hidden_channels),
-        )
-        self.atom_convs.append(GINEConv(nn, train_eps=True))
+
+        if args.gnn_type == "gat":
+            self.atom_convs.append(GATConv(hidden_channels, hidden_channels))
+        elif args.gnn_type == "gine":
+            nn = Sequential(
+                Linear(hidden_channels, 2 * hidden_channels),
+                # BatchNorm1d(2 * hidden_channels),
+                # ReLU(),
+                # Tanh(),
+                Tanh(),
+
+                Linear(2 * hidden_channels, hidden_channels),
+            )
+            self.atom_convs.append(GINEConv(nn, train_eps=True))
 
         # self.atom_lin = Linear(hidden_channels, hidden_channels)
 
@@ -98,16 +103,16 @@ class MoleGraphConv(torch.nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
 
         return x
-        if not global_pooling:
-        #     x = self.atom_lin(x)
-        #     x = torch.tanh(x)
-            return x
-
-        x = scatter(x, data.batch, dim=0, reduce='mean')
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = self.atom_lin(x)
-        x = F.gelu(x)
-        return x
+        # if not global_pooling:
+        # #     x = self.atom_lin(x)
+        # #     x = torch.tanh(x)
+        #     return x
+        #
+        # x = scatter(x, data.batch, dim=0, reduce='mean')
+        # x = F.dropout(x, self.dropout, training=self.training)
+        # x = self.atom_lin(x)
+        # x = F.gelu(x)
+        # return x
 
 
 class MoleGNN2(torch.nn.Module):
@@ -127,16 +132,20 @@ class MoleGNN2(torch.nn.Module):
 
         for _ in range(args.num_gnn_layers):
             self.bond_encoders.append(BondEncoder(hidden_channels))
-            nn = Sequential(
-                Linear(hidden_channels, 2 * hidden_channels),
-                # BatchNorm1d(2 * hidden_channels),
-                # ReLU(),
-                # Tanh(),
-                Tanh(),
 
-                Linear(2 * hidden_channels, hidden_channels),
-            )
-            self.atom_convs.append(GINEConv(nn, train_eps=True))
+            if args.gnn_type=="gat":
+                self.atom_convs.append(GATConv(hidden_channels, hidden_channels))
+            elif args.gnn_type=="gine":
+                nn = Sequential(
+                    Linear(hidden_channels, 2 * hidden_channels),
+                    # BatchNorm1d(2 * hidden_channels),
+                    # ReLU(),
+                    # Tanh(),
+                    Tanh(),
+
+                    Linear(2 * hidden_channels, hidden_channels),
+                )
+                self.atom_convs.append(GINEConv(nn, train_eps=True))
 
             # self.atom_convs.append(GATConv(hidden_channels, hidden_channels))
 
@@ -187,7 +196,7 @@ class MoleGNN2(torch.nn.Module):
         # print(x.shape)
         x = F.dropout(x, self.dropout, training=self.training)
         x = self.atom_lin(x)
-        x = F.gelu(x)
+        x = F.tanh(x)
         # x = F.dropout(x, self.dropout, training=self.training)
         # x = self.lin(x)
         # print("22222")
