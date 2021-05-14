@@ -2629,3 +2629,32 @@ Total time elapsed: 11.1818s
 Loading 1th epoch
 acc 0.15
 Test Score 0.26229508196721313
+=====begin of args=====
+exp: fet
+max_grad_norm: 1.0
+g_global_pooling: 1
+mult_mask: 0
+g_mult_mask: 0
+grad_accumulation_steps: 1
+model_name: fet_model
+activation: gelu
+batch_size: 12
+cm_type: 0
+debug: False
+dropout: 0.2
+gnn_type: gine
+g_dim: 768
+patience: 8
+plm: allenai/scibert_scivocab_uncased
+plm_hidden_dim: 768
+plm_lr: 2e-05
+pool_type: 0
+lr: 0.001
+model_type: tdgm
+num_epochs: 15
+num_gnn_layers: 2
+use_cache: 0
+=====end of args=====
+Total steps: 14805
+Warmup steps: 888
+987 steps for each epoch

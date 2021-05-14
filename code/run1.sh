@@ -7,7 +7,7 @@ first see
 
 
 python main_fet.py --debug  --use_cache 1 --model_type tdg
-
+python main_fet.py --use_cache 0
 
 for _max_grad_norm in 1 0; do
   for _plm_lr in 2e-5 5e-5; do
