@@ -15,13 +15,16 @@ from torch.utils.tensorboard import SummaryWriter
 import numpy
 from pynvml import *
 
-
 from IPython import embed
+
+
 class ScoreRecorder:
     def __init__(self, path):
         pass
+
     def get_highest(self):
         pass
+
 
 def seed_worker(worker_id):
     worker_seed = torch.initial_seed() % 2 ** 32
@@ -43,7 +46,7 @@ def get_logger(args):
     logger.setLevel(logging.DEBUG)
 
     mkdir(args.experiment_path)
-    output_file_handler = logging.FileHandler(args.experiment_path + args.experiment + ".txt")
+    output_file_handler = logging.FileHandler(args.experiment_path + args.exp + "_" + args.exp_id + ".txt")
     stdout_handler = logging.StreamHandler(sys.stdout)
     logger.addHandler(output_file_handler)
     logger.addHandler(stdout_handler)
@@ -55,9 +58,10 @@ def get_plm_fullname(abbr):
         "base": "bert-base-cased",
         "sap": "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR",
         "sci": "allenai/scibert_scivocab_uncased",
-        "tiny":"prajjwal1/bert-tiny"
+        "tiny": "prajjwal1/bert-tiny"
     }
     return plm_dict[abbr]
+
 
 def setup_common(args):
     # args = read_args()
@@ -66,7 +70,7 @@ def setup_common(args):
     mkdir("model")
     mkdir("model/states")
 
-    args.model_path="model/states/best_dev_"+args.exp_id+".pt"
+    args.model_path = "model/states/best_dev_" + args.exp_id + ".pt"
 
     # set_seeds(args)
     args.device = gpu_setup(use_gpu=args.use_gpu, gpu_id=args.gpu_id)
@@ -180,11 +184,12 @@ def set_seeds(args):
 def get_tokenizer(plm, save_dir="tokenizer/"):
     mkdir(save_dir)
     tk_name = plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
-    tk_name=os.path.join(save_dir, tk_name)
+    tk_name = os.path.join(save_dir, tk_name)
     if not os.path.exists(tk_name):
         tokenizer = AutoTokenizer.from_pretrained(plm)
         dump_file(tokenizer, tk_name)
     return load_file(tk_name)
+
 
 def get_gpu_mem_info():
     nvmlInit()
