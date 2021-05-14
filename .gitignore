@@ -161,7 +161,7 @@ nohup*.out
 nohup.out
 rdkit/
 experiment/
-experiment/fet/events.out.*
+experiment/*
 #data_online/ChemProt_Corpus/mention2concepts.json
 data_online/ChemProt_Corpus/chem_mentions.json
 data_online/ChemProt_Corpus/prot_mentions.json
