@@ -160,7 +160,6 @@ tmp*.txt
 nohup*.out
 nohup.out
 rdkit/
-experiment/
 experiment/*
 #data_online/ChemProt_Corpus/mention2concepts.json
 data_online/ChemProt_Corpus/chem_mentions.json
