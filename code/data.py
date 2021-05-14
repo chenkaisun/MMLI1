@@ -69,7 +69,7 @@ class ModalRetriever:
         # print("g_modal.edge_index.shape[0]", g_modal.edge_index.shape[0])
         # print("g_modal.edge_index.shape", g_modal.edge_index.shape)
 
-        g_modal_mask *= (0 not in g_modal.edge_index.shape)
+        # g_modal_mask *= (0 not in g_modal.edge_index.shape)
         # print("g_modal_mask",g_modal_mask)
         # print(type(g_modal_mask))
         return g_modal, g_modal_mask, d_modal, d_modal_mask
@@ -105,7 +105,7 @@ class ModalRetriever:
         return utils.from_scipy_sparse_matrix(adj)[0]
 
     def get_graph(self, input_smile):
-        res = (Data(x=torch.randint(0, 2, (2, 1)), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
+        res = (Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
                     edge_attr=torch.tensor([1, 1])), 0)
 
         if not len(input_smile):
@@ -127,11 +127,13 @@ class ModalRetriever:
 
         node_attr = torch.tensor(atom_properties, dtype=torch.long)
         edge_index = torch.as_tensor(edge_index, dtype=torch.long)
+
         # print('node_attr', node_attr)
         # print('edge_index', edge_index)
         # print('bond_type', bond_type)
 
         edge_attr = torch.tensor(bond_type, dtype=torch.long)
+        if 0 in edge_index.shape or 0 in edge_attr.shape: return res
 
         return Data(x=node_attr, edge_index=edge_index, edge_attr=edge_attr), 1
 

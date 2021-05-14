@@ -18,7 +18,7 @@ class AtomEncoder(torch.nn.Module):
         self.embeddings = torch.nn.ModuleList()
 
         for i in range(1):
-            self.embeddings.append(Embedding(23, hidden_channels))
+            self.embeddings.append(Embedding(24, hidden_channels))
 
     def reset_parameters(self):
         for embedding in self.embeddings:
@@ -41,7 +41,7 @@ class BondEncoder(torch.nn.Module):
         self.embeddings = torch.nn.ModuleList()
 
         for i in range(1):
-            self.embeddings.append(Embedding(4, hidden_channels))
+            self.embeddings.append(Embedding(5, hidden_channels))
 
     def reset_parameters(self):
         for embedding in self.embeddings:
