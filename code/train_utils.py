@@ -64,6 +64,8 @@ def setup_common(args):
     mkdir("model")
     mkdir("model/states")
 
+    args.model_path="model/states/best_dev_"+args.exp_id+".pt"
+
     # set_seeds(args)
     args.device = gpu_setup(use_gpu=args.use_gpu, gpu_id=args.gpu_id)
     if "cpu" in str(args.device): args.use_amp = 0

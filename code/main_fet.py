@@ -53,6 +53,7 @@ if __name__ == '__main__':
         "model_name",
 
         # tuning
+        "exp_id",
         "activation",
         "batch_size",
         "cm_type",
@@ -73,6 +74,7 @@ if __name__ == '__main__':
     ]
     args.downstream_layers = ["combiner", "gnn", "cm_attn", 'the_zero', 'the_one', 'rand_emb']
 
+    # args.model_path=""
     args.model_name = "fet_model"
     args.exp = "fet"
     args.plm = "sci"
