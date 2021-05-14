@@ -91,7 +91,11 @@ def evaluate(args, model, data):
         precision, recall, score = get_prf(targets, preds, average="micro", verbose=True)
 
         acc = accuracy_score(targets, preds)
-        # print("targets",targets)
+        # print("pred")
+        # pp(preds)
+        # print("target")
+        # print(targets)
+
         # print("targets", len(targets), len(targets[0]))
         # print("preds",len(preds), len(preds[0]))
 

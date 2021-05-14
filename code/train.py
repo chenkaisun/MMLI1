@@ -43,7 +43,8 @@ def train(args, model, optimizer, data):
         print('args.exp', args.exp)
         # train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn_re,
         #                           drop_last=False)
-        train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_wrapper,
+        #shuffle now true
+        train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, collate_fn=collate_wrapper,
                                   drop_last=False)
 
     # model = args.model

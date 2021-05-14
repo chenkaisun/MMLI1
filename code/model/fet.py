@@ -12,7 +12,7 @@ import numpy as np
 from IPython import embed
 from torch.nn import TransformerEncoderLayer
 
-
+from pprint import pprint as pp
 # from torchtext.vocab import GloVe
 
 class CrossModal(nn.Module):
@@ -308,8 +308,11 @@ class FET(torch.nn.Module):
             return torch.nn.functional.cross_entropy(output, labels)
             return torch.nn.functional.binary_cross_entropy_with_logits(output, labels)
         # return torch.argmax(F.log_softmax(output, dim=-1), dim=-1)
+        # print("sigmoid output")
+        # pp(torch.sigmoid(output))
         pred_out = (torch.sigmoid(output) > 0.5).float()
-
+        # print("pred_out")
+        # pp(pred_out)
         # pred_out = torch.argmax(torch.softmax(output, dim=-1), dim=-1)
         # print('pred_out', get_tensor_info(pred_out))
         return pred_out
