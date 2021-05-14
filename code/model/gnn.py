@@ -175,7 +175,7 @@ class MoleGNN2(torch.nn.Module):
         # print(data.edge_index)
         x = self.atom_encoder(data.x.squeeze())
         # print(x)
-        # print("x", get_tensor_info(x))
+        print("x", get_tensor_info(x))
         # print(data.edge_attr.unsqueeze(1).shape)
         # embed()
         # exit()
