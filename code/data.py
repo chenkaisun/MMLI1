@@ -66,6 +66,12 @@ class ModalRetriever:
                     d_modal, d_modal_mask = d_arr[id_chosen]["description"], 1
 
         g_modal, g_modal_mask = self.get_graph(g_modal)
+        # print("g_modal.edge_index.shape[0]", g_modal.edge_index.shape[0])
+        # print("g_modal.edge_index.shape", g_modal.edge_index.shape)
+
+        g_modal_mask *= (0 not in g_modal.edge_index.shape)
+        # print("g_modal_mask",g_modal_mask)
+        # print(type(g_modal_mask))
         return g_modal, g_modal_mask, d_modal, d_modal_mask
 
     def get_atom_info(self, mol):
@@ -82,18 +88,24 @@ class ModalRetriever:
 
     def get_edges(self, mol):
         adj = Chem.GetAdjacencyMatrix(mol)
+        # print("mol", mol)
+        # print("adj", adj)
+
         # print("am\n", am)
         for i in range(np.array(adj).shape[0]):
             for j in range(np.array(adj).shape[0]):
                 if adj[i, j] >= 1:
                     adj[j, i] = adj[i, j]
+        # if np.array(adj).shape[0] == 1 and np.array(adj).shape[1] == 1:
+        #     adj[0, 0] = 1
+
         adj[adj > 1] = 1
 
         adj = scipy.sparse.csr_matrix(adj)
         return utils.from_scipy_sparse_matrix(adj)[0]
 
     def get_graph(self, input_smile):
-        res = (Data(x=torch.rand(2, 1), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
+        res = (Data(x=torch.randint(0, 2, (2, 1)), edge_index=torch.tensor([[0, 1], [1, 0]], dtype=torch.long),
                     edge_attr=torch.tensor([1, 1])), 0)
 
         if not len(input_smile):
@@ -103,14 +115,22 @@ class ModalRetriever:
         except Exception as e:
             print(e)
             return res
+        # print("input_smile",input_smile)
 
         atom_properties = self.get_atom_info(mol)
         edge_index = self.get_edges(mol)
+
+        # print("test bond type")
+        # embed()
         bond_type = [int(mol.GetBondBetweenAtoms(int(i), int(j)).GetBondTypeAsDouble()) for i, j in
                      edge_index.t().numpy()]
 
         node_attr = torch.tensor(atom_properties, dtype=torch.long)
         edge_index = torch.as_tensor(edge_index, dtype=torch.long)
+        # print('node_attr', node_attr)
+        # print('edge_index', edge_index)
+        # print('bond_type', bond_type)
+
         edge_attr = torch.tensor(bond_type, dtype=torch.long)
 
         return Data(x=node_attr, edge_index=edge_index, edge_attr=edge_attr), 1
@@ -514,7 +534,6 @@ class ChemetDataset(Dataset):
             ent_pos_list = []
 
             for mention in sample["annotations"]:
-
                 m_s, m_e = mention["start"], mention["end"]
                 m = " ".join(text[m_s:m_e])
                 m = m.replace("  ", " ")
@@ -552,6 +571,15 @@ class ChemetDataset(Dataset):
                 ent1_dict["masked_pos"] = list(new_masked_ent_pos_list[0])
                 ent1_dict['g'], ent1_dict['g_mask'], ent1_dict['t'], ent1_dict['t_mask'] = self.modal_retriever.get_mol(
                     m)
+
+                # print("attr", ent1_dict['g'].edge_attr)
+                if ent1_dict['g_mask']:
+                    # print("x min", ent1_dict['g'].edge_attr.min())
+                    # print("x max", ent1_dict['g'].edge_attr.max())
+
+                    args.num_atom_types = max(args.num_atom_types, int(ent1_dict['g'].x.max().item()) + 1)
+                    args.num_edge_types = max(args.num_edge_types, int(ent1_dict['g'].edge_attr.max().item()) + 1)
+
                 # print("\nm", m)
                 # print('ent1_dict', ent1_dict)
                 total_t_linked += ent1_dict['t_mask']

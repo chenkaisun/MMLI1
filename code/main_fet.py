@@ -71,6 +71,9 @@ if __name__ == '__main__':
         "num_epochs",
         "num_gnn_layers",
         "use_cache",
+
+        "num_atom_types",
+        "num_edge_types",
     ]
     args.downstream_layers = ["combiner", "gnn", "cm_attn", 'the_zero', 'the_one', 'rand_emb']
 
@@ -119,7 +122,7 @@ if __name__ == '__main__':
     train_data, val_data, test_data = ChemetDataset(args, train_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, val_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, test_file, tokenizer, modal_retriever, labels)
-
+    print("args.num_atom_types,args.num_edge_types",args.num_atom_types,args.num_edge_types)
     args, model, optimizer = setup_common(args)
 
     # train or analyze
