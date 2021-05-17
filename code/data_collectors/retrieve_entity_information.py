@@ -154,7 +154,7 @@ def get_entity_info_fet(files=None):
     # embed()
     # print("init", mention2ent, cmpd_info)
 
-    batch_save =300
+    batch_save = 500
     cnt = 0
     n_match = 0
     for file in files:
@@ -185,11 +185,12 @@ def get_entity_info_fet(files=None):
                     try:
                         for possible_name in possible_mole_names:
                             results = pcp.get_compounds(possible_name, 'name')
-                            time.sleep(1)
-
+                            # time.sleep(1)
                             if results:
+                                print(results)
+                                print("break")
                                 break
-
+                        if not len(results): continue
                     except Exception as e:
                         print("Error")
                         print(e)
@@ -231,6 +232,7 @@ def get_entity_info_fet(files=None):
                         else:
                             print(f"{cid} already in info")
                     if cnt % batch_save == 0:
+                        print("saving")
                         dump_file(mention2ent, data_dir + "mention2ent.json")
                         dump_file(cmpd_info, data_dir + "cmpd_info.json")
 
