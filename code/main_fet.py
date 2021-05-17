@@ -82,8 +82,9 @@ if __name__ == '__main__':
     args.exp = "fet"
     args.plm = "sci"
     args.plm = get_plm_fullname(args.plm)
-    if torch.cuda.device_count() > 2:
-        args.gpu_id = 2
+    print("torch.cuda.device_count()",torch.cuda.device_count())
+    # if torch.cuda.device_count() > 2:
+    #     args.gpu_id = 2
 
     # args.num_epoch = 50
     # args.batch_size = 8

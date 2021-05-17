@@ -73,7 +73,7 @@ def setup_common(args):
     args.model_path = "model/states/best_dev_" + args.exp_id + ".pt"
 
     # set_seeds(args)
-    args.device = gpu_setup(use_gpu=args.use_gpu, gpu_id=args.gpu_id)
+    args.device = gpu_setup(use_gpu=args.use_gpu, gpu_id=args.gpu_id, use_random_available=False)
     if "cpu" in str(args.device): args.use_amp = 0
 
     # # wandb.init(config=args, project=args.experiment)
