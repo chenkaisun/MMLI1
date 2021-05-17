@@ -154,7 +154,7 @@ def get_entity_info_fet(files=None):
     # embed()
     # print("init", mention2ent, cmpd_info)
 
-    batch_save = 500
+    batch_save =300
     cnt = 0
     n_match = 0
     for file in files:
@@ -185,7 +185,7 @@ def get_entity_info_fet(files=None):
                     try:
                         for possible_name in possible_mole_names:
                             results = pcp.get_compounds(possible_name, 'name')
-                            time.sleep(2)
+                            time.sleep(1)
 
                             if results:
                                 break
