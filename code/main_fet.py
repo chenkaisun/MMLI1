@@ -123,6 +123,9 @@ if __name__ == '__main__':
     train_data, val_data, test_data = ChemetDataset(args, train_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, val_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, test_file, tokenizer, modal_retriever, labels)
+
+
+    # exit()
     print("args.num_atom_types,args.num_edge_types", args.num_atom_types, args.num_edge_types)
     args, model, optimizer = setup_common(args)
 
