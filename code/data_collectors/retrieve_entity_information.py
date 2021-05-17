@@ -305,5 +305,4 @@ f1 = load_file(fname1)
 f2 = load_file(fname2)
 f3 = load_file(fname3)
 
-
-get_entity_info_fet([f1, f2,f3 ])
+get_entity_info_fet([f1, f2, f3])
