@@ -147,7 +147,7 @@ def get_entity_info_fet(files=None):
     cmpd_info_path = data_dir + "cmpd_info.json"
     cmpd_info = load_file(cmpd_info_path, init={})
 
-    print("init", mention2ent, cmpd_info)
+    # print("init", mention2ent, cmpd_info)
 
     batch_save = 100
     cnt = 0
