@@ -192,7 +192,7 @@ def get_entity_info_fet(files=None):
                                 print(results)
                                 print("break")
                                 break
-                        if not len(results): continue
+                        # if not len(results): continue
                     except Exception as e:
                         print("Error")
                         print(e)
@@ -201,7 +201,6 @@ def get_entity_info_fet(files=None):
                         continue
                     if has_error:
                         print("has error")
-
                         continue
                     # r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/cids/TXT')
                     # print(r.text)
@@ -215,7 +214,7 @@ def get_entity_info_fet(files=None):
                     mention2ent[mole_name] = None
 
                     # if there is a match
-                    if results:
+                    if len(results):
                         cmpd = results[0]
 
                         print("\nHas results", mole_name, cmpd)
