@@ -97,6 +97,9 @@ class CrossModal(nn.Module):
                     # print("stacked", get_tensor_info(stacked))
                     # attended = self.transformers[i](stacked).squeeze(0)
                     attended.append(self.transformers[i](stacked).squeeze(0))
+                    print("self.transformers[i].named_parameters()", self.transformers[i].named_parameters())
+
+
                 else:
                     g2t_sim = x_i.mm(t_i.t())
                     t2g_sim = t_i.mm(x_i.t())

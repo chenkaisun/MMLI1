@@ -89,6 +89,8 @@ def read_args():
     parser.add_argument('--pool_type', default=0, type=int)  # for cm, 0 mean max, 1 max mean, 2 mean, 3 max
     parser.add_argument('--type_embed', default=0, type=int)
     parser.add_argument('--cm', default=0, type=int)
+    parser.add_argument('--attn_analysis', default=0, type=int)
+    parser.add_argument('--error_analysis', default=0, type=int)
 
     # auxiliary
     # parser.add_argument("--debug", action="store_true")

@@ -137,29 +137,35 @@ if __name__ == '__main__':
         test_score, output = evaluate(args, model, test_data)
         val_score, output2 = evaluate(args, model, val_data)
 
+
         print(val_score)
         print(test_score)
-        for id, pred, label in output:
-            print("\nsample", id)
-            sample = test_data[id]
-            print("text is", sample["original_text"])
-            print("mention is ", sample['mention_name'])
-            print("original labels are", sorted(sample["original_labels"]))
+
+        if args.error_analysis:
+
+            for id, pred, label in output:
+                print("\nsample", id)
+                sample = test_data[id]
+                print("text is", sample["original_text"])
+                print("mention is ", sample['mention_name'])
+                print("original labels are", sorted(sample["original_labels"]))
 
 
-            here_labels=sorted([labels[i] for i, c in enumerate(pred) if label[i] == 1])
-            predicted_labels=sorted([labels[i] for i, c in enumerate(pred) if c == 1])
+                here_labels=sorted([labels[i] for i, c in enumerate(pred) if label[i] == 1])
+                predicted_labels=sorted([labels[i] for i, c in enumerate(pred) if c == 1])
 
-            print("has labels", sorted(here_labels))
-            print("predicted labels", sorted(predicted_labels))
+                print("has labels", sorted(here_labels))
+                print("predicted labels", sorted(predicted_labels))
 
-            here_labels=set(here_labels)
-            predicted_labels=set(predicted_labels)
+                here_labels=set(here_labels)
+                predicted_labels=set(predicted_labels)
 
-            missed_labels=predicted_labels.difference(here_labels)
-            incorrected_included_labels=here_labels.difference(predicted_labels)
-            print("missed_labels", missed_labels)
-            print("incorrected_included_labels", incorrected_included_labels)
+                missed_labels=predicted_labels.difference(here_labels)
+                incorrected_included_labels=here_labels.difference(predicted_labels)
+                print("missed_labels", missed_labels)
+                print("incorrected_included_labels", incorrected_included_labels)
+        # if args.attn_analysis:
+
 
             # for i, c in enumerate(pred):
             #     if label[i] == 1:
