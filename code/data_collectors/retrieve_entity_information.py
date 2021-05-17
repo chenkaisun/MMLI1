@@ -182,6 +182,8 @@ def get_entity_info_fet(files=None):
                         possible_mole_names.append(" ".join(tokens[s:e - 2]))
                         possible_mole_names.append(" ".join(tokens[s + 2:e]))
                     results = None
+
+                    has_error=False
                     try:
                         for possible_name in possible_mole_names:
                             results = pcp.get_compounds(possible_name, 'name')
@@ -194,7 +196,12 @@ def get_entity_info_fet(files=None):
                     except Exception as e:
                         print("Error")
                         print(e)
-                        time.sleep(4)
+                        # time.sleep(4)
+                        has_error=True
+                        continue
+                    if has_error:
+                        print("has error")
+
                         continue
                     # r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/cids/TXT')
                     # print(r.text)
@@ -204,6 +211,7 @@ def get_entity_info_fet(files=None):
                     #     print(desc)
 
                     ## if no match, do not repeat search for the same mention
+                    print("setting None")
                     mention2ent[mole_name] = None
 
                     # if there is a match
