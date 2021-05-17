@@ -171,7 +171,8 @@ f_tr = load_file("../data_online/chemet/distant_training_new.json")
 f_dev = load_file("../data_online/chemet/dev_anno_unseen_removed.json")
 f_te = load_file("../data_online/chemet/test_anno_unseen_removed.json")
 
-print(sum([len(s["annotations"])==0 for s in f_te]))
+print(sum([any([len(m['labels'])==0 for m in s["annotations"]]) for s in f_te]))
+print(sum([any([len(m['labels'])==0 for m in s["annotations"]]) for s in f_dev]))
 print(sum([len(s["annotations"])==0 for s in f_dev]))
 
 f_jf = load_file_lines(test_jinfeng_b)

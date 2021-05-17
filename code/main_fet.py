@@ -82,7 +82,7 @@ if __name__ == '__main__':
     args.exp = "fet"
     args.plm = "sci"
     args.plm = get_plm_fullname(args.plm)
-    print("torch.cuda.device_count()",torch.cuda.device_count())
+    print("torch.cuda.device_count()", torch.cuda.device_count())
     # if torch.cuda.device_count() > 2:
     #     args.gpu_id = 2
 
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     train_data, val_data, test_data = ChemetDataset(args, train_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, val_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, test_file, tokenizer, modal_retriever, labels)
-    print("args.num_atom_types,args.num_edge_types",args.num_atom_types,args.num_edge_types)
+    print("args.num_atom_types,args.num_edge_types", args.num_atom_types, args.num_edge_types)
     args, model, optimizer = setup_common(args)
 
     # train or analyze
@@ -135,7 +135,43 @@ if __name__ == '__main__':
 
         model.load_state_dict(torch.load(args.model_path)['model_state_dict'])
         test_score, output = evaluate(args, model, test_data)
+        val_score, output2 = evaluate(args, model, val_data)
+
+        print(val_score)
         print(test_score)
+        for id, pred, label in output:
+            print("\nsample", id)
+            sample = test_data[id]
+            print("text is", sample["original_text"])
+            print("mention is ", sample['mention_name'])
+            print("original labels are", sorted(sample["original_labels"]))
+
+
+            here_labels=sorted([labels[i] for i, c in enumerate(pred) if label[i] == 1])
+            predicted_labels=sorted([labels[i] for i, c in enumerate(pred) if c == 1])
+
+            print("has labels", sorted(here_labels))
+            print("predicted labels", sorted(predicted_labels))
+
+            here_labels=set(here_labels)
+            predicted_labels=set(predicted_labels)
+
+            missed_labels=predicted_labels.difference(here_labels)
+            incorrected_included_labels=here_labels.difference(predicted_labels)
+            print("missed_labels", missed_labels)
+            print("incorrected_included_labels", incorrected_included_labels)
+
+            # for i, c in enumerate(pred):
+            #     if label[i] == 1:
+            #         print("has label", labels[i])
+            # for i, c in enumerate(pred):
+            #     if c == 1:
+            #         print("predicted label", labels[i])
+
+                # if label[i] != c:
+                #     print("pred")
+                #     print(labels[i])
+
         exit()
         rels = ['AGONIST-ACTIVATOR',
                 'DOWNREGULATOR', 'SUBSTRATE_PRODUCT-OF',

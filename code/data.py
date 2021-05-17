@@ -467,6 +467,8 @@ class ChemetDataset(Dataset):
             args.out_dim = len(data['label2id'])
             print(data['label2id'])
             self.instances = data['instances']
+            self.label2id = data['label2id']
+            self.id2label =  {self.label2id[label]:label for label in self.label2id}
             # embed()
             return
 
@@ -481,6 +483,7 @@ class ChemetDataset(Dataset):
 
         self.label_desc = {}
         self.label2id = {label: i for i, label in enumerate(self.labels)}
+        self.id2label = {i:label for i, label in enumerate(self.labels)}
         # label_text = [self.label_desc[lb] for lb in self.labels]
         args.out_dim = len(self.label2id)
         print("\nself.label2id", self.label2id)
@@ -588,7 +591,6 @@ class ChemetDataset(Dataset):
                     # print("cur x", args.num_atom_types)
                     # print("cur e", args.num_edge_types)
 
-
                 # print("\nm", m)
                 # print('ent1_dict', ent1_dict)
                 total_t_linked += ent1_dict['t_mask']
@@ -600,8 +602,11 @@ class ChemetDataset(Dataset):
                                        "id": sample_id,
                                        "label": label,
                                        "ent": ent1_dict,
+                                       "mention_name": m,
                                        # "label_text": label_text,
-                                       "tokenizer": tokenizer
+                                       "tokenizer": tokenizer,
+                                       "original_text": text,
+                                       "original_labels": mention["labels"]
                                        })
                 sample_id += 1
         if args.cache_filename:

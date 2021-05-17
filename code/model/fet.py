@@ -290,6 +290,7 @@ class FET(torch.nn.Module):
             final_vec.append(hid_ent1_g * batch_ent1_g_mask + (1 - batch_ent1_g_mask) * self.rand_emb(self.the_one))
         # print("1")
         # get_gpu_mem_info()
+
         if "m" in self.model_type:
             cm_out = self.cm_attn(batch_ent1_g, hid_ent1_d, batch_ent1_d_mask, batch_ent1_g_mask)
             final_vec.append(cm_out)
