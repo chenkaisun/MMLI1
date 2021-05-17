@@ -151,7 +151,6 @@ def get_entity_info_fet(files=None):
         cmpd_info[cid] = {'canonical_smiles': cmpd_info[cid]['canonical_smiles'],
                           "pubchem_description": cmpd_info[cid]['pubchem_description']}
     dump_file(cmpd_info, cmpd_info_path)
-    
     # embed()
     # print("init", mention2ent, cmpd_info)
 
@@ -186,12 +185,18 @@ def get_entity_info_fet(files=None):
                     try:
                         for possible_name in possible_mole_names:
                             results = pcp.get_compounds(possible_name, 'name')
+                            time.sleep(4)
+
                             if results:
                                 break
 
                     except Exception as e:
                         print(e)
                         time.sleep(4)
+
+
+
+
                         continue
                     # r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/cids/TXT')
                     # print(r.text)
