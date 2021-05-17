@@ -147,9 +147,10 @@ def get_entity_info_fet(files=None):
     cmpd_info_path = data_dir + "cmpd_info.json"
     cmpd_info = load_file(cmpd_info_path, init={})
 
+    embed()
     # print("init", mention2ent, cmpd_info)
 
-    batch_save = 100
+    batch_save = 500
     cnt = 0
     n_match = 0
     for file in files:
@@ -157,7 +158,7 @@ def get_entity_info_fet(files=None):
         for i, sample in enumerate(file):
             tokens = sample["tokens"]
             for j, m in enumerate(sample["annotations"]):
-                print("sent", i, "m", j, m)
+                print("sent", i, "m", j)
 
                 s, e = m["start"], m["end"]
                 mole_name = " ".join(tokens[s:e])
@@ -166,7 +167,7 @@ def get_entity_info_fet(files=None):
                 cnt += 1
 
                 if mole_name not in mention2ent:
-                    print("not in")
+                    # print("not in")
 
 
                     # get possible substrings
@@ -227,8 +228,8 @@ def get_entity_info_fet(files=None):
                         dump_file(mention2ent, data_dir + "mention2ent.json")
                         dump_file(cmpd_info, data_dir + "cmpd_info.json")
 
-            dump_file(mention2ent, data_dir + "mention2ent.json")
-            dump_file(cmpd_info, data_dir + "cmpd_info.json")
+        dump_file(mention2ent, data_dir + "mention2ent.json")
+        dump_file(cmpd_info, data_dir + "cmpd_info.json")
 
     print("cnt", cnt)
     print("n_match (distinct mentions)", n_match)
