@@ -185,18 +185,15 @@ def get_entity_info_fet(files=None):
                     try:
                         for possible_name in possible_mole_names:
                             results = pcp.get_compounds(possible_name, 'name')
-                            time.sleep(3)
+                            time.sleep(2)
 
                             if results:
                                 break
 
                     except Exception as e:
+                        print("Error")
                         print(e)
                         time.sleep(4)
-
-
-
-
                         continue
                     # r = request_get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/water/cids/TXT')
                     # print(r.text)
