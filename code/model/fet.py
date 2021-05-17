@@ -172,10 +172,10 @@ class FET(torch.nn.Module):
             print("args.tdg")
             self.combiner = Linear(args.plm_hidden_dim * 4, args.out_dim)
         elif 'tg' in args.model_type or 'td' in args.model_type:
-            print("args.tg")
+            print("args.tg or td")
             self.combiner = Linear(args.plm_hidden_dim * 3, args.out_dim)
-        elif 't' in args.model_type:
-            print("args.t")
+        elif 'd' in args.model_type or 'g' in args.model_type or 't' in args.model_type:
+            print("args.d or g or t")
             self.combiner = Linear(args.plm_hidden_dim * 2, args.out_dim)
         elif 's' in args.model_type:
             print("args.s")
