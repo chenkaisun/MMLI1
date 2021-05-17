@@ -49,8 +49,8 @@ def train(args, model, optimizer, data):
                                   drop_last=False)
 
     # model = args.model
-    if args.n_gpu > 1:
-        model = nn.DataParallel(model)
+    # if args.n_gpu > 1:
+    #     model = nn.DataParallel(model)
     # optimizer = args.optimizer
 
     # get logger

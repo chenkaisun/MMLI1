@@ -38,9 +38,9 @@ def load_model_from_path(model, optimizer, args):
     else:
         if str(args.device) != "cpu":
             print("use gpu")
-            if torch.cuda.device_count() > 1:
-                print("parallel")
-                model = nn.DataParallel(model)
-            model = model.cuda()
+            # if torch.cuda.device_count() > 1:
+            #     print("parallel")
+            #     model = nn.DataParallel(model)
+            model = model.to(args.device)
 
     return model, optimizer, model_epoch, best_dev_score
