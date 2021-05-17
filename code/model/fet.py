@@ -97,7 +97,7 @@ class CrossModal(nn.Module):
                     # print("stacked", get_tensor_info(stacked))
                     # attended = self.transformers[i](stacked).squeeze(0)
                     attended.append(self.transformers[i](stacked).squeeze(0))
-                    print("self.transformers[i].named_parameters()", self.transformers[i].named_parameters())
+                    # print("self.transformers[i].named_parameters()", self.transformers[i].named_parameters())
 
 
                 else:
