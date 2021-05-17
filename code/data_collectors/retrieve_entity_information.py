@@ -157,7 +157,7 @@ def get_entity_info_fet(files=None):
         for i, sample in enumerate(file):
             tokens = sample["tokens"]
             for j, m in enumerate(sample["annotations"]):
-                print("sent", i, "m", j)
+                print("sent", i, "m", j, m)
 
                 s, e = m["start"], m["end"]
                 mole_name = " ".join(tokens[s:e])
@@ -166,6 +166,8 @@ def get_entity_info_fet(files=None):
                 cnt += 1
 
                 if mole_name not in mention2ent:
+                    print("not in")
+
 
                     # get possible substrings
                     possible_mole_names = [mole_name]
