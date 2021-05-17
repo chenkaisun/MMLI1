@@ -1,10 +1,30 @@
-\begin{thebibliography}{40}
+\begin{thebibliography}{47}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Ando and Zhang(2005)}]{Ando2005}
+Rie~Kubota Ando and Tong Zhang. 2005.
+\newblock A framework for learning predictive structures from multiple tasks
+  and unlabeled data.
+\newblock \emph{Journal of Machine Learning Research}, 6:1817--1853.
+
+\bibitem[{Andrew and Gao(2007)}]{andrew2007scalable}
+Galen Andrew and Jianfeng Gao. 2007.
+\newblock Scalable training of {L1}-regularized log-linear models.
+\newblock In \emph{Proceedings of the 24th International Conference on Machine
+  Learning}, pages 33--40.
 
 \bibitem[{Beltagy et~al.(2019)Beltagy, Lo, and Cohan}]{scibert}
 Iz~Beltagy, Kyle Lo, and Arman Cohan. 2019.
 \newblock Scibert: A pretrained language model for scientific text.
 \newblock \emph{arXiv preprint arXiv:1903.10676}.
+
+\bibitem[{B{\"o}rschinger and
+  Johnson(2011)}]{borschinger-johnson-2011-particle}
+Benjamin B{\"o}rschinger and Mark Johnson. 2011.
+\newblock \href {https://www.aclweb.org/anthology/U11-1004} {A particle filter
+  algorithm for {B}ayesian wordsegmentation}.
+\newblock In \emph{Proceedings of the Australasian Language Technology
+  Association Workshop 2011}, pages 10--18, Canberra, Australia.
 
 \bibitem[{Cho and Lee(2019)}]{biomedpp4}
 Hyejin Cho and Hyunju Lee. 2019.
@@ -32,6 +52,30 @@ Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2018.
 Haiwen Diao, Ying Zhang, Lin Ma, and Huchuan Lu. 2021.
 \newblock Similarity reasoning and filtration for image-text matching.
 \newblock \emph{arXiv preprint arXiv:2101.01368}.
+
+\bibitem[{Goodman et~al.(2016)Goodman, Vlachos, and
+  Naradowsky}]{goodman-etal-2016-noise}
+James Goodman, Andreas Vlachos, and Jason Naradowsky. 2016.
+\newblock \href {https://doi.org/10.18653/v1/P16-1001} {Noise reduction and
+  targeted exploration in imitation learning for {A}bstract {M}eaning
+  {R}epresentation parsing}.
+\newblock In \emph{Proceedings of the 54th Annual Meeting of the Association
+  for Computational Linguistics (Volume 1: Long Papers)}, pages 1--11, Berlin,
+  Germany. Association for Computational Linguistics.
+
+\bibitem[{Gusfield(1997)}]{Gusfield:97}
+Dan Gusfield. 1997.
+\newblock \emph{Algorithms on Strings, Trees and Sequences}.
+\newblock Cambridge University Press, Cambridge, UK.
+
+\bibitem[{Harper(2014)}]{harper-2014-learning}
+Mary Harper. 2014.
+\newblock \href {https://www.aclweb.org/anthology/C14-1001} {Learning from 26
+  languages: Program management and science in the babel program}.
+\newblock In \emph{Proceedings of {COLING} 2014, the 25th International
+  Conference on Computational Linguistics: Technical Papers}, page~1, Dublin,
+  Ireland. Dublin City University and Association for Computational
+  Linguistics.
 
 \bibitem[{He et~al.(2020)He, Wu, Yin, and Cai}]{kg4ner}
 Qizhen He, Liang Wu, Yida Yin, and Heming Cai. 2020.
@@ -175,6 +219,13 @@ Yujia Qin, Yankai Lin, Ryuichi Takanobu, Zhiyuan Liu, Peng Li, Heng Ji, Minlie
 \newblock Erica: Improving entity and relation understanding for pre-trained
   language models via contrastive learning.
 \newblock \emph{arXiv preprint arXiv:2012.15022}.
+
+\bibitem[{Rasooli and Tetreault(2015)}]{rasooli-tetrault-2015}
+Mohammad~Sadegh Rasooli and Joel~R. Tetreault. 2015.
+\newblock \href {http://arxiv.org/abs/1503.06733} {Yara parser: {A} fast and
+  accurate dependency parser}.
+\newblock \emph{Computing Research Repository}, arXiv:1503.06733.
+\newblock Version 2.
 
 \bibitem[{Stenetorp et~al.(2012)Stenetorp, Pyysalo, Topi{\'c}, Ohta, Ananiadou,
   and Tsujii}]{brat}

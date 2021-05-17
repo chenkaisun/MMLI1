@@ -118,13 +118,6 @@ def load_file(filename, init=None):
     if get_ext(filename) == ".json":
         with open(filename, "r", encoding="utf-8") as r:
             res = json.load(r)
-            # try:
-            #     res = json.load(r)
-            # except:
-            #     print("here")
-            #     res = [json.loads(line.strip()) for i, line in enumerate(r)]
-            #     return res
-            #     print(r)
 
 
     elif get_ext(filename) == ".pkl":

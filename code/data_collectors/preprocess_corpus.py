@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from shutil import copyfile
 import os
@@ -7,7 +8,8 @@ from sklearn.model_selection import train_test_split
 # from textacy.preprocessing.normalize import normalize_unicode
 import re
 from data_collectors.crawler_config import greek_alphabet
-
+from collections import defaultdict
+from copy import deepcopy
 "=========================="
 
 
@@ -42,17 +44,137 @@ def get_all_unicode(sent):
 def clean_text(t):
     for a in greek_alphabet:
         tmp = t.replace(a, greek_alphabet[a])
-        # if tmp != t:
-        #     print(t, "changed to", tmp)
         t = tmp
     return t
 
+
+"""=========checking dataset right========="""
+fname_tr = "../data_online/chemet/distant_training.json"
+fname_dev = "../data_online/chemet/dev_anno.json"
+fname_te = "../data_online/chemet/test_anno.json"
+outfname_tr = "../data_online/chemet/distant_training_new.json"
+outfname_dev = "../data_online/chemet/dev_anno_unseen_removed.json"
+outfname_te = "../data_online/chemet/test_anno_unseen_removed.json"
+test_jinfeng_b = "../data_online/chemet/test_jinfeng_b.json"
+# test_jinfeng_b = "../data_online/chemet/test_jinfeng_b.json"
+# test_jinfeng_b = "../data_online/chemet/test_jinfeng_b.json"
+
+
+f_tr = load_file_lines(fname_tr)
+f_dev = load_file_lines(fname_dev)
+f_te = load_file_lines(fname_te)
+f_jf = load_file_lines(test_jinfeng_b)
+
+docs_te = set([sample["doc_id"] for f in [f_dev, f_te] for i, sample in enumerate(f)])
+docs_tr = set([sample["doc_id"] for i, sample in enumerate(f_tr)])
+docs_jf = set([sample["doc_id"] for i, sample in enumerate(f_jf)])
+
+####see te doc dif from tr
+print(docs_te.intersection(docs_tr))
+
+###same as dist
+print(docs_jf.difference(docs_tr))
+print(docs_tr.difference(docs_jf))
+
+len(docs_tr)
+len(docs_te)
+len(docs_te)
+
+len(f_tr)
+len(f_dev)
+len(f_te)
+
+
+# f_tr = [sample for sample in f_tr if sample["doc_id"] not in docs_te]
+"""========================="""
+
+def get_label_occurrence(f):
+    labels_tr = defaultdict(int)
+
+    for i, sample in enumerate(f):
+        for m in sample["annotations"]:
+            for lb in m["labels"]:
+                labels_tr[lb] += 1
+            # labels_tr = labels_tr.union(m["labels"])
+            assert len(m["labels"]) > 0
+    return labels_tr
+
+
+a, b, c = get_label_occurrence(f_tr), get_label_occurrence(f_dev), get_label_occurrence(f_te)
+
+ltr = set(get_label_occurrence(f_tr).keys())
+ldev = set(get_label_occurrence(f_dev).keys())
+lte = set(get_label_occurrence(f_te).keys())
+print("e0")
+print(len(ldev.intersection(ltr)))
+print(len(lte.intersection(ltr)))
+print(len(ldev.difference(ltr)))
+print(len(lte.difference(ltr)))
+
+list(a.values()).sort()
+print(np.array().sort())
+
+for k in b:
+    a[k] += b[k]
+for k in b:
+    a[k] += b[k]
+
+print("ltr", ltr)
+print("ldev", ldev)
+print("lte", lte)
+
+for k, d in enumerate([f_dev, f_te]):
+    for i, sample in enumerate(d):
+        tmp_a = deepcopy(d[i]["annotations"])
+        d[i]["annotations"] = []
+        for j, m in enumerate(tmp_a):
+            tmp_a[j]["labels"] = list(set(m["labels"]).intersection(ltr))
+            if len(tmp_a[j]["labels"]):
+                d[i]["annotations"].append(tmp_a[j])
+f_dev=[s for s in f_dev if len(s["annotations"])>0]
+f_te=[s for s in f_te if len(s["annotations"])>0]
+
+
+# for i, sample in enumerate(f):
+#     for j, t in enumerate(sample["tokens"]):
+#         sample["tokens"][j] = clean_text(t)
+dump_file(f_tr, outfname_tr)
+dump_file(f_dev, outfname_dev)
+dump_file(f_te, outfname_te)
+
+# labels_tr = defaultdict(int)
+# for i, sample in enumerate(f_tr):
+#     for m in sample["annotations"]:
+#
+#         for lb in m["labels"]:
+#             labels_tr[lb]+=1
+#         # labels_tr = labels_tr.union(m["labels"])
+#         assert len(m["labels"])>0
+
+
+# print("labels_tr", labels_tr)
+
+
+# for i, sample in enumerate(f_te):
+#     for j, m in enumerate(sample["annotations"]):
+#
+#         f_te[i]["annotations"][j]["labels"] = list(set(m["labels"]).intersection(labels_tr))
 
 # mystring="hello 3\u03BF4 \u03C6 \u0391 \u03C9 23 23 ! $%&^ ^T "
 # a=re.sub(r"[\x00-\x7f]+", "",mystring)
 # a=list(a)
 # a
 # dump_file(a, "a.json")
+
+
+f_tr = load_file("../data_online/chemet/distant_training_new.json")
+f_dev = load_file("../data_online/chemet/dev_anno_unseen_removed.json")
+f_te = load_file("../data_online/chemet/test_anno_unseen_removed.json")
+
+print(sum([len(s["annotations"])==0 for s in f_te]))
+print(sum([len(s["annotations"])==0 for s in f_dev]))
+
+f_jf = load_file_lines(test_jinfeng_b)
 
 """=========remove docs from tr that appeared in test data and clean test labels that contain unseen label========="""
 
@@ -75,7 +197,6 @@ print("labels_tr", labels_tr)
 
 for i, sample in enumerate(f_te):
     for j, m in enumerate(sample["annotations"]):
-
         f_te[i]["annotations"][j]["labels"] = list(set(m["labels"]).intersection(labels_tr))
 
 # for i, sample in enumerate(f):
@@ -84,7 +205,6 @@ for i, sample in enumerate(f_te):
 dump_file(f_tr, out_fname_tr)
 dump_file(f_te, out_fname_te)
 
-
 labels_te = set()
 for i, sample in enumerate(f_te):
     for m in sample["annotations"]:
@@ -92,6 +212,7 @@ for i, sample in enumerate(f_te):
 print("labels_te", labels_te)
 print(labels_te.difference(labels_tr))
 print(labels_tr.difference(labels_te))
+
 """=========clean files========="""
 # clean chem annos
 fname = "../data_online/chemet/test_jinfeng_b.json"
@@ -107,7 +228,6 @@ for i, sample in enumerate(f):
     for j, t in enumerate(sample["tokens"]):
         sample["tokens"][j] = clean_text(t)
 dump_file(f, outfname)
-
 
 # ####tmp
 # fname = "../data_online/chemet/test_chem_anno_cleaned_cleaned.json"

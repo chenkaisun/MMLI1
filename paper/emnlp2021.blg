@@ -14,45 +14,45 @@ Database file #2: custom.bib
 Reallocating 'wiz_functions' (item size: 4) to 6000 items.
 Warning--can't use both volume and number fields in kg4ner
 Warning--can't use both volume and number fields in kbert
-You've used 40 entries,
+You've used 47 entries,
             3571 wiz_defined-function locations,
-            887 strings with 14145 characters,
-and the built_in function-call counts, 33467 in all, are:
-= -- 2649
-> -- 2213
-< -- 19
-+ -- 708
-- -- 663
-* -- 2379
-:= -- 5038
-add.period$ -- 161
-call.type$ -- 40
-change.case$ -- 441
-chr.to.int$ -- 41
-cite$ -- 42
-duplicate$ -- 2218
-empty$ -- 2100
-format.name$ -- 791
-if$ -- 7124
+            940 strings with 15892 characters,
+and the built_in function-call counts, 38240 in all, are:
+= -- 3098
+> -- 2363
+< -- 29
++ -- 758
+- -- 702
+* -- 2654
+:= -- 5725
+add.period$ -- 192
+call.type$ -- 47
+change.case$ -- 497
+chr.to.int$ -- 48
+cite$ -- 49
+duplicate$ -- 2549
+empty$ -- 2493
+format.name$ -- 855
+if$ -- 8221
 int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 473
-newline$ -- 204
-num.names$ -- 160
-pop$ -- 1076
+missing$ -- 538
+newline$ -- 240
+num.names$ -- 188
+pop$ -- 1215
 preamble$ -- 1
-purify$ -- 377
+purify$ -- 418
 quote$ -- 0
-skip$ -- 1417
+skip$ -- 1685
 stack$ -- 0
-substring$ -- 990
-swap$ -- 1095
-text.length$ -- 13
+substring$ -- 1173
+swap$ -- 1261
+text.length$ -- 17
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 360
+type$ -- 420
 warning$ -- 2
-while$ -- 165
+while$ -- 198
 width$ -- 0
-write$ -- 504
+write$ -- 601
 (There were 2 warnings)

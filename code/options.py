@@ -35,7 +35,7 @@ def read_args():
     # training params
     parser.add_argument("--num_atom_types", default=0, type=int)
     parser.add_argument("--num_edge_types", default=0, type=int)
-    parser.add_argument("--batch_size", default=12, type=int, help="Batch size for training.")
+    parser.add_argument("--batch_size", default=6, type=int, help="Batch size for training.")
     parser.add_argument("--plm_lr", default=2e-5, type=float, help="The initial learning rate for PLM.")
     parser.add_argument("--lr", default=1e-3, type=float, help="The initial learning rate for Adam.")
     parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
