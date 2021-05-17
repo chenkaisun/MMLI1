@@ -147,7 +147,12 @@ def get_entity_info_fet(files=None):
     cmpd_info_path = data_dir + "cmpd_info.json"
     cmpd_info = load_file(cmpd_info_path, init={})
 
-    embed()
+    for cid in cmpd_info:
+        cmpd_info[cid] = {'canonical_smiles': cmpd_info[cid]['canonical_smiles'],
+                          "pubchem_description": cmpd_info[cid]['pubchem_description']}
+    dump_file(cmpd_info, cmpd_info_path)
+    
+    # embed()
     # print("init", mention2ent, cmpd_info)
 
     batch_save = 500
@@ -168,7 +173,6 @@ def get_entity_info_fet(files=None):
 
                 if mole_name not in mention2ent:
                     # print("not in")
-
 
                     # get possible substrings
                     possible_mole_names = [mole_name]
