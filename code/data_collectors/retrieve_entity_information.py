@@ -140,7 +140,7 @@ def get_entity_info_fet(files=None):
     # test = "data_online/ChemProt_Corpus/chemprot_test_gs/chemprot_test_entities_gs.tsv"
 
     tmp = []
-    dump_file(tmp, data_dir + "tmp_empty.json")
+    # dump_file(tmp, data_dir + "tmp_empty.json")
 
     mention2ent_path = data_dir + "mention2ent.json"
     mention2ent = load_file(mention2ent_path, init={})
@@ -185,7 +185,7 @@ def get_entity_info_fet(files=None):
                     try:
                         for possible_name in possible_mole_names:
                             results = pcp.get_compounds(possible_name, 'name')
-                            time.sleep(4)
+                            time.sleep(3)
 
                             if results:
                                 break
