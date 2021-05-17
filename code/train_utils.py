@@ -122,9 +122,10 @@ def gpu_setup(use_gpu=True, gpu_id=2, use_random_available=True):
     num_gpus = 1
     if torch.cuda.is_available() and use_gpu:
         print(f"{torch.cuda.device_count()} GPU available")
-        print('cuda available with GPU:', torch.cuda.get_device_name(0))
+        # print('cuda available with GPU:', torch.cuda.get_device_name(0))
 
-        device = torch.device("cuda")
+        # device = torch.device("cuda")
+        device = torch.device("cuda:"+str(gpu_id))
 
     else:
         if not torch.cuda.is_available():
