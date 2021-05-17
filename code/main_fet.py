@@ -29,10 +29,10 @@ if __name__ == '__main__':
 
     # Specializing args for the experiment
     args.data_dir = "../data_online/chemet/"
-    fname = "test_jinfeng_b"
-    args.train_file = args.data_dir + "test_jinfeng_b_cleaned_cleaned.json"
-    args.val_file = args.data_dir + "test_chem_anno_cleaned_cleaned.json"
-    args.test_file = args.data_dir + "test_chem_anno_cleaned_cleaned.json"
+    fname = "anno"
+    args.train_file = args.data_dir + "distant_training_new.json"
+    args.val_file = args.data_dir + "dev_anno_unseen_removed.json"
+    args.test_file = args.data_dir + "test_anno_unseen_removed.json"
 
     data_dir = args.data_dir
     train_file = args.train_file

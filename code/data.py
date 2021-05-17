@@ -72,6 +72,8 @@ class ModalRetriever:
         # g_modal_mask *= (0 not in g_modal.edge_index.shape)
         # print("g_modal_mask",g_modal_mask)
         # print(type(g_modal_mask))
+        # print("ent", ent)
+        # print("g_modal, g_modal_mask, d_modal, d_modal_mask",g_modal, g_modal_mask, d_modal, d_modal_mask)
         return g_modal, g_modal_mask, d_modal, d_modal_mask
 
     def get_atom_info(self, mol):
@@ -576,11 +578,16 @@ class ChemetDataset(Dataset):
 
                 # print("attr", ent1_dict['g'].edge_attr)
                 if ent1_dict['g_mask']:
-                    # print("x min", ent1_dict['g'].edge_attr.min())
+                    # print("e min", ent1_dict['g'].edge_attr.min())
+                    # print("e max", ent1_dict['g'].edge_attr.max())
+                    # print("x max",  int(ent1_dict['g'].x.max().item()))
                     # print("x max", ent1_dict['g'].edge_attr.max())
 
                     args.num_atom_types = max(args.num_atom_types, int(ent1_dict['g'].x.max().item()) + 1)
                     args.num_edge_types = max(args.num_edge_types, int(ent1_dict['g'].edge_attr.max().item()) + 1)
+                    # print("cur x", args.num_atom_types)
+                    # print("cur e", args.num_edge_types)
+
 
                 # print("\nm", m)
                 # print('ent1_dict', ent1_dict)
@@ -992,6 +999,7 @@ def collate_fn(batch):
 
 class CustomBatch:
     def __init__(self, batch):
+        # print("batch",batch)
         max_len = max([len(f["text"]) for f in batch])
         input_ids = [f["text"] + [0] * (max_len - len(f["text"])) for f in batch]
         input_mask = [[1.0] * len(f["text"]) + [0.0] * (max_len - len(f["text"])) for f in batch]

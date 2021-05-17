@@ -36,6 +36,7 @@ def train(args, model, optimizer, data):
         val_data.instances = val_data.instances[:num_samples_test]
         test_data.instances = test_data.instances[:num_samples_test]
 
+    # embed()
     if args.exp == "mol_pred":
         train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, collate_fn=collate_fn,
                                   drop_last=False, num_workers=args.num_workers, worker_init_fn=seed_worker)
