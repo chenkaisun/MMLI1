@@ -162,11 +162,16 @@ nohup.out
 paper*/
 rdkit/
 experiment/*
-submission/
+submission/*
 stats.xlsx
 #data_online/ChemProt_Corpus/mention2concepts.json
 data_online/ChemProt_Corpus/chem_mentions.json
 data_online/ChemProt_Corpus/prot_mentions.json
 embeddings/
 data_online/*
+paper_tmp/*
+paper/*
+analyze/*
+Reviewer.docx
+
 #wikipedia_html_for_pubchem_compounds/
