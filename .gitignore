@@ -176,4 +176,6 @@ u_set.json
 rg.txt
 run*.json
 data_collectors/*
+main_re.py
+main.py
 #wikipedia_html_for_pubchem_compounds/
