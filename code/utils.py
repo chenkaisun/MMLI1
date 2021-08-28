@@ -172,6 +172,8 @@ def module_exists(module_name):
     else:
         return True
 
+
+
 def get_gpu_mem_info():
     nvmlInit()
     h = nvmlDeviceGetHandleByIndex(0)

@@ -23,6 +23,7 @@ from IPython import embed
 import os
 from utils import load_file, dump_file, visualize_plot
 import gc
+from tqdm import tqdm
 
 # from torch.optim.lr_scheduler import _LRScheduler
 
@@ -91,7 +92,7 @@ def train(args, model, optimizer, data):
         # torch.autograd.set_detect_anomaly(True)
 
         total_loss = 0
-        for step, batch in enumerate(train_loader):
+        for step, batch in enumerate(tqdm(train_loader)):
             # logger.debug(f"Step {step}")
             # gc.collect()
 

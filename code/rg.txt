@@ -1,0 +1,35 @@
+\begin{tabular}{lr}
+\toprule
+                                       Entity Type &  Occurrence \\
+\midrule
+ Organic\_Chemistry/Organic\_Compounds/Aromatic\_C... &         167 \\
+ Organic\_Chemistry/Organic\_Compounds/Organohalides &         161 \\
+ Organic\_Chemistry/Organic\_Compounds/Organometa... &         147 \\
+ Organic\_Chemistry/Organic\_Compounds/Heterocycl... &         128 \\
+ Organic\_Chemistry/Organic\_Compounds/Other\_Orga... &         122 \\
+        Organic\_Chemistry/Organic\_Compounds/Esters &         113 \\
+        Organic\_Chemistry/Organic\_Compounds/Ethers &         113 \\
+ Organic\_Chemistry/Organic\_Compounds/Aromatic\_C... &         102 \\
+ Organic\_Chemistry/Organic\_Compounds/Hydrocarbo... &          88 \\
+       Organic\_Chemistry/Functional\_Groups/Ketones &          73 \\
+ Organic\_Chemistry/Organic\_Compounds/Organonitr... &          59 \\
+ Organic\_Chemistry/Organic\_Compounds/Organonitr... &          53 \\
+ Organic\_Chemistry/Organic\_Compounds/Hydrocarbo... &          52 \\
+ Organic\_Chemistry/Organic\_Compounds/Organic\_Ac... &          37 \\
+ Organic\_Chemistry/Organic\_Compounds/Organic\_Ac... &          37 \\
+ Organic\_Chemistry/Organic\_Compounds/Organic\_Ac... &          31 \\
+ Organic\_Chemistry/Organic\_Compounds/Organophos... &          30 \\
+ Organic\_Chemistry/Organic\_Compounds/Hydrocarbo... &          23 \\
+ Organic\_Chemistry/Organic\_Compounds/Organonitr... &          19 \\
+ Organic\_Chemistry/Organic\_Compounds/Hydrocarbo... &          12 \\
+ Organic\_Chemistry/Organic\_Compounds/Polycyclic... &           6 \\
+ Organic\_Chemistry/Organic\_Compounds/Organonitr... &           5 \\
+   Organic\_Chemistry/Functional\_Groups/Acyl\_Groups &           4 \\
+      Organic\_Chemistry/Organic\_Compounds/Carbenes &           4 \\
+ Organic\_Chemistry/Organic\_Compounds/Organophos... &           4 \\
+ Organic\_Chemistry/Organic\_Compounds/Organophos... &           3 \\
+ Organic\_Chemistry/Organic\_Compounds/Organonitr... &           3 \\
+ Organic\_Chemistry/Organic\_Compounds/Organic\_Ac... &           2 \\
+ Organic\_Chemistry/Organic\_Compounds/Organic\_Po... &           1 \\
+\bottomrule
+\end{tabular}

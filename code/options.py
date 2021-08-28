@@ -9,7 +9,7 @@ def read_args():
     parser.add_argument("--max_seq_len", default=1024, type=int)
 
     # experiment
-    parser.add_argument("--model_name", default="", type=str)
+    parser.add_argument("--model_name", default="fet_model", type=str)
     parser.add_argument("--model_path", default="model/states/best_dev.pt", type=str)
     parser.add_argument("--experiment", default="exp", type=str)
     parser.add_argument("--experiment_path", default="../experiment/", type=str)
@@ -91,6 +91,14 @@ def read_args():
     parser.add_argument('--cm', default=0, type=int)
     parser.add_argument('--attn_analysis', default=0, type=int)
     parser.add_argument('--error_analysis', default=0, type=int)
+
+
+    ##for lst
+
+    parser.add_argument('--embed_dim', type=int, default="200", help='Number of embedding units.')
+    parser.add_argument('--word_embed_type', type=int, default=16, help='Number of embedding units.')
+    parser.add_argument('--lstm_dropout', type=int, default=.5)
+    parser.add_argument('--embed_dropout', type=int, default=.5)
 
     # auxiliary
     # parser.add_argument("--debug", action="store_true")

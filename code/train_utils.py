@@ -14,7 +14,8 @@ from utils import mkdir, dump_file, load_file
 from torch.utils.tensorboard import SummaryWriter
 import numpy
 from pynvml import *
-
+import torch.nn as nn
+import pickle as pkl
 from IPython import embed
 
 
@@ -63,14 +64,14 @@ def get_plm_fullname(abbr):
     return plm_dict[abbr]
 
 
-def setup_common(args):
+def setup_common(args, pretrained_weights=None):
     # args = read_args()
     # wandb.config.update(args)
     # for model running
     mkdir("model")
     mkdir("model/states")
 
-    args.model_path = "model/states/best_dev_" + args.exp_id + ".pt"
+    # args.model_path = "model/states/best_dev_" + args.exp_id + ".pt"
 
     # set_seeds(args)
     args.device = gpu_setup(use_gpu=args.use_gpu, gpu_id=args.gpu_id, use_random_available=False)
@@ -89,8 +90,8 @@ def setup_common(args):
     else:
         args.plm_hidden_dim = 768
 
-    model = get_model(args)
-    # view_model_param(args, model)
+    model = get_model(args, pretrained_weights=pretrained_weights)
+    view_model_param(args, model)
 
     # downstream_layers = ["combiner", "gnn", "cm_attn", 'gnn', 'the_zero','the_one']
 
@@ -112,7 +113,48 @@ def setup_common(args):
 
     return args, model, optimizer
 
+def load_word_embed(path: str,
+                    dimension: int,
+                    *,
+                    skip_first: bool = False,
+                    freeze: bool = False,
+                    sep: str = ' ',
+                    file_vocab_path=''):
+    """Load pre-trained word embeddings from file.
 
+    Args:
+        path (str): Path to the word embedding file.
+        skip_first (bool, optional): Skip the first line. Defaults to False.
+        freeze (bool, optional): Freeze embedding weights. Defaults to False.
+
+    Returns:
+        Tuple[nn.Embedding, Dict[str, int]]: The first element is an Embedding
+        object. The second element is a word vocab, where the keys are words and
+        values are word indices.
+    """
+    vocab = {'$$$UNK$$$': 0, '$$$PAD$$$': 1}
+    embed_matrix = [[0.0] * dimension]
+    file_vocab = pkl.load(open(file_vocab_path, "rb")) if file_vocab_path else None
+    # print("file_vocab type", type(file_vocab))
+    with open(path, encoding='utf-8') as r:
+        if skip_first:
+            r.readline()
+        for line in r:
+            segments = line.rstrip('\n').rstrip(' ').split(sep)
+            word = segments[0]
+            if (not file_vocab) or word in file_vocab:
+                vocab[word] = len(vocab)
+                # print("segments[1:]", len(segments[1:]))
+                embed = [float(x) for x in segments[1:]]
+                embed_matrix.append(embed)
+    print('Loaded %d word embeddings' % (len(embed_matrix) - 1))
+
+    embed_matrix = torch.FloatTensor(embed_matrix)
+
+    word_embed = nn.Embedding.from_pretrained(embed_matrix,
+                                              freeze=freeze,
+                                              padding_idx=0)
+    return word_embed, vocab
 def gpu_setup(use_gpu=True, gpu_id=2, use_random_available=True):
     print("Setting up GPU")
     if not use_random_available:
@@ -184,6 +226,7 @@ def set_seeds(args):
 
 
 def get_tokenizer(plm, save_dir="tokenizer/"):
+    return AutoTokenizer.from_pretrained(plm)
     mkdir(save_dir)
     tk_name = plm.split("/")[-1].replace("-", "_") + "_tokenizer.pkl"
     tk_name = os.path.join(save_dir, tk_name)

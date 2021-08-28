@@ -58,11 +58,12 @@ outfname_te = "../data_online/chemet/test_anno_unseen_removed.json"
 test_jinfeng_b = "../data_online/chemet/test_jinfeng_b.json"
 # test_jinfeng_b = "../data_online/chemet/test_jinfeng_b.json"
 # test_jinfeng_b = "../data_online/chemet/test_jinfeng_b.json"
-
-
-f_tr = load_file_lines(fname_tr)
-f_dev = load_file_lines(fname_dev)
-f_te = load_file_lines(fname_te)
+fname_tr ="../data_online/chemet/distant_training_new.json"
+fname_dev="../data_online/chemet/dev_anno_unseen_removed.json"
+fname_te="../data_online/chemet/test_anno_unseen_removed.json"
+f_tr = load_file(fname_tr)
+f_dev = load_file(fname_dev)
+f_te = load_file(fname_te)
 f_jf = load_file_lines(test_jinfeng_b)
 
 docs_te = set([sample["doc_id"] for f in [f_dev, f_te] for i, sample in enumerate(f)])
@@ -100,7 +101,56 @@ def get_label_occurrence(f):
     return labels_tr
 
 
+import pandas as pd
 a, b, c = get_label_occurrence(f_tr), get_label_occurrence(f_dev), get_label_occurrence(f_te)
+aa={k: v for k, v in sorted(a.items(), key=lambda item: item[1], reverse=True)}
+bb={k: v for k, v in sorted(b.items(), key=lambda item: item[1], reverse=True)}
+cc={k: v for k, v in sorted(c.items(), key=lambda item: item[1], reverse=True)}
+
+
+df = pd.DataFrame(list(aa.items()),columns = ['Entity Type','Occurrence'])
+with pd.option_context("max_colwidth", 1000):
+    print(df)
+    print(df.to_latex(index=False))
+
+df = pd.DataFrame(list(bb.items()),columns = ['Entity Type','Occurrence'])
+with pd.option_context("max_colwidth", 1000):
+    print(df)
+    print(df.to_latex(index=False))
+
+df = pd.DataFrame(list(cc.items()),columns = ['Entity Type','Occurrence'])
+with pd.option_context("max_colwidth", 1000):
+    print(df)
+    print(df.to_latex(index=False))
+from pprint import pprint as pp
+pp(df.to_latex(index=False))
+
+dev_data = [json.loads(line) for line in open("../data_online/chemet/dev_anno_unseen_removed.json", 'r')]
+dev_data
+dev_data_labels = []
+for i in range(len(dev_data[0])):
+    elem = dev_data[0][i]
+    anno = elem['annotations']
+    dev_data_labels.append(anno[0]['labels'])
+print(len(dev_data_labels))
+flat_list = [item for sublist in test_data_labels for item in sublist]
+compound_list = []
+for item in flat_list:
+    name = os.path.basename(item)
+    compound_list.append(name)
+hist = {}
+for i in compound_list:
+    hist[i] = hist.get(i, 0) + 1
+print(hist)
+import pandas as pd
+df = pd.DataFrame(list(hist.items()),columns = [‘Entity Type’,‘Occurrence’])
+print(df)
+
+with open("rg.txt", mode='w+') as ff:
+    ff.write(df.to_latex(index=False))
+
+
+
 
 ltr = set(get_label_occurrence(f_tr).keys())
 ldev = set(get_label_occurrence(f_dev).keys())
@@ -170,6 +220,35 @@ dump_file(f_te, outfname_te)
 f_tr = load_file("../data_online/chemet/distant_training_new.json")
 f_dev = load_file("../data_online/chemet/dev_anno_unseen_removed.json")
 f_te = load_file("../data_online/chemet/test_anno_unseen_removed.json")
+
+print(len(f_tr))
+print(len(f_dev))
+print(len(f_te))
+
+print(sum([len(s["annotations"]) for s in f_tr]))
+print(sum([len(s["annotations"]) for s in f_dev]))
+print(sum([len(s["annotations"]) for s in f_te]))
+#####missing
+m2e = load_file("../data_online/chemet/mention2ent.json")
+
+final_data = []
+cnt_total=0
+cnt_missing=0
+for original_data in [f_tr,f_dev,f_te]:
+    for idx in range(len(original_data)):
+        sample = original_data[idx]
+
+        text = sample["tokens"]
+        for mention in sample["annotations"]:
+            cnt_total += 1
+            m_s, m_e = mention["start"], mention["end"]
+            m = " ".join(text[m_s:m_e])
+            m = m.replace("  ", " ")
+            if m not in m2e or  not m2e[m]: cnt_missing+=1
+
+print(cnt_missing/cnt_total)
+
+
 
 print(sum([any([len(m['labels'])==0 for m in s["annotations"]]) for s in f_te]))
 print(sum([any([len(m['labels'])==0 for m in s["annotations"]]) for s in f_dev]))

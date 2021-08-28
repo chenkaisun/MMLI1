@@ -17,7 +17,7 @@ from utils import dump_file, load_file
 from pprint import pprint as pp
 from sklearn.metrics import f1_score
 from evaluate import evaluate
-
+from pprint import pprint as pp
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 # torch.use_deterministic_algorithms(True)
@@ -78,7 +78,8 @@ if __name__ == '__main__':
     args.downstream_layers = ["combiner", "gnn", "cm_attn", 'the_zero', 'the_one', 'rand_emb']
 
     # args.model_path=""
-    args.model_name = "fet_model"
+    # args.model_name = "fet_model"
+    # args.model_name = "fet_model"
     args.exp = "fet"
     args.plm = "sci"
     args.plm = get_plm_fullname(args.plm)
@@ -123,11 +124,84 @@ if __name__ == '__main__':
     train_data, val_data, test_data = ChemetDataset(args, train_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, val_file, tokenizer, modal_retriever, labels), \
                                       ChemetDataset(args, test_file, tokenizer, modal_retriever, labels)
+    #### for LSTM input
+    word_embed=None
+    if args.model_name=="lstm":
+
+        main_dir="/"
+        word_embed_type = "glove.840B.300d"
+        args.embed_dim=300
+        word_embed_type = "patent_w2v"
+        args.embed_dim=200
+        embed_file = os.path.join('../embeddings/' + word_embed_type + '.txt')
+        word_embed_path = os.path.join("../embeddings", word_embed_type + "word_embed.pkl")
+        word_vocab_path = os.path.join("../embeddings", word_embed_type + "word_vocab.pkl")
+        files_vocab_path = None
+        if not (os.path.isfile(word_embed_path)) or not (os.path.isfile(word_vocab_path)):
+            print("No word_embed or word_vocab save, dumping...")
+            word_embed, word_vocab = load_word_embed(embed_file,
+                                                     args.embed_dim,
+                                                     skip_first=True, file_vocab_path=files_vocab_path)
+            pkl.dump(word_embed, open(word_embed_path, "wb"))
+            pkl.dump(word_vocab, open(word_vocab_path, "wb"))
+            print("word_embed Saved")
+        word_embed = pkl.load(open(word_embed_path, "rb"))
+        word_vocab = pkl.load(open(word_vocab_path, "rb"))
+        # reversed_word_vocab = {value: key for (key, value) in word_vocab.items()}
+        # vocabs = {'word': word_vocab}
+        for data_split in [train_data, val_data, test_data]:
+            for i, sample in enumerate(data_split):
+                sample["word_ids"]=[word_vocab.get(t, word_vocab.get(t.lower(), 0))
+                          for t in sample["original_text"]]
+                sample["mention_masks"]=[1 if sample["original_pos"][0] <= i < sample["original_pos"][1] else 0
+                                for i in range(len(sample["original_text"]))]
+                sample["context_masks"]=[1 for _ in range(len(sample["original_text"]))]
+                sample["is_rnn"]=True
+    else:
+        for data_split in [train_data, val_data, test_data]:
+            for i, sample in enumerate(data_split):
+                sample["is_rnn"]=False
+
+    #
+    # # add glove indicies
+    # def load_glove_vectors(glove_file="./data/glove.6B/glove.6B.50d.txt"):
+    #     """Load the glove word vectors"""
+    #     word_vectors = {}
+    #     with open(glove_file) as f:
+    #         for line in f:
+    #             split = line.split()
+    #             word_vectors[split[0]] = np.array([float(x) for x in split[1:]])
+    #     return word_vectors
+    #
+    #
+    # def get_emb_matrix(pretrained, word_counts, emb_size=50):
+    #     """ Creates embedding matrix from word vectors"""
+    #     vocab_size = len(word_counts) + 2
+    #     vocab_to_idx = {}
+    #     vocab = ["", "UNK"]
+    #     W = np.zeros((vocab_size, emb_size), dtype="float32")
+    #     W[0] = np.zeros(emb_size, dtype='float32')  # adding a vector for padding
+    #     W[1] = np.random.uniform(-0.25, 0.25, emb_size)  # adding a vector for unknown words
+    #     vocab_to_idx["UNK"] = 1
+    #     i = 2
+    #     for word in word_counts:
+    #         if word in word_vecs:
+    #             W[i] = word_vecs[word]
+    #         else:
+    #             W[i] = np.random.uniform(-0.25, 0.25, emb_size)
+    #         vocab_to_idx[word] = i
+    #         vocab.append(word)
+    #         i += 1
+    #     return W, np.array(vocab), vocab_to_idx
+    #
+    #
+    # word_vecs = load_glove_vectors()
+    # pretrained_weights, vocab, vocab2index = get_emb_matrix(word_vecs, counts)
 
 
     # exit()
     print("args.num_atom_types,args.num_edge_types", args.num_atom_types, args.num_edge_types)
-    args, model, optimizer = setup_common(args)
+    args, model, optimizer = setup_common(args, word_embed)
 
     # train or analyze
     if not args.eval:
@@ -138,48 +212,68 @@ if __name__ == '__main__':
 
         model.load_state_dict(torch.load(args.model_path)['model_state_dict'])
         test_score, output = evaluate(args, model, test_data)
-        val_score, output2 = evaluate(args, model, val_data)
-
-
-        print(val_score)
         print(test_score)
+        # val_score, output2 = evaluate(args, model, val_data)
+        # print(val_score)
 
         if args.error_analysis:
+            sample_id = 0
+
+
+
+            original_data = load_file(test_file)
+
+            final_data = []
+            for idx in range(len(original_data)):
+                sample = original_data[idx]
+
+                text = sample["tokens"]
+                for mention in sample["annotations"]:
+                    sample_id += 1
+                    m_s, m_e = mention["start"], mention["end"]
+                    m = " ".join(text[m_s:m_e])
+                    m = m.replace("  ", " ")
+                    final_data.append({"original_text": text, 'mention_name': m, "original_labels": mention["labels"]})
 
             for id, pred, label in output:
-                print("\nsample", id)
-                sample = test_data[id]
-                print("text is", sample["original_text"])
-                print("mention is ", sample['mention_name'])
-                print("original labels are", sorted(sample["original_labels"]))
+                print("\n\nsample", id)
+                sample = final_data[id]
+                # print("text is", sample["original_text"])
+                print(" ".join(sample["original_text"]) )
+                print("\nmention is", sample['mention_name'])
+                print("original labels are")
+                pp(sorted(sample["original_labels"]))
 
+                here_labels = sorted([labels[i] for i, c in enumerate(pred) if label[i] == 1])
+                predicted_labels = sorted([labels[i] for i, c in enumerate(pred) if c == 1])
 
-                here_labels=sorted([labels[i] for i, c in enumerate(pred) if label[i] == 1])
-                predicted_labels=sorted([labels[i] for i, c in enumerate(pred) if c == 1])
+                # print("has labels", sorted(here_labels))
+                print("predicted labels")
+                pp(sorted(predicted_labels))
 
-                print("has labels", sorted(here_labels))
-                print("predicted labels", sorted(predicted_labels))
+                here_labels = set(here_labels)
+                predicted_labels = set(predicted_labels)
 
-                here_labels=set(here_labels)
-                predicted_labels=set(predicted_labels)
-
-                missed_labels=predicted_labels.difference(here_labels)
-                incorrected_included_labels=here_labels.difference(predicted_labels)
-                print("missed_labels", missed_labels)
-                print("incorrected_included_labels", incorrected_included_labels)
+                missed_labels = here_labels.difference(predicted_labels)
+                incorrected_included_labels = predicted_labels.difference(here_labels)
+                if missed_labels:
+                    print("missed_labels")
+                    pp(missed_labels)
+                if incorrected_included_labels:
+                    print("incorrected_included_labels")
+                    pp(incorrected_included_labels)
         # if args.attn_analysis:
 
+        # for i, c in enumerate(pred):
+        #     if label[i] == 1:
+        #         print("has label", labels[i])
+        # for i, c in enumerate(pred):
+        #     if c == 1:
+        #         print("predicted label", labels[i])
 
-            # for i, c in enumerate(pred):
-            #     if label[i] == 1:
-            #         print("has label", labels[i])
-            # for i, c in enumerate(pred):
-            #     if c == 1:
-            #         print("predicted label", labels[i])
-
-                # if label[i] != c:
-                #     print("pred")
-                #     print(labels[i])
+        # if label[i] != c:
+        #     print("pred")
+        #     print(labels[i])
 
         exit()
         rels = ['AGONIST-ACTIVATOR',

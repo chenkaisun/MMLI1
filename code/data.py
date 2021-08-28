@@ -15,7 +15,7 @@ import scipy
 
 if module_exists("rdkit"):
     from rdkit import Chem
-
+else: print("not exist rdkit")
 
 # from train_utils import
 # def load_data(args, name="chemet"):
@@ -576,8 +576,10 @@ class ChemetDataset(Dataset):
                 ent1_dict = deepcopy(ent_template)
                 ent1_dict["pos"] = list(new_ent_pos_list[0])
                 ent1_dict["masked_pos"] = list(new_masked_ent_pos_list[0])
+                # print("e1")
                 ent1_dict['g'], ent1_dict['g_mask'], ent1_dict['t'], ent1_dict['t_mask'] = self.modal_retriever.get_mol(
                     m)
+                # print("e0")
 
                 # print("attr", ent1_dict['g'].edge_attr)
                 if ent1_dict['g_mask']:
@@ -597,6 +599,7 @@ class ChemetDataset(Dataset):
                 total_g_linked += ent1_dict['g_mask']
                 total_num_mentions += 1
 
+
                 self.instances.append({"text": token_ids,
                                        "masked_text": masked_token_ids,
                                        "id": sample_id,
@@ -606,6 +609,7 @@ class ChemetDataset(Dataset):
                                        # "label_text": label_text,
                                        "tokenizer": tokenizer,
                                        "original_text": text,
+                                       "original_pos": (mention["start"], mention["end"]),
                                        "original_labels": mention["labels"]
                                        })
                 sample_id += 1
@@ -638,7 +642,7 @@ class ChemetDataset(Dataset):
             #
             #         for m in sample["annotations"]:
             #             labels = labels.union(m["labels"])
-        labels = list(labels)
+        labels = sorted(list(labels))
         dump_file(labels, path)
 
         return labels
@@ -1044,6 +1048,21 @@ class CustomBatch:
         self.ent1_masked_pos = torch.tensor([f["ent"]['masked_pos'] for f in batch], dtype=torch.long)
         self.ent1_masked_pos[self.ent1_masked_pos > torch.tensor(510)] = 0
 
+        ###LSTM
+        self.is_rnn=batch[0]["is_rnn"]
+        if self.is_rnn:
+
+            self.seq_lens = [len(f["word_ids"]) for f in batch]
+            max_len = max(self.seq_lens)
+            word_ids = [f["word_ids"] + [1] * (max_len - len(f["word_ids"])) for f in batch] #PAD
+            context_masks = [f["context_masks"] + [0] * (max_len - len(f["context_masks"])) for f in batch]
+            mention_masks = [f["mention_masks"] + [0] * (max_len - len(f["mention_masks"])) for f in batch]
+            self.word_ids = torch.tensor(word_ids, dtype=torch.long)
+            self.context_masks = torch.tensor(context_masks, dtype=torch.long)
+            self.mention_masks = torch.tensor(mention_masks, dtype=torch.long)
+            self.seq_lens=torch.tensor(self.seq_lens, dtype=torch.long)
+
+
         self.in_train = True
         # embed()
 
@@ -1063,6 +1082,13 @@ class CustomBatch:
 
         self.ent1_pos = self.ent1_pos.to(device)
         self.ent1_masked_pos = self.ent1_masked_pos.to(device)
+
+        if self.is_rnn:
+            self.word_ids = self.word_ids.to(device)
+            self.mention_masks = self.mention_masks.to(device)
+            self.context_masks = self.context_masks.to(device)
+        # self.seq_lens = self.seq_lens.to(device)
+
 
         return self
 

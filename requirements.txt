@@ -1,0 +1,13 @@
+sparqlwrapper
+IPython
+requests
+sklearn
+beautifulsoup4
+transformers==4.3.1
+pynvml
+tensorboard
+lxml
+pubchempy
+pymediawiki
+sentencepiece==0.1.95
+matplotlib==3.4.3
