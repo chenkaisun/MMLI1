@@ -175,7 +175,8 @@ Reviewer.docx
 u_set.json
 rg.txt
 run*.json
-data_collectors/*
+data_collectors/
 main_re.py
 main.py
+data_collectors/
 #wikipedia_html_for_pubchem_compounds/
