@@ -173,5 +173,7 @@ paper_tmp/*
 paper/*
 analyze/*
 Reviewer.docx
-
+u_set.json
+run*.json
+data_collectors/*
 #wikipedia_html_for_pubchem_compounds/
