@@ -147,7 +147,7 @@ missMDA/
 #upload.sh
 latex*.txt
 testing*.py
-features.py
+#features.py
 note*.txt
 data/*
 model/states/
