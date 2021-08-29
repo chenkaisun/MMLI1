@@ -180,3 +180,4 @@ main.py
 data_online/*
 *.docx
 #wikipedia_html_for_pubchem_compounds/
+*.zip
