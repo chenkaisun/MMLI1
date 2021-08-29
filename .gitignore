@@ -178,5 +178,5 @@ data_collectors/
 main_re.py
 main.py
 data_online/*
-!/data_online/chemet/.placeholder
+*.docx
 #wikipedia_html_for_pubchem_compounds/
