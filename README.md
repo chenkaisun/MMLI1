@@ -6,7 +6,7 @@
 - Google Colab
 - Ubuntu-18.0.4
 - Python (3.7)
-- Cuda (10.1)
+- Cuda (11.2)
 
 ## Installation
 ```
@@ -20,9 +20,10 @@ To reproduce experiment:
 
 download files from [Google Drive](https://drive.google.com/drive/folders/1kRkJxbEZvGaec1WcyzSfnUcd7LRYHwhE?usp=sharing) and place `.pkl` and `.json` in `data_online/chemet/`, and place `.pt` file in `code/model/states/`
 
+download word vectors from [ChemPatent](https://chemu.eng.unimelb.edu.au/patent_w2v/) and place in `embeddings/`
 
 `.pkl` are preprocessed dataset including multimodal definitions, 
-`cmpd_info.json` and `mention2ent.json` are external chemical definitions
+`cmpd_info.json` and `mention2ent.json` are external chemical definitions. `.pt` file is saved model
 
 Then go into `code/` and run the following
 ```bash
