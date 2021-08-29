@@ -168,7 +168,6 @@ stats.xlsx
 data_online/ChemProt_Corpus/chem_mentions.json
 data_online/ChemProt_Corpus/prot_mentions.json
 embeddings/
-data_online/*
 paper_tmp/*
 paper/*
 Reviewer.docx
@@ -178,5 +177,6 @@ run*.json
 data_collectors/
 main_re.py
 main.py
-data_collectors/
+data_online/*
+!/data_online/chemet/.placeholder
 #wikipedia_html_for_pubchem_compounds/

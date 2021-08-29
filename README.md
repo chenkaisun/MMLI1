@@ -39,6 +39,8 @@ python main_fet.py \
         --num_gnn_layers 1 \
         --use_cache 1 \
         --cm_type 0 \
-        --exp_id 1 
+        --exp_id 1 \
+        --model_path model/states/best_dev_1.pt \
+        --eval
 ```
 
