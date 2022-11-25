@@ -12,8 +12,8 @@
 ```
 pip install -r requirements.txt
 ```
-Install [RDKit](https://www.rdkit.org/docs/Install.html), [PyTorch](https://pytorch.org/) and [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
-  
+Install [RDKit](https://www.rdkit.org/docs/Install.html), [PyTorch](https://pytorch.org/) 1.6.0 and [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html) 1.7.0
+
 ## Usage
 
 To reproduce experiment:
